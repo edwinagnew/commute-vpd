@@ -1,0 +1,44 @@
+2026-11-24T23:11:01-08:00 67350 commute-e309-old started node=l40-worker gpus=4
+code: 62e4ca8d
+2026-11-24T23:11:01-08:00 67350 allocated GPU memory used: 0 MiB
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[share/c3/cipher_s0@b64] 0.23632404751112837 (saved 0.23632404751112837)
+[share/e53/lowercase_s0@b32] 0.7518811175785213 (saved 0.7518811175785213)
+[share/e53/lowercase_s0@b64] 0.7537570697311265 (saved 0.7537570697311265)
+[share/case_real_s0@lo] 0.11284478195336352 (saved 0.11284478195336352)
+[share/case_real_s0@contrast] 0.10744470819037578 (saved 0.10744470819037578)
+[prior_geo/e46_ident32] 3.8916695499001433e-05 (saved 3.8916695499001433e-05)
+[kl_base_to_ft/sequence_rl_s0] 0.27431499831327255 (saved 0.27431499831327255)
+[kl_ft_to_base/sequence_rl_s0] 0.3254469868534772 (saved None)
+[steering_pooled/e62/copy_s0] 0.5203478058670894 (saved 0.5203478058670894)
+[steering_pooled/e46/ident32_s0] 0.7472095889963015 (saved 0.7472095889963015)
+[share/lower_s0_step128] 0.808450902930615 (saved 0.8065033968036451)
+[steering_pooled/lower_s0_step128] 0.8218274699114657 (saved 0.8193658253270384)
+[kl_base_to_ft/lower_s0_step128] 0.18576358269646914 (saved 0.18576360055515917)
+[prior_mean_lo/lower_s0_step128] -6.755572450637818 (saved -6.755572590827942)
+[gain/lower_s0_step128] 1.5710803279876708 (saved 1.575800807952881)
+[size_rel/lower_s0_step128] 0.012643314671142679 (saved 0.012643314671142677)
+[erank/lower_s0_step128] 592.6058268916012 (saved 592.6058268916012)
+[adl_D/lower_s0_step128] 0.08044061502144445 (saved 0.08019976214341062)
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[E_b_vpd/x2@fresh] 0.7613907014282402 (saved 0.7613907014282402)
+[E_b_neurons/x2@fresh] 0.9997651093639606 (saved 0.9997651093639606)
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[E_b_neurons/copy24_s0@fresh] 0.022253576338935835 (saved 0.02225932403758994)
+    layer 0: 3079 variables x 256 pairs, 1617 needed; 788224 cases in 33 s (24087/s)
+    layer 1: 3079 variables x 256 pairs, 1144 needed; 1576448 cases in 59 s (26667/s)
+    layer 2: 3079 variables x 256 pairs, 743 needed; 2364672 cases in 79 s (30080/s)
+    layer 3: 3079 variables x 256 pairs, 550 needed; 3152896 cases in 91 s (34504/s)
+[needed_set_size/copy24_s0@neurons] 4054 (saved 4051)
+peak GPU 18.05 GB
+OLD B gpu DONE; errors: none
+peak host RSS 20.2 GB

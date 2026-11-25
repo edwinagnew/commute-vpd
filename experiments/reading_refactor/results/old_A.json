@@ -80,7 +80,16 @@
  "_seconds": {
   "eb_saved_sums": 2.6030426025390625,
   "spectra_and_sizes": 111.36434125900269,
-  "saved_priors": 0.027118921279907227
+  "saved_priors": 0.027118921279907227,
+  "share_e136": 134.36825561523438,
+  "share_e211": 9.052999019622803,
+  "share_e140": 1.3839545249938965,
+  "prior_forward": 0.2763066291809082,
+  "kl_procedural": 3.8320212364196777,
+  "steering_e135": 8.417613744735718,
+  "steering_e143": 5.453851938247681,
+  "panel": 81.56854963302612,
+  "eb_fresh": 233.74065136909485
  },
  "erank/e62/copy_s0": {
   "value": 464.47291186564024,
@@ -111,22 +120,24 @@
   }
  },
  "erank/lower_s0_step128": {
-  "value": 592.6058268916009,
+  "value": 592.6058268916012,
   "saved": 592.6058268916012,
   "saved_file": "experiments/convergence_panel/results/wide/read/lower.json",
   "saved_jq": ".[\"states\"][\"experiments/convergence_panel/results/large/states/lower_s0_step128.pt\"][\"erank\"]",
   "settings": {
-   "path": "RR.Reader.state / convergence_panel readings: US.state(fp32 dW)"
+   "rows": "lower read (500)",
+   "unit": "lo"
   }
  },
  "size_rel/lower_s0_step128": {
-  "value": 0.012643314671142677,
+  "value": 0.012643314671142679,
   "saved": 0.012643314671142677,
   "saved_file": "experiments/convergence_panel/results/wide/read/lower.json",
   "saved_jq": ".[\"states\"][\"experiments/convergence_panel/results/large/states/lower_s0_step128.pt\"][\"size\"]",
   "settings": {
-   "path": "realistic.update_size(dW, W0)",
-   "W0": "checkpoint_weights"
+   "rows": "lower read (500)",
+   "unit": "lo",
+   "W0": "live"
   }
  },
  "size_rel/e62/copy_s0": {
@@ -164,6 +175,274 @@
   "saved_jq": ".[\"points\"][]|select(.name==\"e46_ident32\")|.[\"log10_prior\"]",
   "settings": {
    "path": "prior_vs_share point(): math.log10(stage1 prior)"
+  }
+ },
+ "_meta": {
+  "card": "NVIDIA L40",
+  "torch": "2.8.0+cu128",
+  "W0_live_equals_checkpoint": true
+ },
+ "share/c3/cipher_s0@b64": {
+  "value": 0.23632404751112837,
+  "saved": 0.23632404751112837,
+  "saved_file": "experiments/share_untrained/results/stage1.json",
+  "saved_jq": ".[\"states\"][\"c3/cipher_s0\"][\"trained\"]",
+  "settings": {
+   "batch": 64,
+   "rows": "E136 c3/cipher (75)",
+   "unit": "lo",
+   "dtype": "bf16 autocast",
+   "floor": "|gain| >= 1e-6",
+   "gain": 12.851359278361004
+  }
+ },
+ "share/e53/lowercase_s0@b32": {
+  "value": 0.7518811175785213,
+  "saved": 0.7518811175785213,
+  "saved_file": "experiments/share_untrained/results/stage1.json",
+  "saved_jq": ".[\"states\"][\"e53/lowercase_s0\"][\"trained\"]",
+  "settings": {
+   "batch": 32,
+   "rows": "E136 e53/lowercase (500)",
+   "unit": "lo",
+   "dtype": "bf16 autocast",
+   "floor": "|gain| >= 1e-6",
+   "gain": 1.6707884807586675
+  }
+ },
+ "share/e53/lowercase_s0@b64": {
+  "value": 0.7537570697311265,
+  "saved": 0.7537570697311265,
+  "saved_file": "experiments/realistic_tasks/results/run2_ctl.json",
+  "saved_jq": ".[\"reproduce e53/lowercase_s0\"][\"share\"][\"got\"]",
+  "settings": {
+   "batch": 64,
+   "rows": "E53 scored windows (500)",
+   "unit": "lo",
+   "dtype": "bf16 autocast",
+   "floor": "gain >= 1 (MIN_GAIN)",
+   "gain": 1.6692238597869873
+  }
+ },
+ "share/case_real_s0@lo": {
+  "value": 0.11284478195336352,
+  "saved": 0.11284478195336352,
+  "saved_file": "experiments/real_vs_twin/results/stage2.json",
+  "saved_jq": ".[\"states\"][\"case_real_s0\"][\"share\"][\"lo\"]",
+  "settings": {
+   "batch": 64,
+   "rows": "case_label fit[:256]",
+   "unit": "lo",
+   "dtype": "bf16 autocast",
+   "floor": "gain >= 1.0"
+  }
+ },
+ "share/case_real_s0@contrast": {
+  "value": 0.10744470819037578,
+  "saved": 0.10744470819037578,
+  "saved_file": "experiments/real_vs_twin/results/stage2.json",
+  "saved_jq": ".[\"states\"][\"case_real_s0\"][\"share\"][\"contrast\"]",
+  "settings": {
+   "batch": 64,
+   "rows": "case_label fit[:256]",
+   "unit": "contrast",
+   "dtype": "bf16 autocast",
+   "floor": "gain >= 1.0"
+  }
+ },
+ "prior_geo/e46_ident32": {
+  "value": 3.8916695499001433e-05,
+  "saved": 3.8916695499001433e-05,
+  "saved_file": "experiments/prior_vs_share/results/stage1.json",
+  "saved_jq": ".[\"e46_ident32\"][\"prior\"]",
+  "settings": {
+   "rows": "regating_table windows_ident32 heldout",
+   "batch": "all at once",
+   "dtype": "fp32",
+   "unit": "P (geometric mean)"
+  }
+ },
+ "kl_base_to_ft/sequence_rl_s0": {
+  "value": 0.27431499831327255,
+  "saved": 0.27431499831327255,
+  "saved_file": "experiments/procedural_rl/results/train_sequence.json",
+  "saved_jq": ".[\"states\"][\"sequence_rl_s0\"][\"kl_saved\"]",
+  "settings": {
+   "batch": 8,
+   "rows": "cached val 0..64",
+   "positions": "all",
+   "dtype": "fp32 per position, fp64 sum"
+  }
+ },
+ "kl_ft_to_base/sequence_rl_s0": {
+  "value": 0.3254469868534772,
+  "saved": null,
+  "saved_file": null,
+  "saved_jq": null,
+  "settings": {
+   "batch": 8,
+   "rows": "cached val 0..64",
+   "positions": "all",
+   "dtype": "fp64"
+  }
+ },
+ "steering_pooled/e62/copy_s0": {
+  "value": 0.5203478058670894,
+  "saved": 0.5203478058670894,
+  "saved_file": "experiments/steering_copy_lookup/results/stage1.json",
+  "saved_jq": ".[\"states\"][\"copy_s0\"][\"steering\"][\"pooled\"][\"share_lo\"]",
+  "settings": {
+   "select_rows": "fit half (100)",
+   "read_rows": "score half (100)",
+   "key_pos": "half",
+   "unit": "lo",
+   "dtype": "fp32",
+   "floor": "none (G != 0)",
+   "setting": [
+    1,
+    2
+   ]
+  }
+ },
+ "steering_pooled/e46/ident32_s0": {
+  "value": 0.7472095889963015,
+  "saved": 0.7472095889963015,
+  "saved_file": "experiments/holes_fill/results/stage1.json",
+  "saved_jq": ".[\"states\"][\"e46/ident32_s0\"][\"steering\"][\"pooled\"][\"share\"]",
+  "settings": {
+   "select_rows": "train[:512]",
+   "read_rows": "E136 held (97)",
+   "key_pos": "read position",
+   "unit": "lo",
+   "dtype": "fp32",
+   "floor": "gain >= 1.0",
+   "setting": [
+    2,
+    2
+   ]
+  }
+ },
+ "share/lower_s0_step128": {
+  "value": 0.808450902930615,
+  "saved": 0.8065033968036451,
+  "saved_file": "experiments/convergence_panel/results/wide/read/lower.json",
+  "saved_jq": ".[\"states\"][\"experiments/convergence_panel/results/large/states/lower_s0_step128.pt\"][\"share\"]",
+  "settings": {
+   "rows": "lower read (500)",
+   "unit": "lo",
+   "batch": 64,
+   "dtype": "bf16 autocast",
+   "floor": "gain >= 1"
+  }
+ },
+ "steering_pooled/lower_s0_step128": {
+  "value": 0.8218274699114657,
+  "saved": 0.8193658253270384,
+  "saved_file": "experiments/convergence_panel/results/wide/read/lower.json",
+  "saved_jq": ".[\"states\"][\"experiments/convergence_panel/results/large/states/lower_s0_step128.pt\"][\"steering\"]",
+  "settings": {
+   "rows": "lower read (500)",
+   "unit": "lo",
+   "select_rows": "fit[:512]",
+   "dtype": "fp32",
+   "floor": "gain >= 1"
+  }
+ },
+ "kl_base_to_ft/lower_s0_step128": {
+  "value": 0.18576358269646914,
+  "saved": 0.18576360055515917,
+  "saved_file": "experiments/convergence_panel/results/wide/read/lower.json",
+  "saved_jq": ".[\"states\"][\"experiments/convergence_panel/results/large/states/lower_s0_step128.pt\"][\"kl\"]",
+  "settings": {
+   "rows": "cached val 0..64",
+   "unit": "lo",
+   "positions": "all",
+   "batch": 8
+  }
+ },
+ "prior_mean_lo/lower_s0_step128": {
+  "value": -6.755572450637818,
+  "saved": -6.755572590827942,
+  "saved_file": "experiments/convergence_panel/results/wide/read/lower.json",
+  "saved_jq": ".[\"states\"][\"experiments/convergence_panel/results/large/states/lower_s0_step128.pt\"][\"prior\"]",
+  "settings": {
+   "rows": "lower read (500)",
+   "unit": "lo",
+   "path": "steered(None) at W0"
+  }
+ },
+ "gain/lower_s0_step128": {
+  "value": 1.5710803279876708,
+  "saved": 1.575800807952881,
+  "saved_file": "experiments/convergence_panel/results/wide/read/lower.json",
+  "saved_jq": ".[\"states\"][\"experiments/convergence_panel/results/large/states/lower_s0_step128.pt\"][\"gain\"]",
+  "settings": {
+   "rows": "lower read (500)",
+   "unit": "lo"
+  }
+ },
+ "adl_D/lower_s0_step128": {
+  "value": 0.08044061502144445,
+  "saved": 0.08019976214341062,
+  "saved_file": "experiments/convergence_panel/results/wide/read/lower.json",
+  "saved_jq": ".[\"states\"][\"experiments/convergence_panel/results/large/states/lower_s0_step128.pt\"][\"adl\"][\"D\"]",
+  "settings": {
+   "rows": "lower read (500)",
+   "unit": "lo",
+   "pile_rows": "val 0..4096[:, :5]",
+   "batch": 512,
+   "floor": "gain >= 1"
+  }
+ },
+ "E_b_vpd/x2@fresh": {
+  "value": 0.7613907014282402,
+  "saved": 0.7613907014282402,
+  "saved_file": "experiments/kstar_needed/results/items/x2.json",
+  "saved_jq": ".[\"E_b_K\"]",
+  "settings": {
+   "sums": "rb_states write_pass (fresh)",
+   "K": "kstar_needed in_K",
+   "sel": "K & changed",
+   "dtype": "fp32 forward, fp64 sums",
+   "batch": 8
+  }
+ },
+ "E_b_neurons/x2@fresh": {
+  "value": 0.9997651093639606,
+  "saved": 0.9997651093639606,
+  "saved_file": "experiments/needed_neurons/results/items/x2.json",
+  "saved_jq": ".[\"E_b_K\"]",
+  "settings": {
+   "sums": "needed_neurons write_pass (fresh)",
+   "K": "needed_neurons in_K",
+   "sel": "K & changed",
+   "batch": 32,
+   "dd_max_dev": 0.0
+  }
+ },
+ "E_b_neurons/copy24_s0@fresh": {
+  "value": 0.022253576338935835,
+  "saved": 0.02225932403758994,
+  "saved_file": "experiments/needed_neurons/results/items/copy24_s0.json",
+  "saved_jq": ".[\"E_b_K\"]",
+  "settings": {
+   "sums": "needed_neurons write_pass (fresh)",
+   "K": "needed_neurons in_K",
+   "sel": "K & changed",
+   "batch": 32,
+   "dd_max_dev": 2.0577097576151573
+  }
+ },
+ "needed_set_size/copy24_s0@neurons": {
+  "value": 4054,
+  "saved": 4051,
+  "saved_file": "experiments/needed_neurons/results/items/copy24_s0.json",
+  "saved_jq": ".[\"size_K\"]",
+  "settings": {
+   "derangements": 4,
+   "examples": 64,
+   "seed": 268,
+   "mask_equals_saved": false
   }
  }
 }
