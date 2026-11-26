@@ -1,0 +1,60 @@
+{
+ "experiment": "E311",
+ "shard": [
+  22,
+  26
+ ],
+ "todo": [
+  "e54__cipher_own_s1",
+  "random_like__e54__elicit_s0"
+ ],
+ "checks": {
+  "early e54__cipher_own_s1: batch FVE": {
+   "pass": true,
+   "step": 100,
+   "fve_batch": -0.05824008113871426,
+   "bar": -1000000000.0
+  },
+  "early e54__cipher_own_s1: projected minutes": {
+   "pass": true,
+   "step": 100,
+   "minutes": 0.49786949157714844,
+   "bar": 100
+  },
+  "FVE e54__cipher_own_s1": {
+   "pass": true,
+   "fve": 0.7777232355787334,
+   "self": 0.7858834084794016,
+   "drop": 10
+  },
+  "dead share e54__cipher_own_s1": {
+   "pass": true,
+   "dead": 0.0,
+   "bar": 1
+  },
+  "early random_like__e54__elicit_s0: batch FVE": {
+   "pass": true,
+   "step": 100,
+   "fve_batch": -0.007350588563601379,
+   "bar": -1000000000.0
+  },
+  "early random_like__e54__elicit_s0: projected minutes": {
+   "pass": true,
+   "step": 100,
+   "minutes": 0.4988857905069987,
+   "bar": 100
+  },
+  "FVE random_like__e54__elicit_s0": {
+   "pass": true,
+   "fve": 0.7855270409950438,
+   "self": 0.7858834084794016,
+   "drop": 10
+  },
+  "dead share random_like__e54__elicit_s0": {
+   "pass": true,
+   "dead": 0.0,
+   "bar": 1
+  }
+ },
+ "pass": true
+}
