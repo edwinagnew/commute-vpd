@@ -1,10 +1,12 @@
 """Cell P2.83's figure, from saved results only (CPU): the crosscoder's d on Fig 4's 48 states beside its planted
-control. Left: one column per task in Fig 4's order (built to reuse, then built new), one dot per fine-tune seed, the
-three Gaussian updates as a grey band. Right: the planted control, the fine-tune-specific part of the planted change
-per variant and crosscoder seed against the filed bar 0.5, with E203's miss (0.0) beside. Descriptive: no verdict.
+control, under both exclusions of negative base betas. Left: one column per task in Fig 4's order (built to reuse,
+then built new), one point per fine-tune seed (filled: the literal App. E.2 exclusion; open, shifted right: the
+floored exclusion), the three Gaussian updates as a grey band (literal). Right: the planted control, the
+fine-tune-specific part of the planted change per variant and crosscoder seed under each rule, against the filed bar
+0.5, with E203's miss (literal, 0.0) beside. A stage0b file that stopped at an early check is drawn as missing and
+listed in the CSV. Descriptive: no verdict.
 
-d = shared part of the change minus its fine-tune-specific part (Minder et al.'s latents, the authors' exclusion of a
-negative base beta), `crosscoder.d_forms` d_authors.
+d = shared part of the change minus its fine-tune-specific part (`crosscoder.d_forms` d_authors).
 
     ~/commute-agents/fleet/cpu-run --mem 4G python experiments/crosscoder_fig4/plot.py [--results DIR] [--out PNG]
 """
@@ -18,6 +20,8 @@ import math
 from pathlib import Path
 from typing import Any
 
+from matplotlib.axes import Axes
+
 from commute.figures import FULL_WIDTH, column_dots, figure, save
 
 HERE = Path(__file__).resolve().parent
@@ -25,6 +29,7 @@ CSV = HERE.parents[0] / "weightwatch/figures/tools_fig4.csv"  # Fig 4's states, 
 E203_0B = HERE.parents[0] / "crosscoder/results/run2/stage0b.json"
 VARIANTS = (("random", "content-independent\npositions"), ("answer_half", "answer position,\nhalf the windows"),
             ("answer", "answer position\n(E203's), 4x tokens"))  # fmt: skip
+RULES = ("literal", "floored")
 
 
 def fig4_layout() -> tuple[dict[str, tuple[str, str]], list[str]]:
@@ -45,51 +50,84 @@ def num(v: Any) -> float:
     return float(v) if isinstance(v, (int, float)) else math.nan
 
 
-def draw(results: Path, out: Path) -> None:
-    state, order = fig4_layout()
-    sides, ctl = load(results)
-    by_task: dict[str, list[float]] = {t: [] for t in order}
-    records: list[dict[str, Any]] = []
+def reading(r: dict[str, Any], rule: str) -> dict[str, Any]:
+    return r if rule == "literal" else r.get("floored", {})
+
+
+def open_points(ax: Axes, groups: dict[str, list[float]], dx: float, label: str) -> None:
+    """The floored rule's points beside `column_dots`' filled ones, open markers shifted by dx."""
+    for i, vs in enumerate(groups.values()):
+        ys = [v for v in vs if not math.isnan(v)]
+        ax.scatter([i + dx] * len(ys), ys, facecolors="none", edgecolors="#000000", marker="o", s=20, linewidths=0.8,
+                   label=label if i == 0 else None)  # fmt: skip
+
+
+def d_panel(ax: Axes, sides: list[dict[str, Any]], state: dict[str, tuple[str, str]], order: list[str], records: list[dict[str, Any]]) -> tuple[int, int]:
+    by: dict[str, dict[str, list[float]]] = {rule: {t: [] for t in order} for rule in RULES}
     gauss = [num(s["d_authors"]) for s in sides if s["kind"] == "gaussian"]
     for s in sides:
-        if s["kind"] == "state" and s["state"] in state:
-            by_task[state[s["state"]][0]].append(num(s["d_authors"]))
-        records.append({"panel": "d", "key": s["key"], "state": s["state"], "kind": s["kind"], "d_authors": s["d_authors"],
-                        "specific": s["specific"], "shared_frac": s["shared_frac"], "d_alt": s["d_alt"]})  # fmt: skip
-    fig, (ax, bx) = figure(FULL_WIDTH, ncols=2)
-    fig.set_layout_engine(None)
-    ax.set_position((0.11, 0.36, 0.56, 0.54))
-    bx.set_position((0.78, 0.36, 0.2, 0.54))
+        for rule in RULES:
+            r = reading(s, rule)
+            if s["kind"] == "state" and s["state"] in state:
+                by[rule][state[s["state"]][0]].append(num(r.get("d_authors")))
+            records.append({"panel": "d", "rule": rule, "key": s["key"], "state": s["state"], "kind": s["kind"],
+                            "d_authors": r.get("d_authors"), "specific": r.get("specific"), "shared_frac": r.get("shared_frac"),
+                            "d_alt": r.get("d_alt")})  # fmt: skip
     band = (min(gauss), max(gauss)) if gauss else None
-    column_dots(ax, by_task, method="spectrum", ylabel="crosscoder d\n(shared minus fine-tune-specific part)",
+    column_dots(ax, by["literal"], method="spectrum", ylabel="crosscoder d\n(shared minus fine-tune-specific part)",
                 bands={t: band for t in order} if band else None)  # fmt: skip
+    open_points(ax, by["floored"], 0.25, "floored exclusion")
     n_reuse = len({state[s][0] for s in state if state[s][1] == "reuse"})
     ax.axvline(n_reuse - 0.5, color="#999999", linewidth=0.8)
     ax.set_xticklabels(order, rotation=70, ha="right", fontsize=6)
-    ax.set_title("Crosscoder d on Fig 4's states (dots: fine-tune seeds; grey: Gaussian updates)", loc="left", fontsize=8)
+    ax.set_title("Crosscoder d on Fig 4's states (filled: literal exclusion; open: floored; grey: Gaussian updates)", loc="left", fontsize=7)
     ax.text(n_reuse / 2 - 0.5, 0.97, "built to reuse", transform=ax.get_xaxis_transform(), ha="center", va="top", fontsize=7)
     ax.text(n_reuse + (len(order) - n_reuse) / 2 - 0.5, 0.97, "built new", transform=ax.get_xaxis_transform(), ha="center", va="top", fontsize=7)
     ax.set_ylim(top=ax.get_ylim()[1] + 0.08)
-    # the control: specific part per variant, each crosscoder seed a point; E203's miss beside
+    return sum(len(v) for v in by["literal"].values()), len(gauss)
+
+
+def control_panel(bx: Axes, ctl: list[dict[str, Any]], records: list[dict[str, Any]]) -> None:
     labels = ["E203\n(answer position)", *[lab for _, lab in VARIANTS]]
     e203 = json.loads(E203_0B.read_text())["checks"]["b planted: found, specific and carried"]
-    groups: dict[str, list[float]] = {labels[0]: [float(e203["part"])]}
-    for where, lab in VARIANTS:
-        groups[lab] = [num(c["planted"]["specific"]) for c in ctl if c["where"] == where]
+    by: dict[str, dict[str, list[float]]] = {rule: {lab: [] for lab in labels} for rule in RULES}
+    by["literal"][labels[0]] = [float(e203["part"])]
+    ran = [c for c in ctl if "planted" in c]
     for c in ctl:
-        lead = c["planted"].get("lead", {})
-        records.append({"panel": "control", "key": c["planted"]["key"], "where": c["where"], "seed": c["seed"],
-                        "specific": c["planted"]["specific"], "nu_eps": lead.get("nu_eps"), "nu_r": lead.get("nu_r"),
-                        "lead_rn": lead.get("rn"), "pass": c["planted_pass"]})  # fmt: skip
-    records.append({"panel": "control", "key": "E203 planted", "where": "answer", "seed": 0, "specific": e203["part"],
+        if "planted" not in c:  # stopped at an early check: missing
+            records.append({"panel": "control", "key": f"stage0b {c['where']} s{c['seed']}", "where": c["where"], "seed": c["seed"], "stopped": c.get("stopped")})
+    for (where, lab), rule in ((v, r) for v in VARIANTS for r in RULES):
+        by[rule][lab] = [num(reading(c["planted"], rule).get("specific")) for c in ran if c["where"] == where]
+    for c, rule in ((c, r) for c in ran for r in RULES):
+        r, lead = reading(c["planted"], rule), reading(c["planted"], rule).get("lead", {})
+        records.append({"panel": "control", "rule": rule, "key": c["planted"]["key"], "where": c["where"], "seed": c["seed"],
+                        "specific": r.get("specific"), "nu_eps": lead.get("nu_eps"), "nu_r": lead.get("nu_r"), "lead_rn": lead.get("rn"),
+                        **{k: lead.get(k) for k in lead if k.startswith(("beta_", "sd_", "floor_"))},
+                        "pass": c.get("rules", {}).get(rule, {}).get("pass")})  # fmt: skip
+    records.append({"panel": "control", "rule": "literal", "key": "E203 planted", "where": "answer", "seed": 0, "specific": e203["part"],
                     "nu_eps": e203["lead"]["nu_eps"], "nu_r": e203["lead"]["nu_r"], "lead_rn": e203["lead"]["rn"], "pass": False})  # fmt: skip
-    column_dots(bx, groups, method="random", ylabel="planted change's part on\nfine-tune-specific latents")
+    column_dots(bx, by["literal"], method="random", ylabel="planted change's part on\nfine-tune-specific latents")
+    open_points(bx, by["floored"], 0.2, "floored exclusion")
     bx.axhline(0.5, color="#777777", linewidth=0.8, linestyle="--")
     bx.annotate("filed bar 0.5", (0, 0.5), xycoords=("axes fraction", "data"), xytext=(2, 2), textcoords="offset points", fontsize=6, color="#555555")
     bx.set_ylim(-0.05, 1.05)
     bx.set_xticklabels(labels, rotation=70, ha="right", fontsize=6)
     bx.set_title("Planted control", loc="left", fontsize=8)
-    n = f"{sum(len(v) for v in by_task.values())} states (16 tasks x 3 fine-tune seeds), one crosscoder each; {len(gauss)} Gaussian updates; control: one crosscoder per point"
+
+
+def draw(results: Path, out: Path) -> None:
+    state, order = fig4_layout()
+    sides, ctl = load(results)
+    records: list[dict[str, Any]] = []
+    fig, (ax, bx) = figure(FULL_WIDTH, ncols=2)
+    fig.set_layout_engine(None)
+    ax.set_position((0.11, 0.36, 0.56, 0.54))
+    bx.set_position((0.78, 0.36, 0.2, 0.54))
+    n_states, n_gauss = d_panel(ax, sides, state, order, records)
+    control_panel(bx, ctl, records)
+    n = (f"{n_states} states (16 tasks x 3 fine-tune seeds), one crosscoder each; {n_gauss} Gaussian updates; control: one "
+         "crosscoder per point. Literal: App. E.2 drops a latent with a negative base beta; floored: only below -3 sd "
+         "of that beta (10 folds of whole windows)")  # fmt: skip
     save(fig, out, n=n, data=records)
     print(f"wrote {out}")
 

@@ -19,7 +19,8 @@ Sparsity Artifacts in Crosscoders to Interpret Chat-Tuning", arXiv 2504.02922 (t
 | precision | the pinned trainer in fp32 | fp32 | fp32 (`tf32: false`) |
 | normalisation | per-model mean/std to a target RMS (toolkit) | same, fitted on the first ~1M-token chunk | same |
 | chat-only set | Δnorm bands, chat-only 0.9-1.0 (p. 3); the analyses take the top N by Δnorm (3,176 in §3.1; 5,000 in the toolkit) | top N = 1,667 (5,000 scaled by dictionary size), 5,000 also reported | same |
-| latent scaling | β by least squares on fᵢ d_chat (Eq. 4, p. 5); ν_ε = β^ε_base/β^ε_chat, ν_r = β^r_base/β^r_chat (p. 5); "chat-specific ... ν_ε < 0.2 and ν_r < 0.5" (Fig. 1 caption, p. 4); drop negative base β (App. E.2) | the toolkit's closed form (targets: error with the latent's own contribution added back), 100k tokens; negative-β exclusion added by the P2.70 rescore | `crosscoder.score`, with the exclusion |
+| latent scaling | β by least squares on fᵢ d_chat (Eq. 4, p. 5); ν_ε = β^ε_base/β^ε_chat, ν_r = β^r_base/β^r_chat (p. 5); "chat-specific ... ν_ε < 0.2 and ν_r < 0.5" (Fig. 1 caption, p. 4); drop negative base β (App. E.2) | the toolkit's closed form (targets: error with the latent's own contribution added back), 100k tokens; negative-β exclusion added by the P2.70 rescore | `crosscoder.score`: the literal exclusion, and beside it the floored one (next row) |
+| negative-β exclusion (departure) | App. E.2: latents with a negative base β are dropped; in BatchTopK they found "None" (p. 26) | literal exclusion (P2.70 rescore) | dropped only when a base β is below −m·σ̂, σ̂ the K-fold sampling sd of that β in the same job (K = 10 folds of whole windows, σ̂ = sd(fold β)/√K, m = 3, false drop 0.0075 per β at t(9)); the literal rule reported beside. Why: a latent present only in the fine-tune has base β ≈ 0 with a sign set by sampling noise; on our 67M the literal filter dropped E212's isolated plant (part 0.766 → 0, `negbeta_rescore.json`). A pass under the floored rule alone is reported as the cell's second done_when branch, not as a pass under the published rule |
 | the reading d | none in the source | shared part − fine-tune-specific part of the change | same |
 | planted control | none in the source | ours: a random direction at the median answer-position norm, at the answer position of every task window | ours: the same direction, placed at content-independent positions (1 in 80), or on half the windows; E203's placement kept as a diagnostic |
 
@@ -38,8 +39,11 @@ sparsity of 2. Since the BatchTopK crosscoder optimizes for L0 sparsity, it will
    Memory: E203 peaked at 14.9 GB GPU (`timing.json`); host ~2 GB of Pile rows (the long file is 801 MB as int64).
    Time and cost: plan tables, from E203's measured minutes. Saved: per side `results/sides/<key>.json` (~100 KB) and
    `results/large/<key>.pt` (~0.5 MB; stage 0 adds the 75 MB decoder); download each side's JSON as it lands. Pod loss:
-   every side checkpoints every 10,000 steps under `results/large/ckpt/` and resumes; a lost shard is rerun with the
-   same `2 i/n` (finished sides are skipped). Controls: self first, alone (pod a), on the same card type. Predictions:
+   every side checkpoints every 10,000 steps under `results/large/ckpt/` and resumes after a crashed process, but the
+   checkpoints (~0.9 GB) live on the pod's disk, so a lost pod's sides rerun from step 0 (cost run 3 as full reruns);
+   a lost shard is rerun with the same `2 i/n`, and finished sides are skipped only if their `sides/<key>.json` is
+   copied onto the new pod. `results/large` arrives dangling on a pod; `run.py` replaces it with a real directory
+   (tested on cpu-run with a dangling link). Controls: self first, alone (pod a), on the same card type. Predictions:
    filed with a value for every stage. Code paths never run on a GPU: all of `crosscoder_sides.py` and `run.py` (the
    rehearsal runs every one).
 2. **Settings sourced:** `results/predictions.json` "sources" and "sizes_source".
