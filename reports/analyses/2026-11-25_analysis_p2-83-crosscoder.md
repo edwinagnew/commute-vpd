@@ -302,7 +302,7 @@ from 400M. The two filters give identical $d$ on every state.
 
 ## Not run
 
-- Crosscoders on the real states at four times the tokens, 800M: not in this cell, by the user's decision.
+- Crosscoders on the real states at four times the tokens, 800M: not run, outside this cell; the user decides.
 - More than one crosscoder seed per state; a second seed on any state other than Runner-up guess.
 - TF32, which would have halved training time but departs from the authors' fp32.
 - A sweep of dictionary size or sparsity.
