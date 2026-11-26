@@ -10,8 +10,8 @@ We trained the crosscoder of Minder et al. 2025, with their code and settings, b
 of the 48 fine-tuned states that Fig 4 plots, and also on three random weight changes and on planted changes whose
 answer we know. The crosscoder finds a planted direction: at the standard training length when the plant sits where no
 existing feature fires, and with four times the training when it sits where one always fires, as in the earlier run
-that missed. For `GOALS.md` the crosscoder now has a working control on this model, but on real fine-tunes it finds
-almost no fine-tune-specific latents, it reads a random update as more shared than most of them, and the two built
+that missed. For `GOALS.md` the crosscoder now has a working control on this model, but on real fine-tunes, at the standard
+200M tokens, it finds almost no fine-tune-specific latents, it reads a random update as more shared than most of them, and the two built
 sides overlap across the whole range, so it offers no reading of reuse against new that the paper could use.
 
 ![Left: the crosscoder's reading on each of Fig 4's states, three fine-tune seeds a task, with the random updates as a grey band and a second crosscoder seed as a star. Right: the planted control under both filters, against the bar of one half.](../../experiments/crosscoder_fig4/figures/crosscoder_fig4.png)
@@ -21,7 +21,7 @@ sides overlap across the whole range, so it offers no reading of reuse against n
 The crosscoder can find a planted new direction on this model. Placed where no existing feature fires, the plant gets
 its own latent within the standard training; placed where one always fires, it needs four times the training. The
 authors' filter as written still drops the first plant's latent, for a coefficient a hair below zero. On real
-fine-tunes the two filters agree, almost none of the change sits on fine-tune-specific latents, a random update reads
+fine-tunes at the standard 200M tokens the two filters agree, almost none of the change sits on fine-tune-specific latents, a random update reads
 more shared than most, and the two built sides overlap.
 
 ## What we were trying to test
@@ -209,7 +209,7 @@ The seed-0 random update read 0.550 against 0.547.
 
 The crosscoder can isolate a fine-tune-only direction at block 2 of the 67M. The earlier misses came from too little
 training for a plant that rides on an existing feature, and from the sign filter, not from a method that cannot find
-the plant. On real fine-tunes, though, it finds no fine-tune-specific latents except on one seed. On every state but
+the plant. On real fine-tunes, though, at 200M tokens it finds no fine-tune-specific latents except on one seed. On every state but
 one, the eight tasks built new included, the fine-tune-specific part is at most 0.005; the exception is 0.101 on the
 seed-0 state of Copy key (96 keys), which is also the state with the lowest reading. So the reading reduces to the
 shared part of the change. That shared part is higher for a random update than for most trained ones, one task's
@@ -293,8 +293,8 @@ every side passed them. No rerun is needed.
 ## Draft caption for the crosscoder panel of Fig 6
 
 Crosscoder of Minder et al. 2025, their code and recipe, at block 2: $d$, the shared minus the fine-tune-specific part
-of the change, one point per fine-tune seed. On every state but one the fine-tune-specific part is near 0, so $d$ is
-the shared part. Grey: three random updates, 0.532 to 0.611, above most states; star: a second crosscoder seed, 0.038
+of the change, one point per fine-tune seed. On every state but one the fine-tune-specific part is near 0 at 200M tokens, the length at which a
+plant on an existing feature is still merged, so $d$ is the shared part. Grey: three random updates, 0.532 to 0.611, above most states; star: a second crosscoder seed, 0.038
 from the first. The three fine-tune seeds of one task spread by up to 0.41; the two built sides overlap. The planted
 control passes with the negative-coefficient filter floored at noise, not under the published rule, where it misses;
 placed on an existing feature, it misses at the 200M tokens each state's crosscoder had and passes under both filters
