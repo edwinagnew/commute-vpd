@@ -103,3 +103,7 @@
 14.8	experiments/reverse_ft_fig4/results/summary.json	.pile_ce."e53/lowercase_s0".t_half	this
 2.5	experiments/reverse_ft_fig4/results/summary.json	[.gain|to_entries[]|select(.key|startswith("gain/cipher"))|.value.D]|add/length	this
 1e-9	given	the filed expectation, experiments/reverse_ft_fig4/results/predictions.json .expected.kappa_floor ("under 1e-9 nats")
+9.07	experiments/reverse_ft_fig4/results/summary.json	[.groups."e62/copy".states[].state.t_half]|min	this
+9.96	experiments/reverse_ft_fig4/results/summary.json	[.groups."e62/copy".states[].state.t_half]|max	this
+10.45	experiments/reverse_ft_fig4/results/summary.json	[.groups."e62/lookup".states[].state.t_half]|min	this
+12.90	experiments/reverse_ft_fig4/results/summary.json	[.groups."e62/lookup".states[].state.t_half]|max	this

@@ -3,9 +3,9 @@
 We took the 48 fine-tunes behind the paper's figure of known answers and trained each one back toward the original
 model, counting the steps needed to undo half of the change, as Jain and colleagues do to detect a thin wrapper. Every
 fine-tune came half way back within 17 steps except the text cipher, which took about 100, and the order of the two
-sides flips from pair to pair. For the goals, this method cannot stand in for the definition of reuse: it reads how
-easily the original behaviour returns, which every one of these fine-tunes keeps, and not whether the new behaviour
-runs on the original model's mechanisms.
+sides flips from pair to pair. That is consistent with the earlier test's untested explanation, that the half-life
+reads how easily the original behaviour returns, and by its construction the measure cannot see whether the new
+behaviour runs on the original model's mechanisms, so it cannot stand in for the definition of reuse.
 
 ## The answer
 
@@ -94,12 +94,15 @@ All 111 items ran: 48 states, 48 nulls and 15 gain-only states. None was void an
 **Reading it.** No: the order of the two sides changes from pair to pair. The top panel shows each seed's half-life,
 blue for tasks built to reuse and orange for tasks built new, with each state's rotated null in grey beside it. The
 dashed line is the planted wrapper and the dotted line the D-matched ciphers. Apart from the text cipher, every state
-halves in 7.9 to 16.1 steps. That is well above the wrapper's line, and around or above the ciphers' line. The copying tasks built to reuse halve
-faster than their new partners. The rank-1 and elicitation tasks built to reuse halve slower than theirs. The
-rank-1 map on the 32-key task took 13.95 steps against the cipher's 10.53. That is the same wrong-way order as before.
+halves in 7.9 to 16.1 steps. That is well above the wrapper's line, and around or above the ciphers' line. The
+copying tasks built to reuse halve faster than their new partners. The rank-1 and elicitation tasks built to reuse
+halve slower than theirs. The rank-1 map on the 32-key task took 13.95 steps against the cipher's 10.53. That is the
+same wrong-way order as before. Within each pair the two sides' seed ranges do not overlap, so each pair's order is
+not seed noise. The closest pair is the induction copy, at 9.07 to 9.96 steps, against the lookup at 10.45 to 12.90.
 
-The bottom panel shows why the nulls are no size-matched reference. Their D sits between 11 and 250 times below
-their state's, and yet most of them halve faster.
+The bottom panel shows why the grey nulls are no size-matched reference. Their D sits between 11 and 250 times below
+their state's, and yet most of them halve faster. They are not the reference for reading reuse. The only comparison at
+matched D is the planted wrapper against the scaled ciphers, the two reference lines.
 
 Mean half-life over three seeds for each task, in steps, and mean D in nats. Pairs as in the figure of known answers.
 
@@ -141,13 +144,20 @@ the few swapped words differ from M, while lowercasing changes every capital. Th
 gradient per window. Its slow return is the one place where a state built new reads far slower than its partner, and
 it is also the state with the smallest D.
 
+The start D of 0.51 nats is read at one position per window, the input to the swapped word, not at every position as
+the spec said. This is the same position E53 itself read: index 63 of each window, whose next token is the scored
+form at index 64, in `experiments/performed_anchor/run.py:9-10` and `src/commute/performed.py:214-216`. E53 read the
+log-odds of that next token there, and this run reads the whole distribution at the same place. So this departure from
+the spec keeps the experiment's own read position. The dilution candidate depends on which positions carry the change, and this
+read sees only one of them.
+
 ## Is the half-life just the update's size?
 
 ![Half-life against D for every item](../../experiments/reverse_ft_fig4/figures/page_size.png)
 
 **Reading it.** Not across different updates, and that cuts both ways for the null. On the earlier test's ladder, one
-update was scaled up and down, and its half-life rose as the update shrank. That is why the figure's caption warns that
-a null's longer half-life could be a size effect. Here the nulls sit 11 to 250 times lower in D, and most of them halve
+update was scaled up and down, and its half-life rose as the update shrank. That is why the review and the first caption
+warned that a null's longer half-life could be a size effect. Here the nulls sit 11 to 250 times lower in D, and most of them halve
 *faster* than their state, not slower. Outside the text family, the tasks' mean D runs from 4.0 to 13.3 nats with no
 trend in the half-life. The text cipher is both the smallest D among the states and the slowest. So D does not set the
 half-life. Nor can the null be read as what a change of this size gives. It is matched on norm, and at matched norm it
@@ -156,13 +166,17 @@ the four tasks where the figure also has the full fine-tune, the gain-only seeds
 
 ## What we learned
 
-The method works on the case it was built for: a hand-planted wrapper returns more than twice as fast as a new map at
-the same D. On real fine-tunes it reads something else. The copying tasks come back faster than their partners and the
-rank-1 and elicitation tasks slower, at similar D, so the order follows the task family and not the built side. That
-is the earlier test's explanation at full scale: the half-life reads how easily M's behaviour returns. Every one of
-these fine-tunes but the text cipher keeps M recoverable within about 16 steps. Under the definition of reuse, which asks whether the
-variables F needs still have M's mechanisms, this reading is blind to the question. It goes into the paper's baseline
-figure as a published method shown per task, with the caption saying the rank-1 map comes back slower than the cipher.
+The method separates one hand-planted wrapper, at 3.97 steps, from new maps of the same D. That does not give a
+usable cut-off. The gain-only fine-tunes, wrappers by construction, take 4.6 to 9.5 steps. That range overlaps the
+D-matched ciphers at 8.75 to 10.66 and the fastest real states from 7.9. Gain-only seeds beat the full fine-tune
+only within the same task. On real fine-tunes the copying tasks come back faster than their partners and the rank-1
+and elicitation tasks slower, at similar D. So the order follows the task family and not the built side. That is
+consistent with the earlier test's untested explanation, that the half-life reads how easily M's behaviour returns.
+D counts any change at the read position, so a change that taught almost nothing still gets a half-life. The
+gain-only cipher sits at a D of about 2.5, so D is not how much was learned. The definition of reuse asks whether the
+variables F needs still have M's mechanisms. That is outside what this measure can see by construction, a limit of
+the metric and not a result of this run. It goes into the paper's baseline figure as a published method shown per
+task, with the caption saying the rank-1 map comes back slower than the cipher.
 
 ## How compelling is the evidence
 
@@ -241,7 +255,7 @@ From the spec's Appendix A, `reports/plans/2026-11-25_spec_p2-84-reverse-ft.md`.
   `commute.finetune.finetune_to_reference`, the code of the earlier test.
 - **The text tasks' read.** The spec says D is read at every position of the held text for the text tasks. The code
   reads it at the one read position per window, like the other tasks: `run.py:114-116` cuts each window at that
-  position and `src/commute/revival_kv.py:67-69` averages KL there only.
+  position and `src/commute/revival_kv.py:67-69` averages KL there only. That is the position E53 itself read.
 
 ## Not run
 

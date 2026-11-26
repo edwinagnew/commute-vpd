@@ -87,8 +87,8 @@ def main() -> None:
     for ax in axes.flat:
         ax.grid(axis="y", color="#e5e5e5", lw=0.6)
         ax.spines[["top", "right"]].set_visible(False)
-    note = ("Each null is the state's update turned by a random rotation per matrix: matched on per-matrix norm (spectrum), not on D; "
-            "t_half rises as D shrinks (C3 ladder), so a null's longer t_half is partly a size effect. D is drawn below each pair.\n"
+    note = ("Each null is the state's update turned by a random rotation per matrix: matched on per-matrix norm (spectrum), not on D "
+            "(11-250x smaller), and mostly halves faster than its state; the nulls are not a size-matched reference. D is drawn below each pair.\n"
             "C3 (E55): on the c3/* states this port undid the old-by-construction rank-1 map more slowly than the new cipher (13.3 vs 10.1 steps). "
             f"Items with D under D_void {S['D_void']:.2g} (10 x the measured kappa floor) are void and not drawn.")  # fmt: skip
     fig.text(0.01, 0.005, note, fontsize=7.5, color="#666666")
