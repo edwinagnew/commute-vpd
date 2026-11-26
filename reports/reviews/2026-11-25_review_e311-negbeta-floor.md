@@ -61,3 +61,10 @@ meaningless, and the result is then no longer "the authors' published rule", whi
 
 No rescore of E212 or E203 with a floor (the betas aren't saved). The filed rule itself wasn't checked: it wasn't
 filed at the time of writing.
+
+## Rulings (~16:25)
+
+whip-lead: a pass with the floor counts under the done_when's second branch ("missed under the published rule
+because the filter acts on noise; passes with it floored"); the user's done_when is unchanged. baseline-lead: all six
+conditions and the departure row went to the code writer; the literal reading is reported beside the floored one.
+The filed rule comes back to me before any pod.
