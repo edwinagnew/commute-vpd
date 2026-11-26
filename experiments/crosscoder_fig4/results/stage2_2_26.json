@@ -1,0 +1,60 @@
+{
+ "experiment": "E311",
+ "shard": [
+  2,
+  26
+ ],
+ "todo": [
+  "c3__cipher_s2",
+  "e54__elicit_s1"
+ ],
+ "checks": {
+  "early c3__cipher_s2: batch FVE": {
+   "pass": true,
+   "step": 1000,
+   "fve_batch": 0.6526574889869919,
+   "bar": 0.0
+  },
+  "early c3__cipher_s2: projected minutes": {
+   "pass": true,
+   "step": 1000,
+   "minutes": 47.72939685306549,
+   "bar": 75
+  },
+  "FVE c3__cipher_s2": {
+   "pass": true,
+   "fve": 0.9297135456317297,
+   "self": 0.9320404704678561,
+   "drop": 0.05
+  },
+  "dead share c3__cipher_s2": {
+   "pass": true,
+   "dead": 0.0,
+   "bar": 0.3
+  },
+  "early e54__elicit_s1: batch FVE": {
+   "pass": true,
+   "step": 1000,
+   "fve_batch": 0.6606913291556646,
+   "bar": 0.0
+  },
+  "early e54__elicit_s1: projected minutes": {
+   "pass": true,
+   "step": 1000,
+   "minutes": 47.670868811798094,
+   "bar": 75
+  },
+  "FVE e54__elicit_s1": {
+   "pass": true,
+   "fve": 0.9321266808000194,
+   "self": 0.9320404704678561,
+   "drop": 0.05
+  },
+  "dead share e54__elicit_s1": {
+   "pass": true,
+   "dead": 0.0,
+   "bar": 0.3
+  }
+ },
+ "pass": true
+}

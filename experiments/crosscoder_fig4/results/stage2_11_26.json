@@ -1,0 +1,60 @@
+{
+ "experiment": "E311",
+ "shard": [
+  11,
+  26
+ ],
+ "todo": [
+  "e46__ident32_s2",
+  "e58__prior_cipher_s1"
+ ],
+ "checks": {
+  "early e46__ident32_s2: batch FVE": {
+   "pass": true,
+   "step": 1000,
+   "fve_batch": 0.6626709456004287,
+   "bar": 0.0
+  },
+  "early e46__ident32_s2: projected minutes": {
+   "pass": true,
+   "step": 1000,
+   "minutes": 48.53200936927795,
+   "bar": 75
+  },
+  "FVE e46__ident32_s2": {
+   "pass": true,
+   "fve": 0.9291869870107191,
+   "self": 0.9320404704678561,
+   "drop": 0.05
+  },
+  "dead share e46__ident32_s2": {
+   "pass": true,
+   "dead": 0.0,
+   "bar": 0.3
+  },
+  "early e58__prior_cipher_s1: batch FVE": {
+   "pass": true,
+   "step": 1000,
+   "fve_batch": 0.6766773533825103,
+   "bar": 0.0
+  },
+  "early e58__prior_cipher_s1: projected minutes": {
+   "pass": true,
+   "step": 1000,
+   "minutes": 48.22949173622131,
+   "bar": 75
+  },
+  "FVE e58__prior_cipher_s1": {
+   "pass": true,
+   "fve": 0.9286420627080123,
+   "self": 0.9320404704678561,
+   "drop": 0.05
+  },
+  "dead share e58__prior_cipher_s1": {
+   "pass": true,
+   "dead": 0.0,
+   "bar": 0.3
+  }
+ },
+ "pass": true
+}
