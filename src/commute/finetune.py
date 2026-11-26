@@ -274,6 +274,24 @@ def finetune_to_reference(model: Any, ref: nn.Module, train: Windows, cfg: Refer
         pass
 
 
+def finetune_rows(model: Any, train: Windows, cfg: ReferenceConfig, loss_of: Any, device: str, on_step: Any,
+                  log: Any = print) -> None:  # fmt: skip
+    """`finetune_to_reference` with its loss replaced by `loss_of(net, toks) -> (loss, info)` on cfg.batch rows of
+    `train`, drawn as it draws them (cfg.seed). Added 2026-11-25 for P2.84's Pile cross-entropy reverse
+    (`next_token_ce`); nothing existing changed. The target weights are back at their start when it returns."""
+    params = decomposed_params(model)
+    gen = torch.Generator().manual_seed(cfg.seed)
+    net = model.target_model
+
+    def loss_fn(step: int) -> tuple[Tensor, dict[str, float]]:
+        return loss_of(net, train.tokens[torch.randint(0, len(train), (cfg.batch,), generator=gen)].to(device))
+
+    try:
+        _run(model, params, cfg.lr, cfg.grad_clip, cfg.steps, (), loss_fn, dict, log, cfg.optimizer, on_step)
+    except StopTraining:
+        pass
+
+
 def finetune_with_loss(model: Any, train: Windows, cfg: ArmAConfig, loss_of: Any, device: str, log: Any = print) -> FinetuneResult:
     """`finetune_arm_a` with its loss replaced by `loss_of(net, toks) -> (loss, info)`: the same 24 matrices, batch
     sampling (cfg.seed, cfg.batch), optimizer, clip and loop; delta-W at cfg.checkpoints, no held-out eval. Added

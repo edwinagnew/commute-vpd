@@ -1,0 +1,424 @@
+{
+  "experiment": "E312",
+  "cell": "P2.84",
+  "status": "filed 2026-11-25, before any run; descriptive (no verdict on reuse): user 2026-11-25 asked for one more technique on Fig 6, and E55 C3 found this port reads rank-1 slower than cipher (13.3 vs 10.1 steps, wrong way)",
+  "spec": "reports/plans/2026-11-25_spec_p2-84-reverse-ft.md (with its Amendment for review reports/reviews/2026-11-25_review_p2-84-spec.md)",
+  "card": "experiments/reverse_ft_fig4/card.md",
+  "settings": {
+    "lr": 3e-06,
+    "lr_source": "a tenth of the forward Adam 3e-5 of E12, E53, E54, E58 and E62 (E58's recipe); C3's reverse_lr (open_pair_instruments/results/predictions.json constants.reverse.lr); Jain et al. 2023 l. 1249-1252: reFT below the forward rate",
+    "cap": 1000,
+    "cap_source": "C3's constants.reverse.cap_steps",
+    "grad_clip": 1,
+    "optimizer": "adam",
+    "stop_frac": 0.1,
+    "stop_frac_source": "review SHOULD: save steps to 0.1 D (t_tenth), never promoted; t_half is read from the same curve",
+    "batch": {
+      "kv": 32,
+      "windows_pt": 32,
+      "e53": 8
+    },
+    "batch_source": "each task's forward batch (E58 recipe 32 for the kv tasks and E62; E53 arm B 8, commute.lowercase BATCH); Jain et al. l. 1249: reFT keeps the fine-tune's settings but the rate",
+    "windows": {
+      "c3/cipher": {
+        "format": "kv",
+        "path": "experiments/open_pair/results/large/windows_cipher_trained.pt",
+        "sha256": "543fca1a706ae020ab41ccb13bb17102a146c8c69ab217cb7a188bcd17b770d4"
+      },
+      "c3/copy": {
+        "format": "kv",
+        "path": "experiments/open_pair/results/large/amend1/windows_copy_trained.pt",
+        "sha256": "79e0224da4f8506d7e84988340556cb8719939a4fbc76ac5e54587943eee7646"
+      },
+      "c3/rank1": {
+        "format": "kv",
+        "path": "experiments/open_pair/results/large/amend1/windows_rank1_trained.pt",
+        "sha256": "3cc983adb46686d868018eb3db25a64a85ffbbe477b4d6ca70e9a0efad1de79b"
+      },
+      "e46/ident32": {
+        "format": "kv",
+        "path": "experiments/regating_table/results/large/windows_ident32.pt",
+        "sha256": "b6ded9c5702f94bf167d1f28325913a285db421db4f41cdd13677b3975e9aef3"
+      },
+      "e46/rand32": {
+        "format": "kv",
+        "path": "experiments/regating_table/results/large/windows_rand32.pt",
+        "sha256": "18a99d995af51fe674dfeb1fb9141445f743695792f8014c11630c5984772592"
+      },
+      "e54/elicit": {
+        "format": "kv",
+        "path": "experiments/keydependent_elicit/results/large/windows_elicit.pt",
+        "sha256": "8f6667050c3702b4da25a8cf2e2b845ff886200566f91e28fb75516fb7fcb0ef"
+      },
+      "e54/cipher": {
+        "format": "kv",
+        "path": "experiments/keydependent_elicit/results/large/windows_cipher.pt",
+        "sha256": "924b718303525f3fb9229d00b6613ed872cdbccef985b2aca0ad8d0e7c027ea2"
+      },
+      "e58/cipher": {
+        "format": "kv",
+        "path": "experiments/open_pair/results/large/amend3/windows_cipher_trained.pt",
+        "sha256": "a7416f0e8f20501f0f40f4700be64e64a3cb81dfd4388b2d3fdbb3b08ae3105c"
+      },
+      "e58/copy": {
+        "format": "kv",
+        "path": "experiments/open_pair/results/large/amend3/windows_copy_trained.pt",
+        "sha256": "efbff9698e33ccd94d20c0d74553e6468f9edb504f399f8be6d01d1ddbf0e483"
+      },
+      "e58/rank1": {
+        "format": "kv",
+        "path": "experiments/open_pair/results/large/amend3/windows_rank1_trained.pt",
+        "sha256": "0aad2014c823a58dcb2a9ec4f1be19faf0944923dbc997849a57062ced01da5f"
+      },
+      "e58/elicit": {
+        "format": "kv",
+        "path": "experiments/open_pair/results/large/amend3/windows_elicit_trained.pt",
+        "sha256": "72297e75c35556fad0df551c4766fbff2d3c74a6d32da02093679c1198c3bfe8"
+      },
+      "e58/prior_cipher": {
+        "format": "kv",
+        "path": "experiments/open_pair/results/large/amend6/windows_prior_cipher_trained.pt",
+        "sha256": "001fd044431353ce46faeea2bb3ab9939b299e2359677de33a43a3b8ea75019c"
+      },
+      "e62/copy": {
+        "format": "windows_pt",
+        "path": "experiments/induction_cue/results/large/windows.pt",
+        "sha256": "490e5f74e7b6eae973cee5131ecf21e5a86ce05c8d9259334e3ef567b85711b5"
+      },
+      "e62/lookup": {
+        "format": "windows_pt",
+        "path": "experiments/induction_cue/results/large/windows.pt",
+        "sha256": "490e5f74e7b6eae973cee5131ecf21e5a86ce05c8d9259334e3ef567b85711b5"
+      }
+    },
+    "windows_source": "E136's inventory (share_untrained/results/inventory.json .tasks) and E147's (refit_96key/results/inventory.json .maps) for e58; e53/* by commute.windows.read_rows (held: E53's 500 scored windows; train: its 2,000 hand-write windows, Pile train rows 0-255)",
+    "gain": {
+      "dir": "experiments/ia3_control/results/large",
+      "tasks": [
+        "copy",
+        "rank1",
+        "elicit",
+        "cipher",
+        "prior_cipher"
+      ],
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "fold_check": [
+        "copy",
+        0
+      ]
+    },
+    "gain_source": "E290's FFN-gain arm at its saved read_step (gains_ffn_<task>_s<seed>.pt), folded by commute.gains.delta_ia3; descriptive only (review MUST 1); read on E147's e58/<task> windows, the windows E290 trained on",
+    "c3": {
+      "reproduce": {
+        "c3/rank1_s0": {
+          "t_half": 13.910132881927666,
+          "D": 8.778665214244072
+        },
+        "c3/cipher_s0": {
+          "t_half": 10.686951673940102,
+          "D": 5.328152629698834
+        }
+      },
+      "planted_file": "experiments/open_pair_instruments/results/measure.json",
+      "planted_sha256": "8e72464ac4aab5a22f06d2c51723a6d97405787b5c9bde4c5449d1a68fb48ca4",
+      "planted_t_half": 3.971375585010838,
+      "planted_D": 4.206754490084108,
+      "partner_seeds": [
+        0,
+        1,
+        2
+      ]
+    },
+    "c3_source": "open_pair_instruments/results/run.json .states.{rank1_s0,cipher_s0}.{t_half,D} and .stage0.planted.{reverse.t_half,D}; planted units, w and alpha from measure.json .planted (C3 job 1); C3 read every map on the rank-1 file's windows (tokens identical across maps, measure.json .files.identical_tokens), so the reproductions and the planted pair read c3/rank1's windows",
+    "gate": {
+      "mult": 3,
+      "floor": 1,
+      "repro_tol": 1
+    },
+    "gate_source": "C3 ladder's pole rule (revival_kv.pole_gap: 3 x the larger seed sd) and C3's filed t_half noise floor of 1 step (predictions.json constants.noise_floor.t_half); repro_tol the same 1-step floor",
+    "floor_factor": 10,
+    "floor_min": 1e-12,
+    "floor_source": "E229's filed factor on a measured floor, as E290 (ia3_control predictions.json floor_source); floor_min E290's, used only when a floor reads exactly 0",
+    "null_seed": 84000,
+    "probe": [
+      "c3/rank1_s0",
+      "e53/lowercase_s0",
+      "e62/copy_s0"
+    ],
+    "probe_source": "one state of each windows format (kv, e53 text, e62), for the null's time and censoring and the Pile cross-entropy secondary",
+    "pile": [
+      0,
+      4096
+    ],
+    "pile_source": "Pile train rows 0-4095, the cached rows E53 drew from (commute.windows E53Config.count_rows)",
+    "shards": 4,
+    "shard_limit_min": 100,
+    "load_min": 1,
+    "load_min_source": "allowance per task's windows load, unmeasured; stage 0 measures it on three formats",
+    "fig4": {
+      "c3/cipher_s0": {
+        "task": "c3/cipher",
+        "file": "experiments/open_pair/results/large/cipher_s0.pt",
+        "sha256": "db72f2ed6fc204d5bfc597662b7972ec5aecc7bd09794daaed2cbe87db5984b0"
+      },
+      "c3/cipher_s1": {
+        "task": "c3/cipher",
+        "file": "experiments/open_pair/results/large/cipher_s1.pt",
+        "sha256": "563fc6f0f978ce6eb3cbdbf2321334fc1c8a5769eea1aa0d0df96805be24ea18"
+      },
+      "c3/cipher_s2": {
+        "task": "c3/cipher",
+        "file": "experiments/open_pair/results/large/cipher_s2.pt",
+        "sha256": "868a18f21256e5e4ff5a6403e5db05bb3b859c07c4c0c8a1865d443915e65671"
+      },
+      "c3/copy_s0": {
+        "task": "c3/copy",
+        "file": "experiments/open_pair/results/large/amend1/copy_s0.pt",
+        "sha256": "e005d4b6e75dd373639acc67ee809b2083efdba81a7d00d86489b70b08b0cb6a"
+      },
+      "c3/copy_s1": {
+        "task": "c3/copy",
+        "file": "experiments/open_pair/results/large/amend1/copy_s1.pt",
+        "sha256": "0e58eb79060411702836e3e8f7841fff1957b46f46cfef65c522c50c242a0205"
+      },
+      "c3/copy_s2": {
+        "task": "c3/copy",
+        "file": "experiments/open_pair/results/large/amend1/copy_s2.pt",
+        "sha256": "4e026b160bb72ec555633d17ff68c12c662d804c9add6d600c8aecb43323d1a4"
+      },
+      "c3/rank1_s0": {
+        "task": "c3/rank1",
+        "file": "experiments/open_pair/results/large/amend1/rank1_s0.pt",
+        "sha256": "9c7b46399a8b279049b2fd037885950a15d741425839e79daa638021b6488286"
+      },
+      "c3/rank1_s1": {
+        "task": "c3/rank1",
+        "file": "experiments/open_pair/results/large/amend1/rank1_s1.pt",
+        "sha256": "b2951755c3a002892ac9a6afefefea9aada884942a9fa90db3bcc402ded5a279"
+      },
+      "c3/rank1_s2": {
+        "task": "c3/rank1",
+        "file": "experiments/open_pair/results/large/amend1/rank1_s2.pt",
+        "sha256": "41afb4d6e2cf098e510b07e03965cf9d34b2f53d660c7f4195e8d695f092f440"
+      },
+      "e46/ident32_s0": {
+        "task": "e46/ident32",
+        "file": "experiments/regating_table/results/large/ident32_s0.pt",
+        "sha256": "8fbc08e8179ca3fea0d94455c032ecae8468697a640e6473ccf0b529612f66d7"
+      },
+      "e46/ident32_s1": {
+        "task": "e46/ident32",
+        "file": "experiments/regating_table/results/large/ident32_s1.pt",
+        "sha256": "e848fbbaedb348cbaadfebe4657ca598734ff4045c84686eec07f0969a20c830"
+      },
+      "e46/ident32_s2": {
+        "task": "e46/ident32",
+        "file": "experiments/known_3seeds/results/large/ident32_s2.pt",
+        "sha256": "6118d91df707ba549cd69661974f52c5122376c420fa80ce2349305118425f5f"
+      },
+      "e46/rand32_s0": {
+        "task": "e46/rand32",
+        "file": "experiments/regating_table/results/large/rand32_s0.pt",
+        "sha256": "d44834c88305ac92542e82402de43a57900488fbf14941429fce51a2644cfd0e"
+      },
+      "e46/rand32_s1": {
+        "task": "e46/rand32",
+        "file": "experiments/regating_table/results/large/rand32_s1.pt",
+        "sha256": "ea54f8fa04d9516fc2fb5be7c812e5d0dbae8b88d4fb7d5dd20367661fd6bb44"
+      },
+      "e46/rand32_s2": {
+        "task": "e46/rand32",
+        "file": "experiments/known_3seeds/results/large/rand32_s2.pt",
+        "sha256": "73bc5b5543966de7b3c0cd2cb4761cba40ad3c79aac9aaa434961bba946ebad8"
+      },
+      "e53/cipher_s0": {
+        "task": "e53/cipher",
+        "file": "experiments/performed_anchor/results/large/dW_cipher_s0_step300.pt",
+        "sha256": "5f86af5e2738753e4b43eea8081842b8531bc565bfbc8ff922f0a1e355792222"
+      },
+      "e53/cipher_s1": {
+        "task": "e53/cipher",
+        "file": "experiments/performed_anchor/results/large/dW_cipher_s1_step300.pt",
+        "sha256": "b2ac659554c666533472f95cdb27e2ae881f9623872a9cfa3c94898346274b56"
+      },
+      "e53/cipher_s2": {
+        "task": "e53/cipher",
+        "file": "experiments/known_3seeds/results/large/dW_cipher_s2_step300.pt",
+        "sha256": "51790ec673b789552f5251e224b9d0a8ca1a1c336d084a9d5e53a3cd7412b526"
+      },
+      "e53/lowercase_s0": {
+        "task": "e53/lowercase",
+        "file": "experiments/performed_anchor/results/large/dW_lowercase_s0_step300.pt",
+        "sha256": "d3b956b9780e25b74e4b55131c05b1491bc2ac5065514bba1dcd8844f4d35c44"
+      },
+      "e53/lowercase_s1": {
+        "task": "e53/lowercase",
+        "file": "experiments/performed_anchor/results/large/dW_lowercase_s1_step300.pt",
+        "sha256": "1590694ebd880cf5418185864469ba11408add272a1bcaa3e3ba46561a876243"
+      },
+      "e53/lowercase_s2": {
+        "task": "e53/lowercase",
+        "file": "experiments/known_3seeds/results/large/dW_lowercase_s2_step300.pt",
+        "sha256": "a897eeaab67a9cfb5cac0a2617e362ea5bc2e1af50988ea356dfbc2c07504b7a"
+      },
+      "e54/cipher_own_s0": {
+        "task": "e54/cipher",
+        "file": "experiments/keydependent_elicit/results/large/cipher_own_s0.pt",
+        "sha256": "9cb2b8275e61a05dcbe4cd7aef6f7c328bf42446c1a1f04567c8d3bb9f9e00de"
+      },
+      "e54/cipher_own_s1": {
+        "task": "e54/cipher",
+        "file": "experiments/keydependent_elicit/results/large/cipher_own_s1.pt",
+        "sha256": "d387276843b2f9f5bc5da0c02a2e29f22ecb99bc5f0e6df136ac8e20e65a7c89"
+      },
+      "e54/cipher_own_s2": {
+        "task": "e54/cipher",
+        "file": "experiments/known_3seeds/results/large/cipher_own_s2.pt",
+        "sha256": "f8ff160d62edcd1ced0430453d63169f5dd5a9e5819f9e448bea6784a6b45277"
+      },
+      "e54/cipher_s0": {
+        "task": "e54/cipher",
+        "file": "experiments/keydependent_elicit/results/large/cipher_s0.pt",
+        "sha256": "451b1ba1bffee5dd0b8d5e3509840c6fa86c6d48585d24e51a2bff2a32047ff7"
+      },
+      "e54/cipher_s1": {
+        "task": "e54/cipher",
+        "file": "experiments/keydependent_elicit/results/large/cipher_s1.pt",
+        "sha256": "79bd9799125cb241de9032194e69eefe32003651a146f455ad61dc178be3488a"
+      },
+      "e54/cipher_s2": {
+        "task": "e54/cipher",
+        "file": "experiments/keydependent_patch/results/large/cipher_s2.pt",
+        "sha256": "839bd80c99a46839535b74a9f9724f426976f17300112a7393a1123b1dfe7c6b"
+      },
+      "e54/elicit_s0": {
+        "task": "e54/elicit",
+        "file": "experiments/keydependent_elicit/results/large/elicit_s0.pt",
+        "sha256": "18156b7172dab09ad87bea143fe4d30de437d3a122c0ef3a28478e38c845bf8b"
+      },
+      "e54/elicit_s1": {
+        "task": "e54/elicit",
+        "file": "experiments/keydependent_elicit/results/large/elicit_s1.pt",
+        "sha256": "58ca85d4313857071c70eb9b5c347f908dbcfc6672facb6f9c48d0bb9d6fe092"
+      },
+      "e54/elicit_s2": {
+        "task": "e54/elicit",
+        "file": "experiments/keydependent_patch/results/large/elicit_s2.pt",
+        "sha256": "998c7d39325d38d032ff48af5f8d903f7ae33db39a772ea31a9bf23fe09d4d01"
+      },
+      "e58/cipher_s0": {
+        "task": "e58/cipher",
+        "file": "experiments/refit_96key/results/large/dW_cipher_s0.pt",
+        "sha256": "05a82a9361ec4e7f4658d3091c5fe47566c9c89adfd2637fe66bd762631a99b6"
+      },
+      "e58/cipher_s1": {
+        "task": "e58/cipher",
+        "file": "experiments/refit_96key/results/large/dW_cipher_s1.pt",
+        "sha256": "8ec90d1307ffed0b09b3f3fd9d50a07781b5db479c7d45975cccb61c749b15ff"
+      },
+      "e58/cipher_s2": {
+        "task": "e58/cipher",
+        "file": "experiments/refit_96key/results/large/dW_cipher_s2.pt",
+        "sha256": "25455dd105c23d1da31bf4802c8da7f77ce3414e73c51dd7679fc020067c1226"
+      },
+      "e58/copy_s0": {
+        "task": "e58/copy",
+        "file": "experiments/refit_96key/results/large/dW_copy_s0.pt",
+        "sha256": "0a515d3ba39029cce786629605caa98648b2a0f3b95d454fdf4c0be90c388de2"
+      },
+      "e58/copy_s1": {
+        "task": "e58/copy",
+        "file": "experiments/refit_96key/results/large/dW_copy_s1.pt",
+        "sha256": "83388c18533df8ac583fc9fda7891698d0d4574c2d24a07c3f14c27e678d9870"
+      },
+      "e58/copy_s2": {
+        "task": "e58/copy",
+        "file": "experiments/refit_96key/results/large/dW_copy_s2.pt",
+        "sha256": "4bc3a3e423689bb3667b0cbd6b3ada0d98dd749b50e7abe913e9ac959aea2b8f"
+      },
+      "e58/prior_cipher_s0": {
+        "task": "e58/prior_cipher",
+        "file": "experiments/refit_96key/results/large/dW_prior_cipher_s0.pt",
+        "sha256": "385aa2a8d1f02977d0b5294f020661d934ec7d54c3e28ae0ed8634b8303eaff3"
+      },
+      "e58/prior_cipher_s1": {
+        "task": "e58/prior_cipher",
+        "file": "experiments/refit_96key/results/large/dW_prior_cipher_s1.pt",
+        "sha256": "5cc9f9019a2c545f38e6e8b2e826f10bcebfe62e46ad1842f68f6e6ebd21155c"
+      },
+      "e58/prior_cipher_s2": {
+        "task": "e58/prior_cipher",
+        "file": "experiments/refit_96key/results/large/dW_prior_cipher_s2.pt",
+        "sha256": "27d5b40d411e8d8ddcbc6b20f6ffc1125b366eeb1ef318a02b134262aa75cb64"
+      },
+      "e58/rank1_s0": {
+        "task": "e58/rank1",
+        "file": "experiments/refit_96key/results/large/dW_rank1_s0.pt",
+        "sha256": "7a3782f6e215d3f9c56d022cb6f72b8ef307a9bb7b81efe8ef5e63f6f28abb3f"
+      },
+      "e58/rank1_s1": {
+        "task": "e58/rank1",
+        "file": "experiments/refit_96key/results/large/dW_rank1_s1.pt",
+        "sha256": "180bac6224b9273fa7cacc48e3382b8c5f41ae5045ae295d7893591a09a92b66"
+      },
+      "e58/rank1_s2": {
+        "task": "e58/rank1",
+        "file": "experiments/refit_96key/results/large/dW_rank1_s2.pt",
+        "sha256": "79bc6bd8e67f49ff3d62546c6944d89ad7cfd8be1e9f3919af0f852af48e2ba0"
+      },
+      "e62/copy_s0": {
+        "task": "e62/copy",
+        "file": "experiments/induction_cue/results/large/copy_s0.pt",
+        "sha256": "759fb83995d615babfe49713be360fff626eccf755c717ea01c5d940d2cfc269"
+      },
+      "e62/copy_s1": {
+        "task": "e62/copy",
+        "file": "experiments/induction_cue/results/large/copy_s1.pt",
+        "sha256": "1f1f69b2d53cd8a14286f8b225fd5d75ec04f4e37924c95e91b63e7296cf8147"
+      },
+      "e62/copy_s2": {
+        "task": "e62/copy",
+        "file": "experiments/induction_cue/results/large/copy_s2.pt",
+        "sha256": "cab79309c189bc06bfabeed4e532e9057a33f27e4ae9c4399280d2bb1cc2cd74"
+      },
+      "e62/lookup_s0": {
+        "task": "e62/lookup",
+        "file": "experiments/induction_cue/results/large/lookup_s0.pt",
+        "sha256": "c74c074b70fac1098d87e6c7b744a0f8946d6cd18e6b2eb715c80af467669737"
+      },
+      "e62/lookup_s1": {
+        "task": "e62/lookup",
+        "file": "experiments/induction_cue/results/large/lookup_s1.pt",
+        "sha256": "5e10359fa75e8749b8f633ffaf7a94eaff69734f397fcd0e1ab38e96da0be1aa"
+      },
+      "e62/lookup_s2": {
+        "task": "e62/lookup",
+        "file": "experiments/induction_cue/results/large/lookup_s2.pt",
+        "sha256": "397924a82ad9b2b59fcd422aea82eebcda31d01be172b732b92a243608c54dd8"
+      }
+    },
+    "fig4_source": "experiments/weightwatch/p2-80/predictions.json settings.fig4 (E306 resolve.py: Fig 4s 48 states, file and sha256)"
+  },
+  "expected": {
+    "zero_update": "D exactly 0; t_half and t_tenth void (None); weights back at W0 (C3 run.json .stage0.zero_D 0)",
+    "kappa_floor": "batched vs one window: under 1e-9 nats (fp32 reduction order), unmeasured",
+    "reproduce": "c3/rank1_s0 t_half within 1 step of 13.910, c3/cipher_s0 within 1 step of 10.687 (stop on a miss); D near 8.7787 and 5.3282 (reported)",
+    "planted_wrapper": "t_half within 1 step of 3.971 (stop on a miss), D near 4.2068",
+    "planted_partners": "c3/cipher s0-s2 each scaled (factor about 0.8-0.96) to the wrapper's D; t_half 10-14 steps (C3 cipher 10.0-10.9 at D 4.4-5.3; the ladder's t_half rises as the update shrinks)",
+    "gate": "pass: gap about 6-10 steps against 3 x max(sd about 0.4, 1) = 3 steps",
+    "fold": "fold vs hook relative max logit difference of order the one-ulp floor (about 1e-7), under 10 x the floor",
+    "states": "t_half 4-20 steps (C3's 32 states 7.9-18.0); t_tenth 2-4 x t_half; none censored",
+    "nulls": "D_null well under the state's D; t_half unknown (may be short or censored); some under D_void",
+    "gain": "D under the full fine-tunes' (gain share 0.03-0.8, E290); t_half unknown, near the planted 3.97 if gains read as wrappers; cipher's gain arm learned nothing (D near 0, may be void)",
+    "pile_ce": "unknown: Pile text may not move the read position; reported only"
+  },
+  "rules": {
+    "reading": "t_half per item (revival_kv.half_life on the kappa curve). Void (None) iff curve[0] = D <= 0; 'censored' iff kappa never reaches D/2 within the cap (a lower bound: counts as the cap, never as missing). A null with D under stage 0's D_void is reported as void in the panel. t_tenth is saved and never promoted to the reading.",
+    "gate": "revival_kv.pair_gate(wrapper t_half, partner t_halfs, cap, floor 1, mult 3): void (no call, stop) if the wrapper is void or fewer than 2 partners are non-void; censored values count as the cap in the mean and are left out of the sd; noise = max(sd of uncensored partners, 1 step) (the floor alone under 2 uncensored); pass iff mean(partners) - wrapper >= 3 x noise, inclusive; else fail (stop). Edge cases run in tests/test_revival_kv.py::test_pair_gate_edge_cases.",
+    "panel": "descriptive: per group (16, a state's name without its seed), the three states' t_half beside their nulls' and D beside each; the gain-only states beside their e58 tasks; no bar, no verdict"
+  }
+}
