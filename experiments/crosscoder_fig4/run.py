@@ -51,6 +51,7 @@ REPO = HERE.parents[1]
 PRED = HERE / "results/predictions.json"
 KNOWN3 = EXPERIMENTS / "known_3seeds/results/known3.json"
 WHERE = ("random", "answer_half", "answer")
+RULES = ("literal", "floored")
 OUT: dict[str, Path] = {}
 WRITTEN: list[str] = []
 
@@ -72,8 +73,11 @@ class Config:
     random_states: list[str]
     extra_states: dict[str, list[str]]  # state -> [task, file]: Fig 4's seed-2 states, outside E203's inventory
     sizes: dict[str, dict[str, Any]]
+    gate_rule: str  # "literal" | "floored": which exclusion of negative base betas the planted pass reads
+    floor_multiple: float  # the floored rule's multiple of the full-sample beta's sd (`crosscoder.beta_floor`)
 
     def __post_init__(self) -> None:
+        assert self.gate_rule in RULES and self.floor_multiple > 0, (self.gate_rule, self.floor_multiple)
         assert set(self.sizes) == {"full", "long", "rehearsal", "rehearsal_long"}, sorted(self.sizes)
         for a, b in (("full", "long"), ("rehearsal", "rehearsal_long")):  # long = the same crosscoder, more tokens
             diff = {k for k in self.sizes[a] if self.sizes[a][k] != self.sizes[b][k]}
@@ -104,23 +108,23 @@ def check(out: dict[str, Any], path: Path, name: str, ok: bool, detail: dict[str
         raise Stop(name)
 
 
-def early(out: dict[str, Any], path: Path, T: dict[str, Any], cfg: CC.Cfg) -> Any:
+def early(out: dict[str, Any], path: Path, T: dict[str, Any], cfg: CC.Cfg, key: str) -> Any:
     """The filed checks of a side's first minutes: batch FVE at the first record at or past step `early_step`, the
     training minutes projected there from the last records' ms per step (chunk builds included), and FVE and dead
-    share at the first snapshot."""
+    share at the first snapshot. Check names carry the side's key (one shard file holds several sides)."""
     seen: set[str] = set()
 
     def f(kind: str, r: dict[str, Any]) -> None:
         if kind == "curve" and r["step"] >= T["early_step"] and "curve" not in seen:
             seen.add("curve")
-            check(out, path, "early: batch FVE", r["fve_batch"] >= T["fve_batch_early"], {"step": r["step"], "fve_batch": r["fve_batch"], "bar": T["fve_batch_early"]})
+            check(out, path, f"early {key}: batch FVE", r["fve_batch"] >= T["fve_batch_early"], {"step": r["step"], "fve_batch": r["fve_batch"], "bar": T["fve_batch_early"]})
             proj = r["ms_per_step"] * cfg.steps / 60_000
-            check(out, path, "early: projected minutes", proj <= T["projected_limit_min"], {"step": r["step"], "minutes": proj, "bar": T["projected_limit_min"]})
+            check(out, path, f"early {key}: projected minutes", proj <= T["projected_limit_min"], {"step": r["step"], "minutes": proj, "bar": T["projected_limit_min"]})
         if kind == "snapshot" and "snap" not in seen:
             seen.add("snap")
             fv = min(r["fve_base"], r["fve_ft"])
-            check(out, path, "early: FVE at the first snapshot", fv >= T["fve_early"], {"fve": fv, "bar": T["fve_early"]})
-            check(out, path, "early: dead share at the first snapshot", r["dead"] <= T["dead_max"], {"dead": r["dead"], "bar": T["dead_max"]})
+            check(out, path, f"early {key}: FVE at the first snapshot", fv >= T["fve_early"], {"fve": fv, "bar": T["fve_early"]})
+            check(out, path, f"early {key}: dead share at the first snapshot", r["dead"] <= T["dead_max"], {"dead": r["dead"], "bar": T["dead_max"]})
 
     return f
 

@@ -147,8 +147,9 @@ class Sides:
     """The base net, the Pile and pool rows, the task windows; one crosscoder per side (`run_side`)."""
 
     def __init__(self, cfg: CC.Cfg, layer: int, data_seed: int, reads: dict[str, Any], kv_tasks: dict[str, Any],
-                 tf32: bool, log: Callable[[str], None]) -> None:  # fmt: skip
+                 tf32: bool, floor_multiple: float, log: Callable[[str], None]) -> None:  # fmt: skip
         self.cfg, self.layer, self.seed, self.reads, self.kv, self.log = cfg, layer, data_seed, reads, kv_tasks, log
+        self.floor_multiple = floor_multiple  # every score reads the literal and the floored exclusion (`crosscoder.beta_floor`)
         torch.backends.cuda.matmul.allow_tf32 = tf32
         self.net = ST.Net("cuda")
         self.pool = rows("train", cfg.pool_start, cfg.pool_rows)
@@ -249,7 +250,7 @@ class Sides:
         cfg = self.cfg
         ev = CC.fve(ae, self.val_chunks(side, h_read))
         alive = ev["fired"] >= cfg.alive_min
-        rec, large = CC.score(cfg, ae, ev, h_ls, h_read, side.plant.vec if side.plant is not None else None)
+        rec, large = CC.score(cfg, ae, ev, h_ls, h_read, side.plant.vec if side.plant is not None else None, self.floor_multiple)
         rn = CC.relative_norm(ae)
         rec |= {"step": step, "tokens": step * cfg.batch,
                 "max_rn_dev_alive": float((rn[alive] - 0.5).abs().max()) if bool(alive.any()) else math.nan}  # fmt: skip
@@ -304,8 +305,11 @@ class Sides:
 
     def show(self, side: Side, r: dict[str, Any]) -> None:
         keys = ("tokens", "fve_base", "fve_ft", "fve_change", "dead", "d_authors", "d_alt", "specific", "shared_frac",
-                "d_authors_wide", "parts", "counts", "lead", "cos_planted_best", "max_rn_dev_alive", "minutes")  # fmt: skip
-        self.log(f"[side {side.key}] {json.dumps({k: r[k] for k in keys if k in r}, default=float)}")
+                "d_authors_wide", "parts", "counts", "lead", "cos_planted_best", "max_rn_dev_alive", "beta_floor", "minutes")  # fmt: skip
+        self.log(f"[side {side.key}] literal {json.dumps({k: r[k] for k in keys if k in r}, default=float)}")
+        if "floored" in r:
+            fl = r["floored"]
+            self.log(f"[side {side.key}] floored {json.dumps({k: fl[k] for k in keys if k in fl}, default=float)}")
 
     # ------------------------------------------------------------------------- the sides
 
