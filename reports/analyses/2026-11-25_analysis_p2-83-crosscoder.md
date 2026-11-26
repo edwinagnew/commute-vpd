@@ -140,7 +140,7 @@ it. A rerun of the states at four times the tokens is not part of this cell.
 
 No. On all 52 sides, the 48 states, the three random updates and the second crosscoder seed, the two filters give the
 same $d$ to every digit stored. The reason is in the parts: on the real states the fine-tune-specific part is almost
-nothing under either filter, on the eight tasks built new as much as on the eight built to reuse. Its largest value is
+nothing under either filter (every state read at 200M tokens), on the eight tasks built new as much as on the eight built to reuse. Its largest value is
 0.101, on the seed-0 state of Copy key (96 keys); on every other state it is at most 0.005. That same state has the
 lowest $d$ of all 52 sides, 0.078: the one state where some of the change went to fine-tune-specific latents is the
 one that reads least shared. With almost no specific latents to drop, the filter has nothing to act on, and $d$ is in
