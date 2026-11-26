@@ -3,19 +3,6 @@
 <div class="prose"><p><strong>Two cards wait on you, 2026-11-23.</strong> One is a finding that reverses a filed prediction, with nothing to choose yet: on real text the write share reads the new side higher (E273). The other asks what the gain-only share's one remaining run should do (E282). The convergence panel's cell (P2.66, <a href="#e272">E272</a>) is filled and no question is open on it. Before it, at about 12:40 you answered the last open card: a changed part counts as kept by what it writes, and the definition reads reuse by the write share over changed parts (section {{n:timeline}}, 2026-11-22). Behaviour read part by part is reported as a stated limit, because one part barely moves the output; the search-based version is not used; definition-lead is writing the paper's one-page justification. At about 19:20 on 2026-11-21 you chose to count only what changed, each changed part weighted by the change it carries; untouched parts no longer count as reused. Earlier that day you answered how wording A treats a new computation spread thinly over many parts (diagnose first; the diagnosis was <a href="#e247">E247</a>), and on 2026-11-20 four questions: size-normalised R, the memorising twins, the held-model reading on Qwen's pair library, and the reuse score at the VPD featurization. Your wording of the definition box (2026-11-18, about 19:00) stands. The neuron-level saturation question is closed.</p>
 <p>Flags on a card: <span class="chip refuted">Blocking</span> planned runs cannot go ahead; <span class="chip open">Soon</span> it decides one line's next step; <span class="chip uninf">No rush</span> nothing waits on it.</p></div>
 <div class="cards stack">
-<div class="card decision" id="decision-e311-4x-tokens"><span class="chip uninf urgency">No rush</span>
-<div class="k">Question for you · baseline-lead · new 2026-11-25</div>
-<h3>Should the crosscoder be rerun on Fig 4's 48 states at four times the training?</h3>
-<p><strong>What was done.</strong> We trained Minder et al.'s crosscoder, a tool that splits a fine-tune's change into a shared part and a fine-tune-specific part, on the 48 fine-tuned states at the source's 200M tokens (E311). We expected some fine-tune-specific part, most on tasks built new. On every state but one it is at most 0.005. A planted new direction that sits on an existing feature is still merged at 200M and splits off from 400M (0.722, then 0.804 at 800M); one placed where no feature fires is found at 200M.</p>
-<p><strong>Options.</strong></p>
-<ul>
-<li><strong>A. Rerun all 52 sides at 800M.</strong> One side took about 48 min on an H100, so about 3.2 h; 26 pods, about 6.5 h wall, 52 x 3.2 h x $4.41 = about $730, over the session cap. Tells us whether any state separates.</li>
-<li><strong>B. Keep 200M and state the caveat in the caption.</strong> $0; the caveat stays untested.</li>
-<li><strong>C. Rerun the 8 tasks built new, seed 0, at 800M.</strong> 8 x 3.2 h x $4.41 = about $113, about 3.5 h wall on 8 pods. Tests the caveat where a new direction should exist.</li>
-</ul>
-<p><strong>Recommendation: C</strong>, before the 2026-11-29 draft.</p>
-<p class="small">Running: nothing. Links: <code>reports/analyses/2026-11-25_analysis_p2-83-crosscoder.md</code>, <code>reports/decisions/2026-11-25_decision_e311-4x-tokens.md</code>, <code>experiments/crosscoder_fig4/results/</code>.</p>
-</div>
 <div class="card decision" id="decision-p1-58-gain-share-next"><span class="chip open urgency">Soon</span>
 <div class="k">Question for you · compare-lead · new 2026-11-23</div>
 <h3>The gain-only share rebuilt edits built to be new: what should the cell's one remaining run do?</h3>
