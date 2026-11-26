@@ -51,6 +51,7 @@ REPO = HERE.parents[1]
 PRED = HERE / "results/predictions.json"
 KNOWN3 = EXPERIMENTS / "known_3seeds/results/known3.json"
 WHERE = ("random", "answer_half", "answer")
+RULES = ("literal", "floored")
 OUT: dict[str, Path] = {}
 WRITTEN: list[str] = []
 
@@ -72,8 +73,12 @@ class Config:
     random_states: list[str]
     extra_states: dict[str, list[str]]  # state -> [task, file]: Fig 4's seed-2 states, outside E203's inventory
     sizes: dict[str, dict[str, Any]]
+    gate_rule: str  # "literal" | "floored": which exclusion of negative base betas the planted pass reads
+    floor_multiple: float  # the floored rule's multiple of the full-sample beta's sd (`crosscoder.fold_floor`)
+    floor_folds: int  # K folds of whole windows the sd is measured on
 
     def __post_init__(self) -> None:
+        assert self.gate_rule in RULES and self.floor_multiple > 0 and self.floor_folds >= 10, (self.gate_rule, self.floor_multiple, self.floor_folds)
         assert set(self.sizes) == {"full", "long", "rehearsal", "rehearsal_long"}, sorted(self.sizes)
         for a, b in (("full", "long"), ("rehearsal", "rehearsal_long")):  # long = the same crosscoder, more tokens
             diff = {k for k in self.sizes[a] if self.sizes[a][k] != self.sizes[b][k]}
@@ -104,23 +109,23 @@ def check(out: dict[str, Any], path: Path, name: str, ok: bool, detail: dict[str
         raise Stop(name)
 
 
-def early(out: dict[str, Any], path: Path, T: dict[str, Any], cfg: CC.Cfg) -> Any:
+def early(out: dict[str, Any], path: Path, T: dict[str, Any], cfg: CC.Cfg, key: str) -> Any:
     """The filed checks of a side's first minutes: batch FVE at the first record at or past step `early_step`, the
     training minutes projected there from the last records' ms per step (chunk builds included), and FVE and dead
-    share at the first snapshot."""
+    share at the first snapshot. Check names carry the side's key (one shard file holds several sides)."""
     seen: set[str] = set()
 
     def f(kind: str, r: dict[str, Any]) -> None:
         if kind == "curve" and r["step"] >= T["early_step"] and "curve" not in seen:
             seen.add("curve")
-            check(out, path, "early: batch FVE", r["fve_batch"] >= T["fve_batch_early"], {"step": r["step"], "fve_batch": r["fve_batch"], "bar": T["fve_batch_early"]})
+            check(out, path, f"early {key}: batch FVE", r["fve_batch"] >= T["fve_batch_early"], {"step": r["step"], "fve_batch": r["fve_batch"], "bar": T["fve_batch_early"]})
             proj = r["ms_per_step"] * cfg.steps / 60_000
-            check(out, path, "early: projected minutes", proj <= T["projected_limit_min"], {"step": r["step"], "minutes": proj, "bar": T["projected_limit_min"]})
+            check(out, path, f"early {key}: projected minutes", proj <= T["projected_limit_min"], {"step": r["step"], "minutes": proj, "bar": T["projected_limit_min"]})
         if kind == "snapshot" and "snap" not in seen:
             seen.add("snap")
             fv = min(r["fve_base"], r["fve_ft"])
-            check(out, path, "early: FVE at the first snapshot", fv >= T["fve_early"], {"fve": fv, "bar": T["fve_early"]})
-            check(out, path, "early: dead share at the first snapshot", r["dead"] <= T["dead_max"], {"dead": r["dead"], "bar": T["dead_max"]})
+            check(out, path, f"early {key}: FVE at the first snapshot", fv >= T["fve_early"], {"fve": fv, "bar": T["fve_early"]})
+            check(out, path, f"early {key}: dead share at the first snapshot", r["dead"] <= T["dead_max"], {"dead": r["dead"], "bar": T["dead_max"]})
 
     return f
 
@@ -154,7 +159,7 @@ def make_sides(C: Config, cfg: CC.Cfg, inv: dict[str, Any], tasks: set[str]) -> 
     W = load_experiment("share_untrained", "windows")  # E203's read windows (src's windows.read_rows lacks e58/prior_cipher)
     reads = {t: W.load_read(t, inv["tasks"][t]) for t in sorted(tasks)}
     kvt = {t: torch.load(REPO / inv["tasks"][t]["path"], weights_only=False)["task"] for t in sorted(tasks) if inv["tasks"][t]["format"] == "kv"}
-    return CS.Sides(cfg, C.layer, C.data_seed, reads, kvt, C.tf32, log)
+    return CS.Sides(cfg, C.layer, C.data_seed, reads, kvt, C.tf32, C.floor_multiple, C.floor_folds, log)
 
 
 def load_dw(inv: dict[str, Any], state: str) -> dict[str, torch.Tensor]:
@@ -174,7 +179,7 @@ def stage0a(C: Config, cfg: CC.Cfg, T: dict[str, Any], stop_after: int | None) -
     toks = CS.windows(task, "fit")[:8]
     diff = float((S.acts(toks, None) - S.acts(toks, S.zero)).abs().max())
     check(out, path, "self path: equal activations", diff <= T["self_act_diff"], {"max_abs": diff, "bar": T["self_act_diff"]})
-    rec, _ = S.run_side(CS.Side("self", task, C.control_task, S.zero), OUT["large"], True, True, early(out, path, T, cfg), stop_after)
+    rec, _ = S.run_side(CS.Side("self", task, C.control_task, S.zero), OUT["large"], True, True, early(out, path, T, cfg, "self"), stop_after)
     out["self"] = rec
     write(path, out)
     check(out, path, "self: relative norms at 0.5", rec["max_rn_dev_alive"] <= T["self_rn_dev"], {"max_dev": rec["max_rn_dev_alive"], "bar": T["self_rn_dev"]})
@@ -194,16 +199,20 @@ def stage0b(C: Config, cfg: CC.Cfg, T: dict[str, Any], where: str, seed: int, lo
     S = make_sides(C, cfg, inv, {C.control_task})
     side = S.planted(C.control_task, where, C.plant_rate, C.plant_seed, seed)
     side.key += "_long" if long else ""
-    rec, _ = S.run_side(side, OUT["large"], True, True, early(out, path, T, cfg))
+    rec, _ = S.run_side(side, OUT["large"], True, True, early(out, path, T, cfg, side.key))
     out["planted"] = rec
-    lead = rec.get("lead", {})
-    ok = bool(lead.get("specific")) and rec["specific"] >= T["planted_part"]
-    out["planted_pass"] = ok
-    out["rule"] = {"lead": lead, "part": rec["specific"], "bar": T["planted_part"], "nu_eps_bar": cfg.nu_eps, "nu_r_bar": cfg.nu_r}
-    for s in rec["snapshots"]:
-        log(f"[0b {tag}] snapshot tokens {s['tokens']}: part {s['specific']:.4f} lead {json.dumps(jsonable(s.get('lead', {})))}")
-    log(f"[0b {tag}] PLANTED {'PASS' if ok else 'MISS'}: lead {json.dumps(jsonable(lead))}, part {rec['specific']:.4f} (bar {T['planted_part']})")
-    out["pass"] = True  # the stage ran; planted_pass is the reading
+    out["rules"] = {}
+    for rule, r in (("literal", rec), ("floored", rec["floored"])):
+        lead = r.get("lead", {})
+        ok = bool(lead.get("specific")) and r["specific"] >= T["planted_part"]
+        out["rules"][rule] = {"pass": ok, "lead": lead, "part": r["specific"], "bar": T["planted_part"], "nu_eps_bar": cfg.nu_eps, "nu_r_bar": cfg.nu_r}
+        for s in rec["snapshots"]:
+            sr = s if rule == "literal" else s["floored"]
+            log(f"[0b {tag}] {rule} snapshot tokens {s['tokens']}: part {sr['specific']:.4f} lead {json.dumps(jsonable(sr.get('lead', {})))}")
+        log(f"[0b {tag}] {rule}: PLANTED {'PASS' if ok else 'MISS'}: lead {json.dumps(jsonable(lead))}, part {r['specific']:.4f} (bar {T['planted_part']})")
+    log(f"[0b {tag}] beta floor {json.dumps(jsonable(rec['beta_floor']))}")
+    out["gate_rule"], out["planted_pass"] = C.gate_rule, out["rules"][C.gate_rule]["pass"]
+    out["pass"] = True  # the stage ran; planted_pass (under gate_rule) is the reading
     write(path, out)
 
 
@@ -225,9 +234,10 @@ def stage2(C: Config, cfg: CC.Cfg, T: dict[str, Any], shard: tuple[int, int], t_
             side = S.random_like(key, task, dW, C.random_seed + C.random_states.index(state))
         else:
             side = S.state(key, task, dW, seed=1 if kind == 2 else 0)
-        rec, _ = S.run_side(side, OUT["large"], False, False, early(out, path, T, cfg))
+        rec, _ = S.run_side(side, OUT["large"], False, False, early(out, path, T, cfg, key))
         write(OUT["sides"] / f"{key}.json", rec | {"state": state, "kind": ["state", "gaussian", "reseed"][kind]})
-        log(f"[score] {key} d_authors {rec['d_authors']:.4f} d_alt {rec['d_alt']:.4f} specific {rec['specific']:.4f} shared_frac {rec['shared_frac']}")
+        for rule, r in (("literal", rec), ("floored", rec["floored"])):
+            log(f"[score] {key} {rule} d_authors {r['d_authors']:.4f} d_alt {r['d_alt']:.4f} specific {r['specific']:.4f} shared_frac {r['shared_frac']}")
         f = min(rec["fve_base"], rec["fve_ft"])
         check(out, path, f"FVE {key}", f >= fve0 - T["fve_drop"], {"fve": f, "self": fve0, "drop": T["fve_drop"]})
         check(out, path, f"dead share {key}", rec["dead"] <= T["dead_max"], {"dead": rec["dead"], "bar": T["dead_max"]})
@@ -276,6 +286,15 @@ def inputs(C: Config, shard: tuple[int, int]) -> None:
     print(json.dumps({"shard": f"{shard[0]}/{shard[1]}", "sides": [k for k, _, _ in sides], "states": files, "tasks": tasks, "state_mb": round(mb)}, indent=1))
 
 
+def real_large(p: Path) -> None:
+    """`results/large` is a symlink into ~/commute-data on the dev node and arrives on a pod dangling (root CLAUDE.md):
+    replace a dangling link with a real directory, so the first checkpoint's mkdir does not fail."""
+    if p.is_symlink() and not p.exists():
+        log(f"[job] {p} is a dangling symlink to {p.readlink()}: replaced with a real directory")
+        p.unlink()
+    p.mkdir(parents=True, exist_ok=True)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("stage", choices=["prep", "inputs", "0a", "0b", "2", "resumecheck"])
@@ -291,6 +310,10 @@ def main() -> int:
     cfg, T = cc_cfg(C.sizes[tag]), P["thresholds"]["rehearsal" if a.rehearse else "full"]
     T = T | (T["long"] if a.long else {})
     sub = "rehearsal" if a.rehearse else ""
+    if a.stage in ("inputs", "2"):
+        i, n = (int(x) for x in a.arg.split("/"))
+        assert 0 <= i < n, f"shard {a.arg}: i runs 0..n-1"
+    real_large(HERE / "results/large")
     OUT.update(results=HERE / "results" / sub, sides=HERE / "results" / sub / "sides", large=HERE / "results/large" / sub)
     log(f"[job] {a} sizes {tag}: {cfg}")
     code = 0

@@ -248,13 +248,55 @@ def beta_sums(ae: AE, h: Tensor, J: Tensor, size: int = 4096) -> dict[str, Tenso
     return {k: v.cpu() for k, v in num.items()} | {"den": den.cpu()}
 
 
-def specific(cfg: Cfg, b: dict[str, Tensor]) -> Tensor:
+def specific(cfg: Cfg, b: dict[str, Tensor], floor: dict[str, Tensor] | None = None) -> Tensor:
     """The paper's test, nu_r < 0.5 and nu_eps < 0.2 (Minder et al. glossary, §3.1), on the latents its App. E.2 keeps
     ("we filter out latents with negative beta base values"): both base betas, error and reconstruction, at least 0, as
     archive/experiments/crosscoder_replicate/run.py applies it on Gemma (cell P2.70; scores before 2026-11-23 lacked it). A nan
-    beta or ratio (a latent that never fired on the latent-scaling tokens) fails every comparison."""
-    kept = (b["eps_base"] >= 0) & (b["r_base"] >= 0)
+    beta or ratio (a latent that never fired on the latent-scaling tokens) fails every comparison. `floor` (E311's
+    floored rule, `beta_floor`) keeps a latent unless a base beta is below minus its floor; None is the literal rule."""
+    if floor is None:
+        kept = (b["eps_base"] >= 0) & (b["r_base"] >= 0)
+    else:  # a tie at exactly -floor is kept, as a tie at 0 is under the literal rule
+        kept = (b["eps_base"] >= -floor["eps_base"]) & (b["r_base"] >= -floor["r_base"])
     return kept & (b["nu_r"] < cfg.nu_r) & (b["nu_eps"] < cfg.nu_eps)
+
+
+FLOOR_KEYS = ("eps_base", "r_base")
+
+
+def fold_floor(fold_betas: Tensor, fold_fired: Tensor, multiple: float, min_fired: int) -> tuple[Tensor, Tensor, Tensor]:
+    """E311's floored exclusion, per latent, from one base beta measured on K disjoint folds of whole windows
+    ((K, n) betas, (K, n) firing-token counts). The full-sample beta is about the mean of the K fold betas, so its sd is
+    sd(fold betas) / sqrt(K) (unbiased sd, K - 1 degrees of freedom); floor = multiple x that sd. A latent whose sd is
+    undefined (a fold with fewer than `min_fired` firing tokens, or a non-finite fold beta) or zero gets floor 0: the
+    literal App. E.2 rule (beta >= 0) for that latent. Returns (floor, sd, defined), each (n,)."""
+    K = fold_betas.shape[0]
+    defined = (fold_fired >= min_fired).all(0) & torch.isfinite(fold_betas).all(0)
+    sd = torch.where(defined, fold_betas.double().std(0, unbiased=True) / math.sqrt(K), torch.zeros(()).double())
+    sd = sd.nan_to_num(0.0)
+    return multiple * sd, sd, defined
+
+
+@torch.no_grad()
+def fired_counts(ae: AE, h: Tensor, J: Tensor, size: int = 4096) -> Tensor:
+    """(len(J),) tokens of raw (n, 2, d) on which each latent of J fires (inference threshold on)."""
+    out = torch.zeros(len(J), dtype=torch.long)
+    for x in split(h, size):
+        out += (ae.encode(x.to(ae.decoder.weight.device))[:, J.to(ae.decoder.weight.device)] > 0).sum(0).cpu()
+    return out
+
+
+def beta_floor(ae: AE, h_ls: Tensor, folds: Tensor, J: Tensor, multiple: float, min_fired: int) -> dict[str, Tensor]:
+    """`fold_floor` for both base betas of latents J, folds (len(h_ls),) holding each token's fold 0..K-1 (whole
+    windows per fold). Every fold's betas use `beta_sums`, as the full sample does."""
+    K, folds = int(folds.max()) + 1, folds.to(h_ls.device)
+    sums = [beta_sums(ae, h_ls[folds == k], J) for k in range(K)]
+    fired = torch.stack([fired_counts(ae, h_ls[folds == k], J) for k in range(K)])
+    out: dict[str, Tensor] = {}
+    for key in FLOOR_KEYS:
+        fb = torch.stack([s[key] / s["den"] for s in sums])
+        out[key], out[f"sd_{key}"], out[f"defined_{key}"] = fold_floor(fb, fired, multiple, min_fired)
+    return out
 
 
 @torch.no_grad()
@@ -386,12 +428,15 @@ def batches(sizes: list[int], make: Callable[[int], Tensor], B: int, start: int)
             buf = buf[B:]
 
 
-def score(cfg: Cfg, ae: AE, ev: dict[str, Any], h_ls: Tensor, h_task: Tensor,
-          plant: Tensor | None = None) -> tuple[dict[str, Any], dict[str, Any]]:  # fmt: skip
+def score(cfg: Cfg, ae: AE, ev: dict[str, Any], h_ls: Tensor, h_task: Tensor, plant: Tensor | None = None,
+          floor: tuple[Tensor, float] | None = None) -> tuple[dict[str, Any], dict[str, Any]]:  # fmt: skip
     """E203's numbers for one crosscoder (its Job.score), `ev` being `fve` on the validation mix, computed once by the
     caller: the groups at N and at the wide N, the parts, d in both forms (`d_forms`), the specific part, shared /
     (shared + specific), the lead latent (the alive one carrying most of the change on `h_task`) with its latent-scaling
-    ratios, and the best cosine of a specific latent's decoder difference with `plant`."""
+    ratios and four betas, and the best cosine of a specific latent's decoder difference with `plant`. With `floor` =
+    (each h_ls token's fold, multiple) (E311), the same reading again under the floored exclusion (`beta_floor`) goes
+    under rec["floored"] (its lead also holds the two base betas' sd and floor), a summary under rec["beta_floor"];
+    the top level stays the literal rule (App. E.2)."""
     rn, ev = relative_norm(ae), dict(ev)
     alive = ev.pop("fired") >= cfg.alive_min
     ch = carried(ae, h_task)
@@ -399,13 +444,36 @@ def score(cfg: Cfg, ae: AE, ev: dict[str, Any], h_ls: Tensor, h_task: Tensor,
     lead = int(torch.where(alive, s.nan_to_num(-math.inf), -math.inf).argmax()) if ch["energy"] > 0 else -1
     J = torch.nonzero(top(rn, cfg.top_n_wide) | (torch.arange(len(rn)) == lead)).squeeze(1)
     b = betas(ae, h_ls, J)
-    spec = torch.zeros(len(rn), dtype=torch.bool)
-    spec[J] = specific(cfg, b)
     rec: dict[str, Any] = {**ev, **ch, "theta": float(ae.threshold), "dead": float((~alive).float().mean())}
+    read = _reading(cfg, ae, rn, alive, s, ch["bias"], J, b, lead, plant, None)
+    rec |= read.pop("_rec")
+    large = {"relative_norm": rn.half(), "alive": alive, "s": s.float(), "scaled": J, "groups": read["groups"],
+             "betas": {k: v.float() for k, v in b.items()}}  # fmt: skip
+    if floor is not None:
+        fl = beta_floor(ae, h_ls, floor[0], J, floor[1], cfg.alive_min)
+        fr = _reading(cfg, ae, rn, alive, s, ch["bias"], J, b, lead, plant, fl)
+        rec["floored"], large["floored_groups"], large["floor"] = fr["_rec"], fr["groups"], fl
+        rec["beta_floor"] = {"multiple": floor[1], "folds": int(floor[0].max()) + 1, "latents": len(J)} | {
+            f"{w}_{k}": float(v) for k in FLOOR_KEYS for w, v in (("undefined", (~fl[f"defined_{k}"]).sum()),
+                                                                   ("zero_sd", (fl[f"sd_{k}"] == 0).sum()),
+                                                                   ("median_sd", fl[f"sd_{k}"].median()))}  # fmt: skip
+        if lead >= 0:
+            i = int((J == lead).nonzero())
+            rec["floored"]["lead"] |= {f"{w}_{k}": float(fl[f"{p}{k}"][i]) for k in FLOOR_KEYS for w, p in (("sd", "sd_"), ("floor", ""))}
+            rec["floored"]["lead"] |= {f"defined_{k}": bool(fl[f"defined_{k}"][i]) for k in FLOOR_KEYS}
+    return rec, large
+
+
+def _reading(cfg: Cfg, ae: AE, rn: Tensor, alive: Tensor, s: Tensor, bias: float, J: Tensor, b: dict[str, Tensor],
+             lead: int, plant: Tensor | None, floor: dict[str, Any] | None) -> dict[str, Any]:  # fmt: skip
+    """`score`'s groups, parts, d forms, lead record and planted cosine under one exclusion rule (`specific`'s floor)."""
+    spec = torch.zeros(len(rn), dtype=torch.bool)
+    spec[J] = specific(cfg, b, None if floor is None else {k: floor[k].to(b[k].dtype) for k in FLOOR_KEYS})
+    rec: dict[str, Any] = {}
     g: dict[str, dict[str, Tensor]] = {}
     for tag, n in (("", cfg.top_n), ("_wide", cfg.top_n_wide)):
         g[tag] = groups(cfg, rn, alive, top(rn, n), spec)
-        p = parts(s, ch["bias"], g[tag])
+        p = parts(s, bias, g[tag])
         both = p["shared"] + p["ft_specific"]
         rec |= {f"parts{tag}": p, f"counts{tag}": {k: int(m.sum()) for k, m in g[tag].items()},
                 f"shared_frac{tag}": p["shared"] / both if both else math.nan}  # fmt: skip
@@ -415,14 +483,13 @@ def score(cfg: Cfg, ae: AE, ev: dict[str, Any], h_ls: Tensor, h_task: Tensor,
         i = int((J == lead).nonzero())
         rec["lead"] = {"latent": lead, "s": float(s[lead]), "rn": float(rn[lead]), "rank": 1 + int((rn > rn[lead]).sum()),
                        "nu_r": float(b["nu_r"][i]), "nu_eps": float(b["nu_eps"][i]), "specific": bool(g[""]["ft_specific"][lead])}  # fmt: skip
+        rec["lead"] |= {f"beta_{k}": float(b[k][i]) for k in BETA_KEYS}
     if plant is not None:
         Wr, _ = raw(ae)
         dd = (Wr[1] - Wr[0])[g[""]["ft_specific"].to(Wr.device)]
         cos = torch.nn.functional.cosine_similarity(dd, plant[None].to(dd.device), dim=1)
         rec["cos_planted_best"] = float(cos.max()) if len(cos) else math.nan
-    large = {"relative_norm": rn.half(), "alive": alive, "s": s.float(), "scaled": J, "groups": g[""],
-             "betas": {k: v.float() for k, v in b.items()}}  # fmt: skip
-    return rec, large
+    return {"_rec": rec, "groups": g[""]}
 
 
 # ----------------------------------------------------------------------------- E235 (cell P2.49)

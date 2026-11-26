@@ -147,8 +147,10 @@ class Sides:
     """The base net, the Pile and pool rows, the task windows; one crosscoder per side (`run_side`)."""
 
     def __init__(self, cfg: CC.Cfg, layer: int, data_seed: int, reads: dict[str, Any], kv_tasks: dict[str, Any],
-                 tf32: bool, log: Callable[[str], None]) -> None:  # fmt: skip
+                 tf32: bool, floor_multiple: float, floor_folds: int, log: Callable[[str], None]) -> None:  # fmt: skip
         self.cfg, self.layer, self.seed, self.reads, self.kv, self.log = cfg, layer, data_seed, reads, kv_tasks, log
+        # every score reads the literal and the floored exclusion (`crosscoder.beta_floor`, K folds of whole windows)
+        self.floor_multiple, self.floor_folds = floor_multiple, floor_folds
         torch.backends.cuda.matmul.allow_tf32 = tf32
         self.net = ST.Net("cuda")
         self.pool = rows("train", cfg.pool_start, cfg.pool_rows)
@@ -219,6 +221,10 @@ class Sides:
 
     def chunk(self, side: Side, e: int, c: int, n_win: int) -> Tensor:
         """One chunk's (m, 2, d) raw pairs: its Pile rows and n_win task windows, shuffled together (E203's seeds)."""
+        return self.chunk_ids(side, e, c, n_win)[0]
+
+    def chunk_ids(self, side: Side, e: int, c: int, n_win: int) -> tuple[Tensor, Tensor]:
+        """`chunk` and (m,) the window (Pile row or task window) each token came from, in the same shuffled order."""
         gen = torch.Generator().manual_seed(self.seed * 100_003 + e * 1_009 + c)
         C, P = self.cfg.chunk_rows, self.pile(self.text(side)["pile_rows"])
         prow, tw = P[c * C :][:C], self.task_windows(side, c, n_win, gen)
@@ -227,7 +233,16 @@ class Sides:
         pm = side.plant.mask(prow.shape[0], prow.shape[1], half, False, key) if side.plant else None
         tm = side.plant.mask(tw.shape[0], tw.shape[1], half, True, key + 1) if side.plant else None
         h = torch.cat([self.pair(prow, side, pm), self.pair(tw, side, tm)])
-        return h[torch.randperm(len(h), generator=gen).to(h.device)]
+        wid = torch.cat([torch.arange(len(prow)).repeat_interleave(prow.shape[1] - 1),
+                         len(prow) + torch.arange(len(tw)).repeat_interleave(tw.shape[1] - 1)])  # fmt: skip
+        perm = torch.randperm(len(h), generator=gen)
+        return h[perm.to(h.device)], wid[perm]
+
+    def folds(self, wid: Tensor) -> Tensor:
+        """Each token's fold 0..K-1 for the floored exclusion: whole windows, assigned to folds in a seeded random order."""
+        u, inv = wid.unique(return_inverse=True)
+        fold_of = torch.randperm(len(u), generator=torch.Generator().manual_seed(self.seed)) % self.floor_folds
+        return fold_of[inv]
 
     def stream(self, side: Side, start: int) -> Iterator[Tensor]:
         """(B, 2, d) batches from step `start` on: whole chunks before it are skipped without being built."""
@@ -243,13 +258,14 @@ class Sides:
             yield self.pair(r, side, None)
         yield h_read
 
-    def score(self, ae: Any, side: Side, h_ls: Tensor, h_read: Tensor, step: int) -> tuple[dict[str, Any], dict[str, Any]]:
+    def score(self, ae: Any, side: Side, h_ls: Tensor, h_read: Tensor, step: int, folds: Tensor) -> tuple[dict[str, Any], dict[str, Any]]:
         """`crosscoder.score` plus the step, the tokens and the largest relative-norm deviation from 0.5 of an alive
         latent (the self control's bar)."""
         cfg = self.cfg
         ev = CC.fve(ae, self.val_chunks(side, h_read))
         alive = ev["fired"] >= cfg.alive_min
-        rec, large = CC.score(cfg, ae, ev, h_ls, h_read, side.plant.vec if side.plant is not None else None)
+        plant = side.plant.vec if side.plant is not None else None
+        rec, large = CC.score(cfg, ae, ev, h_ls, h_read, plant, (folds, self.floor_multiple))
         rn = CC.relative_norm(ae)
         rec |= {"step": step, "tokens": step * cfg.batch,
                 "max_rn_dev_alive": float((rn[alive] - 0.5).abs().max()) if bool(alive.any()) else math.nan}  # fmt: skip
@@ -261,9 +277,9 @@ class Sides:
         "curve" on each training-curve record and "snapshot" on each snapshot score; it raises to stop the job."""
         t0, cfg = time.time(), self.cfg
         e, c, _, n_win = self.plan(side)[0]
-        h0 = self.chunk(side, e, c, n_win)
+        h0, wid = self.chunk_ids(side, e, c, n_win)
         mean, std = CC.normaliser(h0)
-        h_ls, h_read = h0[: cfg.ls_tokens].clone(), self.read_pairs(side)
+        h_ls, h_read, folds = h0[: cfg.ls_tokens].clone(), self.read_pairs(side), self.folds(wid[: cfg.ls_tokens])
         del h0
         tr = CC.trainer(cfg, mean, std, side.seed)
         ck, start, snaps, curve = large_dir / "ckpt" / f"{side.key}.pt", 0, [], []
@@ -280,7 +296,7 @@ class Sides:
                 checks("curve", r | {"minutes": (time.time() - t0) / 60})
             n_curve[0] = len(curve)
             if step in marks:
-                snaps.append(self.score(tr.ae, side, h_ls, h_read, step)[0])
+                snaps.append(self.score(tr.ae, side, h_ls, h_read, step, folds)[0])
                 self.show(side, snaps[-1])
                 checks("snapshot", snaps[-1])
             if step % cfg.ckpt_every == 0 or step in marks or step == stop_after:
@@ -291,7 +307,7 @@ class Sides:
                 hard_exit(3)
 
         CC.train(tr, self.stream(side, start), start, cfg.steps, cfg.log_every, curve, self.log, hook)
-        rec, large = self.score(tr.ae, side, h_ls, h_read, cfg.steps)
+        rec, large = self.score(tr.ae, side, h_ls, h_read, cfg.steps, folds)
         if save_dec:
             large["W_dec"] = tr.ae.decoder.weight.detach().half().cpu()
         large_dir.mkdir(parents=True, exist_ok=True)
@@ -304,8 +320,11 @@ class Sides:
 
     def show(self, side: Side, r: dict[str, Any]) -> None:
         keys = ("tokens", "fve_base", "fve_ft", "fve_change", "dead", "d_authors", "d_alt", "specific", "shared_frac",
-                "d_authors_wide", "parts", "counts", "lead", "cos_planted_best", "max_rn_dev_alive", "minutes")  # fmt: skip
-        self.log(f"[side {side.key}] {json.dumps({k: r[k] for k in keys if k in r}, default=float)}")
+                "d_authors_wide", "parts", "counts", "lead", "cos_planted_best", "max_rn_dev_alive", "beta_floor", "minutes")  # fmt: skip
+        self.log(f"[side {side.key}] literal {json.dumps({k: r[k] for k in keys if k in r}, default=float)}")
+        if "floored" in r:
+            fl = r["floored"]
+            self.log(f"[side {side.key}] floored {json.dumps({k: fl[k] for k in keys if k in fl}, default=float)}")
 
     # ------------------------------------------------------------------------- the sides
 
