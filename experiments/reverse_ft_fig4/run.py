@@ -351,26 +351,43 @@ def stage0(net: ST.Net, c: Config) -> None:
 # ---- summary (no GPU) -----------------------------------------------------------------------------------------------
 
 
+NOTE = RESULTS / "2026-11-25_note_dvoid.md"  # dated note beside the filed predictions (redteam SHOULD 1-3)
+
+
+def void_rule() -> str:
+    """The note's machine line: "every item" (D under D_void voids any item's reading, not only a null's)."""
+    lines = [ln.split(":", 1)[1].strip() for ln in NOTE.read_text().splitlines() if ln.startswith("void_rule:")]
+    if lines != ["every item"]:
+        raise SystemExit(f"STOP: {NOTE.name} has no 'void_rule: every item' line")
+    return lines[0]
+
+
 def stage_summary(c: Config) -> None:
     done = {n: json.loads(item_path(n).read_text()) for n in item_names(c) if item_path(n).is_file()}
-    drop = lambda r: {k: r[k] for k in ("D", "norm", "t_half", "t_tenth", "end", "steps")}
+    s0 = json.loads(STAGE0.read_text())
+    void, rule = s0["kappa_floor"]["D_void"], void_rule()
+
+    def drop(r: dict[str, Any]) -> dict[str, Any]:
+        v = r["D"] < void  # the note's rule, every item: a reading from noise is not drawn
+        return {k: r[k] for k in ("D", "norm", "end", "steps")} | {"void": v} | {k: None if v else r[k] for k in ("t_half", "t_tenth")}
+
     groups: dict[str, Any] = {}
     for s in sorted(c.fig4):
         g = groups.setdefault(s.rsplit("_s", 1)[0], {"task": c.fig4[s]["task"], "states": {}})
         g["states"][s] = {"state": drop(done[s]) if s in done else None, "null": drop(done[f"{s}~null"]) if f"{s}~null" in done else None}
     gains = {n: drop(r) for n, r in done.items() if n.startswith("gain/")}
     missing = [n for n in item_names(c) if n not in done]
-    s0 = json.loads(STAGE0.read_text())
-    void = s0["kappa_floor"]["D_void"]
-    nulls = [r for n, r in done.items() if n.endswith("~null")]
-    out = {"groups": groups, "gain": gains, "missing": missing, "D_void": void, "null_void": sum(r["D"] < void for r in nulls),
-           "censored": {k: sum(r["t_half"] == "censored" for n, r in done.items() if r["kind"] == k) for k in ("state", "null", "gain")},
+    kinds = ("state", "null", "gain")
+    out = {"groups": groups, "gain": gains, "missing": missing, "kappa_floor": s0["kappa_floor"]["batched_vs_single"], "D_void": void,
+           "void_rule": rule, "void": {k: sum(r["D"] < void for r in done.values() if r["kind"] == k) for k in kinds},
+           "censored": {k: sum(r["t_half"] == "censored" and r["D"] >= void for r in done.values() if r["kind"] == k) for k in kinds},
            "gate": s0["planted"]["gate"], "planted": {"wrapper": drop(s0["planted"]["wrapper"]), "partners": {k: drop(v) for k, v in s0["planted"]["partners"].items()}},
            "pile_ce": {k: drop(v) for k, v in s0.get("pile_ce", {}).items()}}  # fmt: skip
     write_stage(RESULTS / "summary.json", out)
     for name, g in groups.items():
         log(f"[{name}] " + " | ".join(f"{s}: t_half {v['state'] and v['state']['t_half']} D {v['state'] and v['state']['D']} null t_half {v['null'] and v['null']['t_half']} D {v['null'] and v['null']['D']}" for s, v in g["states"].items()))
-    log(f"[summary] {len(done)} of {len(item_names(c))} items; missing {missing}; censored {out['censored']}; nulls under D_void {out['null_void']}")
+    log(f"[summary] {len(done)} of {len(item_names(c))} items; missing {missing}; censored {out['censored']}; measured kappa floor "
+        f"{out['kappa_floor']:.3g} -> D_void {void:.3g}; void ({rule}) {out['void']}")  # fmt: skip
     log("STAGE summary DONE")
 
 

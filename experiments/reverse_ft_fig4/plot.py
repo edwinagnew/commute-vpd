@@ -82,13 +82,17 @@ def main() -> None:
     bot.set_ylabel("D = KL(M || F) at the read, nats")
     bot.set_xticks(range(len(names)), names, rotation=60, ha="right", fontsize=8)
     ctl_d.set_xticks(range(3), [c[0] for c in ctl_items], fontsize=8)
-    top.set_title(f"Reverse fine-tune per Fig 4 task: states (blue) beside their rotated nulls (grey); open = censored at {CAP}; {void} void", fontsize=9, color=INK)
+    top.set_title(f"Reverse fine-tune per Fig 4 task: states (blue) beside their norm-matched rotated nulls (grey); open = censored at {CAP}; {void} void", fontsize=9, color=INK)
     ctl.set_title(f"Controls: gate {S['gate']['reading']}", fontsize=9, color=INK)
     for ax in axes.flat:
         ax.grid(axis="y", color="#e5e5e5", lw=0.6)
         ax.spines[["top", "right"]].set_visible(False)
-    fig.text(0.01, 0.005, "C3 (E55): on the c3/* states this port undid the old-by-construction rank-1 map more slowly than the new cipher (13.3 vs 10.1 steps).", fontsize=8, color="#666666")
-    fig.tight_layout(rect=(0, 0.03, 1, 1))
+    note = ("Each null is the state's update turned by a random rotation per matrix: matched on per-matrix norm (spectrum), not on D; "
+            "t_half rises as D shrinks (C3 ladder), so a null's longer t_half is partly a size effect. D is drawn below each pair.\n"
+            "C3 (E55): on the c3/* states this port undid the old-by-construction rank-1 map more slowly than the new cipher (13.3 vs 10.1 steps). "
+            f"Items with D under D_void {S['D_void']:.2g} (10 x the measured kappa floor) are void and not drawn.")  # fmt: skip
+    fig.text(0.01, 0.005, note, fontsize=7.5, color="#666666")
+    fig.tight_layout(rect=(0, 0.05, 1, 1))
     out = HERE / "figures" / ("sketch_p2-84.png" if a.stub else "reverse_ft_fig4.png")
     out.parent.mkdir(exist_ok=True)
     fig.savefig(out, dpi=150)
