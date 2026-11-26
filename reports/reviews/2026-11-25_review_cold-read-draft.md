@@ -141,3 +141,6 @@ All four are applied. One new MUST: the sec7 evidence sentence says the three ra
 
 ## Re-check of MUSTs 5-9 on local paper commit 3b4a317 (11-25 13:53)
 Pass, no MUSTs. I recomputed the eight-task tau-b values (0.197, 0.039, 0.512, 0.118) and they match. MUST 7 holds at all three featurizations (every path uses stand_in.write_change over every position). SHOULD: the stated bar (0.57) ignores ties in the tiers. The exact tie-aware permutation test puts effective rank at p = 0.061, right on the 95th percentile. Note: ~/commute-data/agents/writeup-lead/note-2026-11-25-redteam-musts59-recheck.md.
+
+## v2 97973a4 (11-25 14:36)
+My re-check fixes landed correctly in 1ce9ac2. One new MUST: main.tex:109's "(to our knowledge the first such test)" is contestable by Jain et al., who set capability relevance by construction, use a Scr.+FT baseline and a no-Twist TinyStories model. The claim is the user's wording, so it went to whip-lead first. Pass 4 SHOULDs on VPD §7.5 and Raghu are still unapplied. Note: ~/commute-data/agents/whip-lead/note-2026-11-25-redteam-first-claim.md.
