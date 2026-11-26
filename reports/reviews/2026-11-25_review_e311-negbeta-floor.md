@@ -68,3 +68,24 @@ whip-lead: a pass with the floor counts under the done_when's second branch ("mi
 because the filter acts on noise; passes with it floored"); the user's done_when is unchanged. baseline-lead: all six
 conditions and the departure row went to the code writer; the literal reading is reported beside the floored one.
 The filed rule comes back to me before any pod.
+
+## Re-check of the filed rule (main ca7801c8, ~16:35): passes, run 1 may start
+
+Read: `predictions.json` (`gate_rule` floored, `floor_multiple` 3, `floor_folds` 10, `floor_source`, the 0b notes),
+`crosscoder.py` `fold_floor`/`beta_floor`/`specific`, `crosscoder_sides.py` `folds` and `score`, appendix row 23.
+
+| condition | filed | verdict |
+|---|---|---|
+| MUST 1 wording | floored pass = second done_when branch (appendix row 23, predictions "pass rule") | met |
+| MUST 2 pooled / K-fold sd | K = 10, σ̂ = sd(fold β)/√10, 9 df, m = 3; t(9) tail at 3 = 0.0075 per β, ≤ 0.015 per latent (checked) | met |
+| MUST 3 window split | `folds()`: unique window ids, seeded permutation, mod K | met |
+| SHOULD 4 edge cases | σ̂ = 0, fold under `alive_min` 10 tokens, or a non-finite fold β → literal rule; tie at −m·σ̂ kept; both betas must clear | met (tests in `tests/test_crosscoder_floor.py`, not run by me) |
+| SHOULD 5 both filters on the 48 | literal at top, `floored` below, incl. d_authors | met |
+| SHOULD 6 lead's betas + sd | logged | met |
+| SHOULD 7 b/c under the literal rule | in the 0b note | met |
+
+One residual point, for reading the result, not for the filing. The floor protects against a base β whose sign is
+sampling noise. It does not protect against a small negative β that is real but negligible, e.g. ν_r −0.0035 resolved
+at many firing tokens. If the lead of b or c is dropped under the floored rule, report its ν beside: a drop with
+|ν| < 0.01 reads as "dropped by a resolved but negligible negative base β", not as "the crosscoder found no
+fine-tune-specific latent".
