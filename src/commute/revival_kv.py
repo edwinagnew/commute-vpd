@@ -143,18 +143,20 @@ def prune_readings(net: Net, ref: Ref, dW: DW | None, ks: Sequence[int], n_rando
 
 
 def reverse_curve(net: Net, ref: Ref, dW: DW, w0_net: nn.Module, train: Tensor, cfg: Any,
-                  deadline: float | None = None) -> dict[str, Any]:  # fmt: skip
-    """kappa after every step of `finetune_to_reference` from W0 + delta-W, until it reaches half its start or the cap.
-    `end` is "half", "cap" or "deadline" (a deadline exit is not a reading). The model is W0 again afterwards."""
+                  deadline: float | None = None, stop_frac: float = 0.5, loss_of: Any = None) -> dict[str, Any]:  # fmt: skip
+    """kappa after every step of `finetune_to_reference` from W0 + delta-W, until it reaches stop_frac of its start
+    (C3: a half) or the cap. `end` is "half" (stop_frac reached, whatever stop_frac is), "cap" or "deadline" (a
+    deadline exit is not a reading). With `loss_of` (P2.84, 2026-11-25) the loop is `finetune_rows` on that loss
+    instead of KL to `w0_net`. The model is W0 again afterwards."""
     from commute.data import Windows
-    from commute.finetune import StopTraining, finetune_to_reference
+    from commute.finetune import StopTraining, finetune_rows, finetune_to_reference
 
     curve, end = [], "cap"
 
     def on_step(step: int, _params: Any) -> None:
         nonlocal end
         curve.append(kappa(net, ref))
-        if curve[-1] <= curve[0] / 2:
+        if curve[-1] <= curve[0] * stop_frac:
             end = "half"
             raise StopTraining
         if deadline is not None and time.monotonic() > deadline:
@@ -165,8 +167,10 @@ def reverse_curve(net: Net, ref: Ref, dW: DW, w0_net: nn.Module, train: Tensor, 
     w = Windows(train, torch.zeros(n), torch.zeros(n, dtype=torch.long), torch.zeros(n, dtype=torch.long), ref.half)
     with net.at(dW):
         curve.append(kappa(net, ref))
-        if curve[0] > 0:
+        if curve[0] > 0 and loss_of is None:
             finetune_to_reference(net.model, w0_net, w, cfg, net.device, on_step, log=lambda _m: None)
+        elif curve[0] > 0:
+            finetune_rows(net.model, w, cfg, loss_of, net.device, on_step, log=lambda _m: None)
     return {"curve": curve, "end": end, "t_half": half_life(curve) if end != "deadline" else None}
 
 
@@ -297,6 +301,43 @@ def half_life(curve: Sequence[float]) -> float | None:
             a, b = curve[i - 1], curve[i]
             return i - 1 + (a - t) / (a - b) if a != b else float(i)
     return None
+
+
+def crossing(curve: Sequence[float], frac: float) -> float | None:
+    """`half_life` at any fraction: the step at which kappa first falls to frac x curve[0], linear between the two
+    steps that straddle it; None if it never does (censored) or curve[0] <= 0 (P2.84: frac 0.1, saved only)."""
+    if not curve or curve[0] <= 0:
+        return None
+    t = curve[0] * frac
+    for i in range(1, len(curve)):
+        if curve[i] <= t:
+            a, b = curve[i - 1], curve[i]
+            return i - 1 + (a - t) / (a - b) if a != b else float(i)
+    return None
+
+
+Reading = float | str | None  # a step count, "censored" (never crossed within the cap), or None (void: D <= 0)
+
+
+def censored_as(v: Reading, cap: int) -> float | None:
+    """A reading as a number: "censored" counts as the cap (a lower bound, not missing); void stays None."""
+    return float(cap) if v == "censored" else None if v is None else float(v)
+
+
+def pair_gate(wrapper: Reading, partners: Sequence[Reading], cap: int, floor: float, mult: float) -> dict[str, Any]:
+    """P2.84's gate (C3's planted pair, rule as C3's ladder `pole_gap`): gap = mean(partners) - wrapper, noise =
+    max(sd(uncensored partners), floor). "void" (no call) if the wrapper is void or fewer than 2 partners are
+    non-void; "pass" iff gap >= mult x noise; else "fail". Censored values count as the cap in the mean (so the gap is
+    a lower bound) and are left out of the sd (a cap carries no spread: one censored partner at 1000 beside two at
+    ~10 made sd ~570 and failed a clear pass, CPU test 2026-11-25); under 2 uncensored partners the floor is the
+    noise. A censored wrapper fails unless every partner is censored too (gap 0)."""
+    w, ps = censored_as(wrapper, cap), [x for x in (censored_as(p, cap) for p in partners) if x is not None]
+    if w is None or len(ps) < 2:
+        return {"reading": "void", "gap": math.nan, "noise": math.nan, "n": len(ps)}
+    free = [float(p) for p in partners if p is not None and p != "censored"]
+    noise = max(sd(free), floor) if len(free) >= 2 else floor
+    gap = float(np.mean(ps)) - w
+    return {"reading": "pass" if gap >= mult * noise else "fail", "gap": gap, "noise": noise, "n": len(ps)}
 
 
 def planted_pass(top13: Sequence[int], planted: Sequence[int], R: float, ceiling: float, found_min: int, frac: float,

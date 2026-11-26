@@ -1,8 +1,11 @@
 # P2.84 spec: Jain et al.'s reverse fine-tuning on Fig 4's 48 states
 
 Cell P2.84 (due 11-26, 2 runs): one per-task panel for Fig 6, Jain et al.'s reverse fine-tune read on all 48 states,
-with a passing positive control and a random-update null. This is the method spec only. No code is written until
-redteam-lead has checked it. Nothing here is filed yet.
+with a passing positive control and a random-update null. E312. Checked by redteam
+(`reports/reviews/2026-11-25_review_p2-84-spec.md`); **the Amendment at the end replaces § 3's positive control and
+settles the review's points; where it and § 3 disagree, the Amendment holds.** Code `experiments/reverse_ft_fig4/`,
+filed rules `experiments/reverse_ft_fig4/results/predictions.json`. Jain et al. is the 2023 preprint (ICLR 2024),
+cited as 2023 as in `refs.bib`.
 
 We take each fine-tuned state and train it back toward the original model's outputs on the fine-tune's own inputs, and
 count how many steps it takes to undo half of the change. Jain et al. read a quick return as a sign that the old
@@ -162,7 +165,7 @@ job took ~5 min). Every C3 reverse halved within 9-19 steps (`run.json` curve le
 Nothing. No code exists for P2.84. The per-step time on the 96-key windows and the e53 text, the load times, and the
 nulls' D and t_half are all unmeasured.
 
-## Appendix A. Departures from Jain et al. 2024 (and from our C1, C1b and C3)
+## Appendix A. Departures from Jain et al. 2023 (and from our C1, C1b and C3)
 
 | # | Jain et al. (line) | Here | Reason |
 |---|---|---|---|
@@ -179,6 +182,10 @@ nulls' D and t_half are all unmeasured.
 | 11 | C1: steps to 95% count-a accuracy against a NEVER-prior scratch, guessed 0.5 × scratch cut-off (`revival.py:261-268`) | no cut-off; per-task values beside a null | C1's guessed cut-off failed while its raw readings separated (TRIED E55 C1) |
 | 12 | C1b: cut-off from calibration seeds; passed only where the label was the task's identity (TRIED E55 C1b) | no labels, no calibration split | the panel is descriptive; C1b's pass could not separate methods |
 | 13 | C3: the same port on 32 states with pruning beside it, 8 seeds, placed on the rank-1-to-cipher axis | 48 states, 3 seeds, no axis, no pruning, random null and gain-only control added | the cell; C3's axis rules are not reused |
+| 14 | code: the paper names no code release for its PCFG or reFT runs; its TinyStories code "is based on" karpathy/llama2.c (l. 1630) | our port, `revival_kv.reverse_curve` on `finetune.finetune_to_reference` | the project rule is the authors' pinned code (user, 2026-11-17), but there is none to pin, their testbed is minGPT on PCFG, and reFT is plain fine-tuning on the 67M's own loop; the port already ran on these states in C3 |
+| 15 | reFT runs to the target accuracy | run on to kappa ≤ 0.1 D; t_half read from the same curve, t_tenth saved, never promoted | review SHOULD; the curve prefix to D/2 is the one C3 read |
+| 16 | reFT batch as the fine-tune's (l. 1249) | batch = each task's forward batch: 32 (kv, E62), 8 (E53) | the same rule; § 2's "batch 32" holds for 14 of 16 tasks |
+| 17 | reFT on pretraining data with cross-entropy (l. 270-272) | secondary only: the 3 probe states also reversed with next-token cross-entropy on Pile train rows 0-4095, read at the same position | review SHOULD; distillation on the task's windows stays the primary |
 
 ## Appendix B. Phase B outline (not started)
 
@@ -188,3 +195,56 @@ the reverse through `revival_kv.reverse_curve` with `finetune.ReferenceConfig`, 
 `weightwatch/run.py:391-400`, and the gain-only fold from E290's gain files. Stages: 0 (zero, identity,
 reproduction, 3-state null probe) → 1 (control; stop on a fail) → 2 (48 + nulls, resumable per state). There is one
 plot, per task: three dots per state, its null beside it, and the control on the same axis.
+
+(As built, Appendix B differs: windows load from the filed paths and `commute.windows.read_rows` for E53, not E136's
+Job; the null uses `untrained.haar_orthogonal`; stages are 0, items (sharded), summary. See the Amendment.)
+
+## Amendment, 2026-11-25, after the review (the lead's decisions; E312)
+
+**MUST 1: the gate is C3's planted pair.** The gate is no longer gain-only against full fine-tunes. It is C3's
+planted 13-neuron wrapper against a planted non-wrapper at the same D.
+- The wrapper is rebuilt from `open_pair_instruments/results/measure.json` `.planted` (units, w, alpha). Those were
+  saved, so nothing is retrained ($0, seconds).
+- C3 never built a non-wrapper partner, so one is built here. Each of c3/cipher_s0-s2 has its δW scaled by one factor,
+  found by C3's bisection (`revival_kv.fit_alpha`), until its D equals the wrapper's (4.2068 nats). The cipher is new
+  by construction. Both read on C3's windows (the rank-1 file's; the tokens are identical across maps).
+- Rule, `revival_kv.pair_gate` (C3 ladder's pole rule): gap = mean t_half(scaled ciphers) − t_half(wrapper), noise =
+  max(sd, 1 step). Pass iff gap ≥ 3 × noise. Fail or void stops the job before any of the 48 states.
+- Expected: wrapper 3.97 steps (C3), which also counts as a reproduction within 1 step; scaled ciphers 10-14 steps.
+  The gain-only states (E290 FFN-gain, 15 states) are shown descriptively beside their e58 tasks, with no rule.
+
+**MUST 2: void, censored and a zero sd**, as filed and as run through `tests/test_revival_kv.py`.
+- Void (D ≤ 0) gives None.
+- A wrapper that is void, or fewer than 2 non-void partners, gives "void": no call, and the job stops.
+- Censored (never halves within 1000 steps) counts as 1000 in the mean: a lower bound, never missing. It is left out
+  of the sd, because a cap carries no spread. The CPU test of the first draft caught one censored partner at 1000
+  beside two at ~10. That made the sd ~570 and failed a clear pass.
+- With under 2 uncensored partners, or an sd of 0, the 1-step floor is the noise.
+- A censored wrapper fails, and fails also when all partners are censored (gap 0).
+- One void partner leaves 2, which is enough.
+- All partners censored with an uncensored wrapper passes (gap ~996 against 3).
+
+**SHOULDs, all adopted.**
+- **Null and D.** The null is primary, spectrum-kept: a per-matrix Haar rotation on the output side, from
+  `untrained.haar_orthogonal`, with one seeded generator per state. D is plotted under every state/null pair, on the
+  same x. Nulls under stage 0's D_void (10 × the batched-against-single κ floor) are counted.
+- **Caption.** The figure carries C3's wrong-way result.
+- **Code.** Appendix A row 14.
+- **Targets and readings.** Distillation stays the primary target. The 3 probe states are also read under Pile
+  cross-entropy in stage 0 (row 17). t_half is the reading, and t_tenth (0.1 D) is saved, never promoted (row 15).
+- **Fold check.** Stage 0 compares the gain fold with E290's hooks (`gains.applied_ia3`) on 64 e58/copy windows. The
+  bar is 10 × the change from moving each folded down_proj weight by one fp32 ulp (E229's factor, as E290).
+
+**Stage 0** stops on any miss:
+1. The zero update: D exactly 0 and t_half void.
+2. The κ floor.
+3. C3's reproductions: rank1_s0 13.91 and cipher_s0 10.69, each within 1 step.
+4. The planted-pair gate.
+5. The planted wrapper within 1 step of 3.97.
+6. The fold.
+
+Then two sizing steps, not stops:
+- The 3-state null probe (c3/rank1_s0, e53/lowercase_s0, e62/copy_s0 and their nulls) gives the shard projection.
+- The Pile cross-entropy secondary, reported only.
+
+**Items.** The 111 items run as a 4-shard debug array and are summarised without a GPU.
