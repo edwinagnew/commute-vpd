@@ -130,6 +130,12 @@ first absorbed the plant into an existing feature separated from it with more to
 content separated within the standard 200M. The placement sets how much training the crosscoder needs; it does not
 decide whether the plant is found.
 
+This bears on the 48 readings below. Every state's crosscoder was trained for the standard 200M tokens, the same length
+as the earlier run. That length is enough for the content-independent plant and the half-window plant, which both pass
+there, but too short for the plant at every answer position, which still misses at 200M and passes only from 400M. If a
+real fine-tune's change rides on existing features the way that plant does, its crosscoder may not yet have separated
+it. A rerun of the states at four times the tokens is not part of this cell.
+
 ## Does the choice of filter change any reading on the real states?
 
 No. On all 52 sides, the 48 states, the three random updates and the second crosscoder seed, the two filters give the
@@ -207,7 +213,9 @@ the plant. On real fine-tunes, though, it finds no fine-tune-specific latents ex
 one, the eight tasks built new included, the fine-tune-specific part is at most 0.005; the exception is 0.101 on the
 seed-0 state of Copy key (96 keys), which is also the state with the lowest reading. So the reading reduces to the
 shared part of the change. That shared part is higher for a random update than for most trained ones, one task's
-seeds can spread as widely as tasks differ, and the two built sides overlap across the whole range. For `GOALS.md` the
+seeds can spread as widely as tasks differ, and the two built sides overlap across the whole range. These readings come
+from crosscoders trained for 200M tokens: long enough for a plant placed without regard to content, too short for one
+that always rides on an existing feature. For `GOALS.md` the
 crosscoder joins the other model-diffing tools as a baseline whose values on Fig 4's states overlap between the two
 built sides; it gives no reading of reuse against new on this model.
 
@@ -216,8 +224,9 @@ built sides; it gives no reading of reuse against new on this model.
 - The control is strong for what it tests: one fixed direction added only to the fine-tuned side, found at two
   crosscoder seeds and at two placements, with most of its change on one latent. It does not test a change spread
   across many directions, which is what a fine-tune makes.
-- The plant that rides on an existing feature needed 400M tokens; a real fine-tune's change might need more than the
-  200M each state was given. That was not tested.
+- Each state's crosscoder had 200M tokens, the length at which the plant riding on an existing feature still misses; it
+  passes only from 400M. A real fine-tune's change might likewise need more than the 200M each state was given. That
+  was not tested.
 - The reading is blind to whatever the crosscoder puts in the bias, in latents that fail latent scaling, and in the
   error; on the states the bias alone averages about a fifth of the change.
 - Every state has three fine-tune seeds and one crosscoder. Only one state has a second crosscoder seed, so the
@@ -236,9 +245,8 @@ built sides; it gives no reading of reuse against new on this model.
 
 ## What next
 
-- Whether the real states' near-zero fine-tune-specific part changes with 800M tokens per crosscoder. Run it only if
-  the paper needs the crosscoder panel to rule out training length; a specific part that grows would change the
-  panel's reading.
+- Whether the real states' near-zero fine-tune-specific part changes with 800M tokens per crosscoder. That rerun is not
+  in this cell, by the user's decision; a specific part that grows would change the panel's reading.
 - Nothing else is proposed. The reading would not change with more crosscoder seeds, since the crosscoder's own gap is
   a tenth of the fine-tune seed spread.
 
@@ -289,12 +297,12 @@ of the change, one point per fine-tune seed. On every state but one the fine-tun
 the shared part. Grey: three random updates, 0.532 to 0.611, above most states; star: a second crosscoder seed, 0.038
 from the first. The three fine-tune seeds of one task spread by up to 0.41; the two built sides overlap. The planted
 control passes with the negative-coefficient filter floored at noise, not under the published rule, where it misses;
-placed on an existing feature, it passes under both filters after four times the training. The two filters give
-identical $d$ on every state.
+placed on an existing feature, it misses at the 200M tokens each state's crosscoder had and passes under both filters
+from 400M. The two filters give identical $d$ on every state.
 
 ## Not run
 
-- Crosscoders on the real states at 800M tokens.
+- Crosscoders on the real states at four times the tokens, 800M: not in this cell, by the user's decision.
 - More than one crosscoder seed per state; a second seed on any state other than Runner-up guess.
 - TF32, which would have halved training time but departs from the authors' fp32.
 - A sweep of dictionary size or sparsity.

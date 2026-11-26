@@ -94,10 +94,22 @@
 0.3	experiments/crosscoder_fig4/results/predictions.json	.thresholds.full.dead_max	this
 0.001	experiments/crosscoder_fig4/results/predictions.json	.thresholds.full.self_rn_dev	this
 0.5	experiments/crosscoder_fig4/results/predictions.json	.thresholds.full.fve_early	this
-0.320	given	pod e (commute-E311 stage 0b answer long) runner message: lead nu_eps at 25M tokens, 2026-11-25
-0.323	given	pod e runner message: lead nu_eps at 50M tokens
-0.293	given	pod e runner message: lead nu_eps at 100M tokens
 0.031	experiments/crosscoder_fig4/results/sides/c3__cipher_s0.json + experiments/crosscoder/results/negbeta_rescore.json	.[0].d_authors - .[1].runs["E203"]["c3__cipher_s0"].new.d_authors	earlier
 0.411	experiments/crosscoder_fig4/results/sides/e58__copy_s2.json + experiments/crosscoder_fig4/results/sides/e58__copy_s0.json	.[0].d_authors - .[1].d_authors	this
 -0.0070	experiments/crosscoder_fig4/results/stage0b_random_s0.json	-(.rules.floored.lead.floor_r_base)	this
 -0.0042	experiments/crosscoder_fig4/results/stage0b_random_s1.json	-(.rules.floored.lead.floor_r_base)	this
+0.320	experiments/crosscoder_fig4/results/stage0b_answer_s0_long.json	.planted.snapshots[0].lead.nu_eps	this
+0.323	experiments/crosscoder_fig4/results/stage0b_answer_s0_long.json	.planted.snapshots[1].lead.nu_eps	this
+0.293	experiments/crosscoder_fig4/results/stage0b_answer_s0_long.json	.planted.snapshots[2].lead.nu_eps	this
+0.244	experiments/crosscoder_fig4/results/stage0b_answer_s0_long.json	.planted.snapshots[3].lead.nu_eps	this
+0.089	experiments/crosscoder_fig4/results/stage0b_answer_s0_long.json	.planted.snapshots[3].lead.nu_r	this
+0.089	experiments/crosscoder/results/run2/stage0b.json	.checks["b planted: found, specific and carried"].lead.nu_r	earlier
+0.175	experiments/crosscoder_fig4/results/stage0b_answer_s0_long.json	.planted.snapshots[4].lead.nu_eps	this
+0.722	experiments/crosscoder_fig4/results/stage0b_answer_s0_long.json	.planted.snapshots[4].specific	this
+0.120	experiments/crosscoder_fig4/results/stage0b_answer_s0_long.json	.rules.literal.lead.nu_eps	this
+0.076	experiments/crosscoder_fig4/results/stage0b_answer_s0_long.json	.rules.literal.lead.nu_r	this
+0.804	experiments/crosscoder_fig4/results/stage0b_answer_s0_long.json	.rules.literal.part	this
+0.088	experiments/crosscoder_fig4/results/stage0b_answer_s0_long.json	.rules.literal.lead.beta_r_base	this
+0.41	experiments/crosscoder_fig4/results/sides/e58__copy_s2.json + experiments/crosscoder_fig4/results/sides/e58__copy_s0.json	.[0].d_authors - .[1].d_authors	this
+0.570	experiments/crosscoder_fig4/results/sides/e62__copy_s0.json + experiments/crosscoder_fig4/results/sides/e62__copy_s1.json + experiments/crosscoder_fig4/results/sides/e62__copy_s2.json	[.[].d_authors]|add/length	this
+0.574	experiments/crosscoder_fig4/results/sides/e62__lookup_s0.json + experiments/crosscoder_fig4/results/sides/e62__lookup_s1.json + experiments/crosscoder_fig4/results/sides/e62__lookup_s2.json	[.[].d_authors]|add/length	this
