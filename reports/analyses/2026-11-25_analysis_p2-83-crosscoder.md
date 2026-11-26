@@ -246,7 +246,7 @@ built sides; it gives no reading of reuse against new on this model.
 ## What next
 
 - Whether the real states' near-zero fine-tune-specific part changes with 800M tokens per crosscoder. That rerun is not
-  in this cell, by the user's decision; a specific part that grows would change the panel's reading.
+  run: outside this cell; the user decides (card `reports/decisions/2026-11-25_decision_e311-4x-tokens.md`). A specific part that grows would change the panel's reading.
 - Nothing else is proposed. The reading would not change with more crosscoder seeds, since the crosscoder's own gap is
   a tenth of the fine-tune seed spread.
 
@@ -302,7 +302,8 @@ from 400M. The two filters give identical $d$ on every state.
 
 ## Not run
 
-- Crosscoders on the real states at four times the tokens, 800M: not run, outside this cell; the user decides.
+- Crosscoders on the real states at four times the tokens, 800M: not run: outside this cell; the user decides (card
+  `reports/decisions/2026-11-25_decision_e311-4x-tokens.md`).
 - More than one crosscoder seed per state; a second seed on any state other than Runner-up guess.
 - TF32, which would have halved training time but departs from the authors' fp32.
 - A sweep of dictionary size or sparsity.
