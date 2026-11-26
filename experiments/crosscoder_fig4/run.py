@@ -17,6 +17,8 @@ snapshot is E203's end point). Every variant is read as E203 read it.
   2 i/n          shard i of n of the 52 sides: Fig 4's 48 states, 3 Gaussian updates, 1 crosscoder reseed
   resumecheck    (CPU, rehearsal) a stopped-and-resumed self run against two uninterrupted ones
   --rehearse     settings.sizes.rehearsal (tiny dictionary, full read sizes); outputs under results/rehearsal/
+  --long         settings.sizes.long (800M tokens); outputs under results/long/ (run 3, every stage; run 1's pod e
+                 wrote results/stage0b_answer_s0_long.json before this split)
   --stop-after S checkpoint at step S and exit 3 (the rehearsal's resume test)
 Prints every scored number, "STAGE x DONE" and a closing "FINISHED ...".
 """
@@ -309,7 +311,7 @@ def main() -> int:
     tag = {(False, False): "full", (False, True): "long", (True, False): "rehearsal", (True, True): "rehearsal_long"}[(a.rehearse, a.long)]
     cfg, T = cc_cfg(C.sizes[tag]), P["thresholds"]["rehearsal" if a.rehearse else "full"]
     T = T | (T["long"] if a.long else {})
-    sub = "rehearsal" if a.rehearse else ""
+    sub = Path("rehearsal" if a.rehearse else "") / ("long" if a.long else "")  # run 3 (--long): own stage0a, sides
     if a.stage in ("inputs", "2"):
         i, n = (int(x) for x in a.arg.split("/"))
         assert 0 <= i < n, f"shard {a.arg}: i runs 0..n-1"
