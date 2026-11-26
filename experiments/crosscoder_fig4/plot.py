@@ -77,13 +77,18 @@ def d_panel(ax: Axes, sides: list[dict[str, Any]], state: dict[str, tuple[str, s
     column_dots(ax, by["literal"], method="spectrum", ylabel="crosscoder d\n(shared minus fine-tune-specific part)",
                 bands={t: band for t in order} if band else None)  # fmt: skip
     open_points(ax, by["floored"], 0.25, "floored exclusion")
+    for s in (s for s in sides if s["kind"] == "reseed" and s["state"] in state):  # crosscoder seed 1 on a seed-0 state
+        ax.scatter([order.index(state[s["state"]][0]) - 0.25], [num(s["d_authors"])], marker="*", color="#c44e00", s=40,
+                   linewidths=0, label="fine-tune seed 0, crosscoder seed 1")  # fmt: skip
+    ax.scatter([], [], color="#000000", marker="h", s=22, label="one fine-tune seed (literal exclusion)")
+    ax.legend(fontsize=6, loc="lower left", ncols=2, frameon=False)
     n_reuse = len({state[s][0] for s in state if state[s][1] == "reuse"})
     ax.axvline(n_reuse - 0.5, color="#999999", linewidth=0.8)
     ax.set_xticklabels(order, rotation=70, ha="right", fontsize=6)
     ax.set_title("Crosscoder d on Fig 4's states (filled: literal exclusion; open: floored; grey: Gaussian updates)", loc="left", fontsize=7)
     ax.text(n_reuse / 2 - 0.5, 0.97, "built to reuse", transform=ax.get_xaxis_transform(), ha="center", va="top", fontsize=7)
     ax.text(n_reuse + (len(order) - n_reuse) / 2 - 0.5, 0.97, "built new", transform=ax.get_xaxis_transform(), ha="center", va="top", fontsize=7)
-    ax.set_ylim(top=ax.get_ylim()[1] + 0.08)
+    ax.set_ylim(min(ax.get_ylim()[0], 0) - 0.12, ax.get_ylim()[1] + 0.08)  # room for the legend under the points
     return sum(len(v) for v in by["literal"].values()), len(gauss)
 
 
@@ -111,6 +116,10 @@ def control_panel(bx: Axes, ctl: list[dict[str, Any]], records: list[dict[str, A
     bx.axhline(0.5, color="#777777", linewidth=0.8, linestyle="--")
     bx.annotate("filed bar 0.5", (0, 0.5), xycoords=("axes fraction", "data"), xytext=(2, 2), textcoords="offset points", fontsize=6, color="#555555")
     bx.set_ylim(-0.05, 1.05)
+    bx.set_xlim(-0.5, len(labels) - 0.5)
+    for i, lab in enumerate(labels):
+        if not by["literal"][lab] and not by["floored"][lab]:  # a variant whose pod has not finished
+            bx.text(i, 0.22, "end pending", rotation=90, ha="center", va="center", fontsize=6, color="#555555")
     bx.set_xticklabels(labels, rotation=70, ha="right", fontsize=6)
     bx.set_title("Planted control", loc="left", fontsize=8)
 
