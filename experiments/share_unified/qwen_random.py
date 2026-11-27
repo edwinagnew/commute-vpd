@@ -20,11 +20,16 @@ the first `search_rows` rows; the written gain is the final full read's.
 
   control  first, per decomposition and row set: a zero change reads gain and numerator exactly 0 (E310's control a),
            on the search's T path and on the full read; a miss stops the job (results/stopped.json, exit 1).
-  draws    one JSON line per draw in results/qwen_random.jsonl as it lands (sign, scale, evals, gain, numerator,
+  draws    this shard's (side, draw) pairs: every N-th of the decomposition's 18 from the I-th (--shard I N); one
+           JSON line per draw in results/qwen_random_<tag>.jsonl as it lands (sign, scale, evals, gain, numerator,
            share, KL, size, seconds); a rerun skips the draws written.
 Prints "QWEN_RANDOM DONE" at the end. Settings: results/predictions_random.json "settings.qwen_random".
 
-    python experiments/share_unified/qwen_random.py --decomp "$COMMUTE_QWEN_NEW_DIR" --decomp "$COMMUTE_QWEN_FROZEN_DIR"
+  Four pods, one decomposition and half its draws each; every pod runs its decomposition's zero control first:
+    PRED_SHA=<sha> python experiments/share_unified/qwen_random.py --decomp "$COMMUTE_QWEN_NEW_DIR" --shard 0 2 --tag vpd0
+    PRED_SHA=<sha> python experiments/share_unified/qwen_random.py --decomp "$COMMUTE_QWEN_NEW_DIR" --shard 1 2 --tag vpd1
+    PRED_SHA=<sha> python experiments/share_unified/qwen_random.py --decomp "$COMMUTE_QWEN_FROZEN_DIR" --shard 0 2 --tag neuron0
+    PRED_SHA=<sha> python experiments/share_unified/qwen_random.py --decomp "$COMMUTE_QWEN_FROZEN_DIR" --shard 1 2 --tag neuron1
     ~/commute-agents/fleet/cpu-run --mem 8G python3 experiments/share_unified/qwen_random.py --dry   (CPU: rows, spans, draws)
 """
 
@@ -59,7 +64,8 @@ from commute.qwen_vpd import SITES, decomp_id, decomp_kinds, parse_site
 
 HERE = Path(__file__).resolve().parent
 RESULTS = HERE / "results"
-PRED, OUT = RESULTS / "predictions_random.json", RESULTS / "qwen_random.jsonl"
+PRED = RESULTS / "predictions_random.json"
+OUT = RESULTS / "qwen_random_all.jsonl"  # main sets results/qwen_random_<tag>.jsonl
 E310_PRED = EXPERIMENTS / "random_logodds_share" / "results" / "predictions.json"
 RR = load_experiment("share_unified", "qwen_reread")  # rows_and_spans: the row sets as E328 read them
 QS, L = RR.QS, RR.L  # P3.8/P3.9's run.py; E57's Lab module
@@ -172,9 +178,10 @@ def control(lab: Any, dec: str, data: dict[str, tuple[Tensor, SH.Spans]], t0: di
 
 
 def draws(lab: Any, dec: str, data: dict[str, tuple[Tensor, SH.Spans]], t0: dict[str, Tensor], c: Config,
-          shapes: dict[str, tuple[int, ...]], fetch_to: Path) -> None:
+          shapes: dict[str, tuple[int, ...]], fetch_to: Path, shard: tuple[int, int]) -> None:
     name = lambda st: f"{dec}/{st.arm}_d{st.seed}"  # draw d takes seed d's fine-tune
-    todo = [st for a in c.arms for d in range(len(c.seeds)) if name(st := LS.state(QS.RUN_OF[a], a, d, c.save)) not in done()]
+    mine = pairs(c)[shard[0] :: shard[1]]
+    todo = [st for a, d in mine if name(st := LS.state(QS.RUN_OF[a], a, d, c.save)) not in done()]
     for st, path in QS.streamed(todo, fetch_to, lab.log):
         dW = QS.own_sites(load(path))
         norms = {s: float(m.double().norm()) for s, m in dW.items()}
@@ -189,11 +196,17 @@ def draws(lab: Any, dec: str, data: dict[str, tuple[Tensor, SH.Spans]], t0: dict
         del R
 
 
+def pairs(c: Config) -> list[tuple[str, int]]:
+    """Every (side, draw) of one decomposition, sides in settings order; a shard takes every N-th from the I-th."""
+    return [(a, d) for a in c.arms for d in range(len(c.seeds))]
+
+
 def size_of(norms: dict[str, float]) -> float:
     return math.sqrt(sum(n * n for n in norms.values()))
 
 
-def one_decomp(directory: str, c: Config, data: dict[str, tuple[Tensor, SH.Spans]], fetch_to: Path) -> None:
+def one_decomp(directory: str, c: Config, data: dict[str, tuple[Tensor, SH.Spans]], fetch_to: Path,
+               shard: tuple[int, int]) -> None:
     dec = decomp_id(Path(directory))
     QS.point(dec)
     L.RESULTS, L.PRED = RESULTS, PRED
@@ -204,8 +217,8 @@ def one_decomp(directory: str, c: Config, data: dict[str, tuple[Tensor, SH.Spans
         k = c.search_rows
         assert all(len(sp.take(0, k).row) for _, sp in data.values()), "a row set has no whole answer in the search rows"
         t0 = {rs: SR.answer_target(lab, "W0", rows[:k], spans.take(0, k)) for rs, (rows, spans) in data.items()}
-        control(lab, dec, data, t0, c, shapes)
-        draws(lab, dec, data, t0, c, shapes, fetch_to)
+        control(lab, dec, data, t0, c, shapes)  # every shard, first
+        draws(lab, dec, data, t0, c, shapes, fetch_to, shard)
     lab.log(f"[{dec} done] {lab.peaks()}")
     del lab
     gc.collect()
@@ -217,18 +230,26 @@ def main() -> None:
     ap.add_argument("--decomp", action="append", default=[], help="a decomposition directory; give both, VPD first")
     ap.add_argument("--fetch-to", default=str(RESULTS / "large" / "states"), help="where states land, two at a time")
     ap.add_argument("--dry", action="store_true", help="CPU: rows, answer spans and the draws, then stop")
+    ap.add_argument("--shard", nargs=2, type=int, default=(0, 1), metavar=("I", "N"),
+                    help="every N-th (side, draw) of each decomposition from the I-th (0-based)")
+    ap.add_argument("--tag", default="all", help="output results/qwen_random_<tag>.jsonl (one per pod)")
     a = ap.parse_args()
+    global OUT
+    OUT = RESULTS / f"qwen_random_{a.tag}.jsonl"
+    shard = (a.shard[0], a.shard[1])
+    assert 0 <= shard[0] < shard[1], shard
     c = config_from_settings(Config, json.loads(PRED.read_text())["settings"]["qwen_random"])
     assert list(c.seeds) == json.loads(E310_PRED.read_text())["settings"]["seeds"], "draw seeds must be E310's"
     data = RR.rows_and_spans(c.arms)
-    todo = [f"{a}_d{d}" for a in c.arms for d in range(len(c.seeds))]
-    print(f"{len(todo)} draws per decomposition; {len(done())} items written; rows {[(rs, len(sp.row)) for rs, (_, sp) in data.items()]}", flush=True)
+    mine = pairs(c)[shard[0] :: shard[1]]
+    print(f"shard {shard}, tag {a.tag}: {len(mine)} of {len(pairs(c))} draws per decomposition {mine}; "
+          f"{len(done())} items in {OUT.name}; rows {[(rs, len(sp.row)) for rs, (_, sp) in data.items()]}", flush=True)
     if a.dry:
         hard_exit(0)
     require_filed(PRED)
     assert a.decomp, "--decomp, once per decomposition"
     for d in a.decomp:
-        one_decomp(d, c, data, Path(a.fetch_to))
+        one_decomp(d, c, data, Path(a.fetch_to), shard)
     print("QWEN_RANDOM DONE", flush=True)
     hard_exit(0)
 
