@@ -1,0 +1,462 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+E325 start, feat sae, 36 items ['e62/copy_s0_rand', 'e62/copy_s1_rand', 'e62/copy_s2_rand', 'e62/lookup_s0_rand', 'e62/lookup_s1_rand', 'e62/lookup_s2_rand', 'e46/ident32_s0_rand', 'e46/ident32_s1_rand', 'e46/ident32_s2_rand', 'e46/rand32_s0_rand', 'e46/rand32_s1_rand', 'e46/rand32_s2_rand', 'e53/lowercase_s0_rand', 'e53/lowercase_s1_rand', 'e53/lowercase_s2_rand', 'e53/cipher_s0_rand', 'e53/cipher_s1_rand', 'e53/cipher_s2_rand', 'e54/elicit_s0_rand', 'e54/elicit_s1_rand', 'e54/elicit_s2_rand', 'e54/cipher_s0_rand', 'e54/cipher_s1_rand', 'e54/cipher_s2_rand', 'e54/cipher_own_s0_rand', 'e54/cipher_own_s1_rand', 'e54/cipher_own_s2_rand', 'c3/rank1_s0_rand', 'c3/rank1_s1_rand', 'c3/rank1_s2_rand', 'c3/cipher_s0_rand', 'c3/cipher_s1_rand', 'c3/cipher_s2_rand', 'c3/copy_s0_rand', 'c3/copy_s1_rand', 'c3/copy_s2_rand']; settings {'control': 'e62/copy_s0', 'tasks': ('e62/copy', 'e62/lookup', 'e46/ident32', 'e46/rand32', 'e53/lowercase', 'e53/cipher', 'e54/elicit', 'e54/cipher', 'e54/cipher_own', 'c3/rank1', 'c3/cipher', 'c3/copy'), 'overlap': {'e58/copy': 'copy', 'e58/rank1': 'rank1', 'e58/cipher': 'cipher', 'e58/prior_cipher': 'prior_cipher'}, 'seeds': (0, 1, 2), 'random_seed': 325000, 'split_tol': 1e-06, 'n_read': 512, 'read_seed': 195200, 'band': 'p97', 'sae_size': 'scored', 'sae_seed': 0, 'derangements': 4, 'examples': 64, 'seed': 268, 'rows': 1024, 'logit_rows': 8192, 'cache_batch': 32, 'ident_vars': 3, 'sae_err_rows': 64, 'sae_chunk': 32, 'repro': {'vpd': {'state': 'e58/cipher_s1', 'json': 'experiments/fig2_standard/results/items/vpd/trained__cipher_s1.json', 'npz': 'experiments/fig2_standard/results/large/vpd/trained__cipher_s1.npz'}, 'neurons': {'state': 'e58/copy_s0', 'json': 'experiments/ia3_control/results/items/full__copy_s0.json', 'npz': 'experiments/ia3_control/results/large/items_full__copy_s0.npz'}, 'sae': {'state': 'e58/cipher_s0', 'json': 'experiments/fig2_standard/results/items/sae/trained__cipher_s0.json', 'npz': 'experiments/fig2_standard/results/large/sae/trained__cipher_s0.npz'}}, 'repro_rel_tol': {'vpd': 0.0005, 'neurons': 5e-05, 'sae': 1e-06}}
+stage 0 sae do_nothing: {"experiment": "E325", "feat": "sae", "part": "do_nothing", "on": "e62/copy_s0", "n_changed": 0, "dd_max": 0.0, "E_b": 1.0, "seconds": 10.985801219940186, "card": "NVIDIA H100 80GB HBM3"}; checks hold
+    site 0 (block 0, variables from 0): 256 cases, 0 needed so far; 256 cases in 0 s (5008/s)
+    site 1 (block 0, variables from 16385): 256 cases, 0 needed so far; 512 cases in 0 s (8454/s)
+    site 2 (block 1, variables from 32770): 256 cases, 0 needed so far; 768 cases in 0 s (11224/s)
+    site 3 (block 1, variables from 49155): 256 cases, 0 needed so far; 1024 cases in 0 s (13397/s)
+    site 4 (block 2, variables from 65540): 256 cases, 0 needed so far; 1280 cases in 0 s (15415/s)
+    site 5 (block 2, variables from 81925): 256 cases, 0 needed so far; 1536 cases in 0 s (16948/s)
+    site 6 (block 3, variables from 98310): 256 cases, 0 needed so far; 1792 cases in 0 s (18580/s)
+    site 7 (block 3, variables from 114695): 256 cases, 0 needed so far; 2048 cases in 0 s (20022/s)
+stage 0 sae identity: {"experiment": "E325", "feat": "sae", "part": "identity", "item": "e62/copy_s0", "flips": 0, "max_dev": 3.719329833984375e-05, "min_margin": 0.0033941268920898438, "cases": 2048, "cases_per_s": 19799.82111336233, "n_windows": 512, "window_len": 8, "seconds": 0.37929797172546387, "card": "NVIDIA H100 80GB HBM3"}; checks hold
+stage 0 sae must_flip: {"experiment": "E325", "feat": "sae", "part": "must_flip", "item": "e62/copy_s0", "cases": 256, "n_differ": 256, "n_flipped": 256, "n_off_x_prime": 0, "max_dev": 1.239776611328125e-05, "seconds": 0.2785329818725586, "card": "NVIDIA H100 80GB HBM3"}; checks hold
+  512 windows of 8 tokens, read at -1, 131080 variables, 131080 changed, 256 pairs
+    site 0 (block 0, variables from 0): 307898 cases, 562 needed so far; 307898 cases in 6 s (54750/s)
+    site 1 (block 0, variables from 16385): 316841 cases, 1954 needed so far; 624739 cases in 11 s (54715/s)
+    site 2 (block 1, variables from 32770): 134289 cases, 2286 needed so far; 759028 cases in 13 s (56812/s)
+    site 3 (block 1, variables from 49155): 284433 cases, 3025 needed so far; 1043461 cases in 17 s (59769/s)
+    site 4 (block 2, variables from 65540): 94878 cases, 3364 needed so far; 1138339 cases in 18 s (61622/s)
+    site 5 (block 2, variables from 81925): 233248 cases, 4041 needed so far; 1371587 cases in 21 s (65482/s)
+    site 6 (block 3, variables from 98310): 147534 cases, 4476 needed so far; 1519121 cases in 22 s (69206/s)
+    site 7 (block 3, variables from 114695): 159300 cases, 5072 needed so far; 1678421 cases in 23 s (72836/s)
+stage 0 sae repro: {"experiment": "E325", "feat": "sae", "part": "repro", "state": "e58/cipher_s0", "E_b": 0.03583138042789829, "saved": 0.03583138042789829, "source": "experiments/fig2_standard/results/items/sae/trained__cipher_s0.json", "rel_dev": 0.0, "tol": 1e-06, "n_K_differ": 0, "size_K": 5072, "size_K_saved": 5072, "n_windows": 512, "seconds": 26.340686321258545, "card": "NVIDIA H100 80GB HBM3"}; checks hold
+STAGE 0 DONE (sae, sae_a)
+sae e62/copy_s0_rand:
+  512 windows of 8 tokens, read at -1, 131080 variables, 131080 changed, 256 pairs
+    site 0 (block 0, variables from 0): 220519 cases, 1236 needed so far; 220519 cases in 4 s (54797/s)
+    site 1 (block 0, variables from 16385): 226692 cases, 3444 needed so far; 447211 cases in 8 s (54819/s)
+    site 2 (block 1, variables from 32770): 106754 cases, 4035 needed so far; 553965 cases in 10 s (57062/s)
+    site 3 (block 1, variables from 49155): 223096 cases, 5309 needed so far; 777061 cases in 13 s (60125/s)
+    site 4 (block 2, variables from 65540): 74584 cases, 5862 needed so far; 851645 cases in 14 s (62054/s)
+    site 5 (block 2, variables from 81925): 166425 cases, 6915 needed so far; 1018070 cases in 15 s (65715/s)
+    site 6 (block 3, variables from 98310): 96386 cases, 7317 needed so far; 1114456 cases in 16 s (68984/s)
+    site 7 (block 3, variables from 114695): 109078 cases, 7849 needed so far; 1223534 cases in 17 s (72358/s)
+sae e62/copy_s0_rand: E_b over K 0.010390 (leftovers dropped 0.036589); |K| 7849 (7849 changed) of 131080; 22 s
+ITEM 1 of 36 DONE (sae e62/copy_s0_rand)
+sae e62/copy_s1_rand:
+  512 windows of 8 tokens, read at -1, 131080 variables, 131080 changed, 256 pairs
+    site 0 (block 0, variables from 0): 220742 cases, 781 needed so far; 220742 cases in 4 s (54828/s)
+    site 1 (block 0, variables from 16385): 227539 cases, 2506 needed so far; 448281 cases in 8 s (54755/s)
+    site 2 (block 1, variables from 32770): 107325 cases, 2970 needed so far; 555606 cases in 10 s (56990/s)
+    site 3 (block 1, variables from 49155): 223574 cases, 3773 needed so far; 779180 cases in 13 s (60000/s)
+    site 4 (block 2, variables from 65540): 74472 cases, 4162 needed so far; 853652 cases in 14 s (61913/s)
+    site 5 (block 2, variables from 81925): 166683 cases, 4833 needed so far; 1020335 cases in 16 s (65541/s)
+    site 6 (block 3, variables from 98310): 92157 cases, 5151 needed so far; 1112492 cases in 16 s (68654/s)
+    site 7 (block 3, variables from 114695): 110193 cases, 5639 needed so far; 1222685 cases in 17 s (72054/s)
+sae e62/copy_s1_rand: E_b over K 0.012871 (leftovers dropped 0.048197); |K| 5639 (5639 changed) of 131080; 21 s
+ITEM 2 of 36 DONE (sae e62/copy_s1_rand)
+sae e62/copy_s2_rand:
+  512 windows of 8 tokens, read at -1, 131080 variables, 131080 changed, 256 pairs
+    site 0 (block 0, variables from 0): 223319 cases, 826 needed so far; 223319 cases in 4 s (54840/s)
+    site 1 (block 0, variables from 16385): 227762 cases, 2693 needed so far; 451081 cases in 8 s (54823/s)
+    site 2 (block 1, variables from 32770): 106987 cases, 3177 needed so far; 558068 cases in 10 s (57077/s)
+    site 3 (block 1, variables from 49155): 223222 cases, 4147 needed so far; 781290 cases in 13 s (60135/s)
+    site 4 (block 2, variables from 65540): 73629 cases, 4551 needed so far; 854919 cases in 14 s (62029/s)
+    site 5 (block 2, variables from 81925): 166511 cases, 5273 needed so far; 1021430 cases in 16 s (65664/s)
+    site 6 (block 3, variables from 98310): 93719 cases, 5609 needed so far; 1115149 cases in 16 s (68827/s)
+    site 7 (block 3, variables from 114695): 109417 cases, 6067 needed so far; 1224566 cases in 17 s (72204/s)
+sae e62/copy_s2_rand: E_b over K 0.009851 (leftovers dropped 0.035769); |K| 6067 (6067 changed) of 131080; 20 s
+ITEM 3 of 36 DONE (sae e62/copy_s2_rand)
+sae e62/lookup_s0_rand:
+  512 windows of 8 tokens, read at -1, 131080 variables, 131080 changed, 256 pairs
+    site 0 (block 0, variables from 0): 224754 cases, 790 needed so far; 224754 cases in 4 s (54834/s)
+    site 1 (block 0, variables from 16385): 227563 cases, 2601 needed so far; 452317 cases in 8 s (54867/s)
+    site 2 (block 1, variables from 32770): 107685 cases, 3078 needed so far; 560002 cases in 10 s (57117/s)
+    site 3 (block 1, variables from 49155): 222575 cases, 3998 needed so far; 782577 cases in 13 s (60144/s)
+    site 4 (block 2, variables from 65540): 74197 cases, 4403 needed so far; 856774 cases in 14 s (62049/s)
+    site 5 (block 2, variables from 81925): 167673 cases, 5015 needed so far; 1024447 cases in 16 s (65718/s)
+    site 6 (block 3, variables from 98310): 94775 cases, 5372 needed so far; 1119222 cases in 16 s (68918/s)
+    site 7 (block 3, variables from 114695): 109466 cases, 5834 needed so far; 1228688 cases in 17 s (72288/s)
+sae e62/lookup_s0_rand: E_b over K 0.009965 (leftovers dropped 0.038269); |K| 5834 (5834 changed) of 131080; 22 s
+ITEM 4 of 36 DONE (sae e62/lookup_s0_rand)
+sae e62/lookup_s1_rand:
+  512 windows of 8 tokens, read at -1, 131080 variables, 131080 changed, 256 pairs
+    site 0 (block 0, variables from 0): 222948 cases, 1106 needed so far; 222948 cases in 4 s (54422/s)
+    site 1 (block 0, variables from 16385): 228439 cases, 3708 needed so far; 451387 cases in 8 s (54628/s)
+    site 2 (block 1, variables from 32770): 107255 cases, 4356 needed so far; 558642 cases in 10 s (56896/s)
+    site 3 (block 1, variables from 49155): 223532 cases, 5800 needed so far; 782174 cases in 13 s (59977/s)
+    site 4 (block 2, variables from 65540): 75067 cases, 6406 needed so far; 857241 cases in 14 s (61911/s)
+    site 5 (block 2, variables from 81925): 167345 cases, 7508 needed so far; 1024586 cases in 16 s (65573/s)
+    site 6 (block 3, variables from 98310): 94371 cases, 7977 needed so far; 1118957 cases in 16 s (68762/s)
+    site 7 (block 3, variables from 114695): 109865 cases, 8610 needed so far; 1228822 cases in 17 s (72146/s)
+sae e62/lookup_s1_rand: E_b over K 0.015156 (leftovers dropped 0.050432); |K| 8610 (8610 changed) of 131080; 21 s
+ITEM 5 of 36 DONE (sae e62/lookup_s1_rand)
+sae e62/lookup_s2_rand:
+  512 windows of 8 tokens, read at -1, 131080 variables, 131080 changed, 256 pairs
+    site 0 (block 0, variables from 0): 224645 cases, 1196 needed so far; 224645 cases in 4 s (54545/s)
+    site 1 (block 0, variables from 16385): 227943 cases, 3521 needed so far; 452588 cases in 8 s (54722/s)
+    site 2 (block 1, variables from 32770): 106240 cases, 4137 needed so far; 558828 cases in 10 s (56961/s)
+    site 3 (block 1, variables from 49155): 222768 cases, 5478 needed so far; 781596 cases in 13 s (60023/s)
+    site 4 (block 2, variables from 65540): 74705 cases, 6066 needed so far; 856301 cases in 14 s (61945/s)
+    site 5 (block 2, variables from 81925): 166913 cases, 7176 needed so far; 1023214 cases in 16 s (65605/s)
+    site 6 (block 3, variables from 98310): 95779 cases, 7594 needed so far; 1118993 cases in 16 s (68839/s)
+    site 7 (block 3, variables from 114695): 110270 cases, 8231 needed so far; 1229263 cases in 17 s (72229/s)
+sae e62/lookup_s2_rand: E_b over K 0.013911 (leftovers dropped 0.044662); |K| 8231 (8231 changed) of 131080; 20 s
+ITEM 6 of 36 DONE (sae e62/lookup_s2_rand)
+sae e46/ident32_s0_rand:
+  512 windows of 8 tokens, read at -1, 131080 variables, 131080 changed, 256 pairs
+    site 0 (block 0, variables from 0): 204847 cases, 698 needed so far; 204847 cases in 4 s (54850/s)
+    site 1 (block 0, variables from 16385): 233606 cases, 2301 needed so far; 438453 cases in 8 s (54897/s)
+    site 2 (block 1, variables from 32770): 108246 cases, 2727 needed so far; 546699 cases in 10 s (57227/s)
+    site 3 (block 1, variables from 49155): 230950 cases, 3527 needed so far; 777649 cases in 13 s (60387/s)
+    site 4 (block 2, variables from 65540): 58219 cases, 3821 needed so far; 835868 cases in 14 s (61893/s)
+    site 5 (block 2, variables from 81925): 171856 cases, 4480 needed so far; 1007724 cases in 15 s (65739/s)
+    site 6 (block 3, variables from 98310): 91587 cases, 4815 needed so far; 1099311 cases in 16 s (68884/s)
+    site 7 (block 3, variables from 114695): 113549 cases, 5384 needed so far; 1212860 cases in 17 s (72441/s)
+sae e46/ident32_s0_rand: E_b over K 0.005809 (leftovers dropped 0.022493); |K| 5384 (5384 changed) of 131080; 20 s
+ITEM 7 of 36 DONE (sae e46/ident32_s0_rand)
+sae e46/ident32_s1_rand:
+  512 windows of 8 tokens, read at -1, 131080 variables, 131080 changed, 256 pairs
+    site 0 (block 0, variables from 0): 203443 cases, 1141 needed so far; 203443 cases in 4 s (54500/s)
+    site 1 (block 0, variables from 16385): 233992 cases, 3242 needed so far; 437435 cases in 8 s (54730/s)
+    site 2 (block 1, variables from 32770): 107928 cases, 3783 needed so far; 545363 cases in 10 s (57077/s)
+    site 3 (block 1, variables from 49155): 231466 cases, 5198 needed so far; 776829 cases in 13 s (60275/s)
+    site 4 (block 2, variables from 65540): 58438 cases, 5655 needed so far; 835267 cases in 14 s (61784/s)
+    site 5 (block 2, variables from 81925): 172560 cases, 6767 needed so far; 1007827 cases in 15 s (65649/s)
+    site 6 (block 3, variables from 98310): 90405 cases, 7179 needed so far; 1098232 cases in 16 s (68745/s)
+    site 7 (block 3, variables from 114695): 113689 cases, 7838 needed so far; 1211921 cases in 17 s (72307/s)
+sae e46/ident32_s1_rand: E_b over K 0.008554 (leftovers dropped 0.029428); |K| 7838 (7838 changed) of 131080; 20 s
+ITEM 8 of 36 DONE (sae e46/ident32_s1_rand)
+sae e46/ident32_s2_rand:
+  512 windows of 8 tokens, read at -1, 131080 variables, 131080 changed, 256 pairs
+    site 0 (block 0, variables from 0): 204978 cases, 991 needed so far; 204978 cases in 4 s (54809/s)
+    site 1 (block 0, variables from 16385): 234386 cases, 3033 needed so far; 439364 cases in 8 s (54824/s)
+    site 2 (block 1, variables from 32770): 108781 cases, 3572 needed so far; 548145 cases in 10 s (57151/s)
+    site 3 (block 1, variables from 49155): 232135 cases, 4888 needed so far; 780280 cases in 13 s (60323/s)
+    site 4 (block 2, variables from 65540): 58137 cases, 5281 needed so far; 838417 cases in 14 s (61820/s)
+    site 5 (block 2, variables from 81925): 172687 cases, 6293 needed so far; 1011104 cases in 15 s (65674/s)
+    site 6 (block 3, variables from 98310): 92098 cases, 6687 needed so far; 1103202 cases in 16 s (68827/s)
+    site 7 (block 3, variables from 114695): 113442 cases, 7326 needed so far; 1216644 cases in 17 s (72363/s)
+sae e46/ident32_s2_rand: E_b over K 0.006583 (leftovers dropped 0.023625); |K| 7326 (7326 changed) of 131080; 21 s
+ITEM 9 of 36 DONE (sae e46/ident32_s2_rand)
+sae e46/rand32_s0_rand:
+  512 windows of 8 tokens, read at -1, 131080 variables, 131080 changed, 256 pairs
+    site 0 (block 0, variables from 0): 206013 cases, 1390 needed so far; 206013 cases in 4 s (54589/s)
+    site 1 (block 0, variables from 16385): 228428 cases, 4098 needed so far; 434441 cases in 8 s (54600/s)
+    site 2 (block 1, variables from 32770): 107804 cases, 4853 needed so far; 542245 cases in 10 s (56915/s)
+    site 3 (block 1, variables from 49155): 230453 cases, 6755 needed so far; 772698 cases in 13 s (60069/s)
+    site 4 (block 2, variables from 65540): 60772 cases, 7342 needed so far; 833470 cases in 14 s (61637/s)
+    site 5 (block 2, variables from 81925): 173117 cases, 8791 needed so far; 1006587 cases in 15 s (65484/s)
+    site 6 (block 3, variables from 98310): 90783 cases, 9267 needed so far; 1097370 cases in 16 s (68591/s)
+    site 7 (block 3, variables from 114695): 114477 cases, 10013 needed so far; 1211847 cases in 17 s (72161/s)
+sae e46/rand32_s0_rand: E_b over K 0.012875 (leftovers dropped 0.040683); |K| 10013 (10013 changed) of 131080; 21 s
+ITEM 10 of 36 DONE (sae e46/rand32_s0_rand)
+sae e46/rand32_s1_rand:
+  512 windows of 8 tokens, read at -1, 131080 variables, 131080 changed, 256 pairs
+    site 0 (block 0, variables from 0): 205837 cases, 1035 needed so far; 205837 cases in 4 s (54643/s)
+    site 1 (block 0, variables from 16385): 228191 cases, 3451 needed so far; 434028 cases in 8 s (54768/s)
+    site 2 (block 1, variables from 32770): 106906 cases, 4105 needed so far; 540934 cases in 9 s (57096/s)
+    site 3 (block 1, variables from 49155): 231174 cases, 5498 needed so far; 772108 cases in 13 s (60302/s)
+    site 4 (block 2, variables from 65540): 58823 cases, 6003 needed so far; 830931 cases in 13 s (61833/s)
+    site 5 (block 2, variables from 81925): 173705 cases, 7102 needed so far; 1004636 cases in 15 s (65727/s)
+    site 6 (block 3, variables from 98310): 91078 cases, 7523 needed so far; 1095714 cases in 16 s (68864/s)
+    site 7 (block 3, variables from 114695): 114308 cases, 8267 needed so far; 1210022 cases in 17 s (72452/s)
+sae e46/rand32_s1_rand: E_b over K 0.009383 (leftovers dropped 0.032579); |K| 8267 (8267 changed) of 131080; 20 s
+ITEM 11 of 36 DONE (sae e46/rand32_s1_rand)
+sae e46/rand32_s2_rand:
+  512 windows of 8 tokens, read at -1, 131080 variables, 131080 changed, 256 pairs
+    site 0 (block 0, variables from 0): 204885 cases, 1349 needed so far; 204885 cases in 4 s (54517/s)
+    site 1 (block 0, variables from 16385): 227982 cases, 4042 needed so far; 432867 cases in 8 s (54685/s)
+    site 2 (block 1, variables from 32770): 107224 cases, 4771 needed so far; 540091 cases in 9 s (57033/s)
+    site 3 (block 1, variables from 49155): 229968 cases, 6559 needed so far; 770059 cases in 13 s (60233/s)
+    site 4 (block 2, variables from 65540): 59500 cases, 7166 needed so far; 829559 cases in 13 s (61790/s)
+    site 5 (block 2, variables from 81925): 173340 cases, 8577 needed so far; 1002899 cases in 15 s (65678/s)
+    site 6 (block 3, variables from 98310): 91184 cases, 9020 needed so far; 1094083 cases in 16 s (68822/s)
+    site 7 (block 3, variables from 114695): 114622 cases, 9758 needed so far; 1208705 cases in 17 s (72426/s)
+sae e46/rand32_s2_rand: E_b over K 0.009175 (leftovers dropped 0.031331); |K| 9758 (9758 changed) of 131080; 20 s
+ITEM 12 of 36 DONE (sae e46/rand32_s2_rand)
+sae e53/lowercase_s0_rand:
+  512 windows of 8 tokens, read at -1, 131080 variables, 131080 changed, 256 pairs
+    site 0 (block 0, variables from 0): 218923 cases, 816 needed so far; 218923 cases in 4 s (54925/s)
+    site 1 (block 0, variables from 16385): 220561 cases, 2702 needed so far; 439484 cases in 8 s (54923/s)
+    site 2 (block 1, variables from 32770): 106218 cases, 3189 needed so far; 545702 cases in 10 s (57213/s)
+    site 3 (block 1, variables from 49155): 226897 cases, 4253 needed so far; 772599 cases in 13 s (60318/s)
+    site 4 (block 2, variables from 65540): 60559 cases, 4646 needed so far; 833158 cases in 13 s (61897/s)
+    site 5 (block 2, variables from 81925): 169576 cases, 5492 needed so far; 1002734 cases in 15 s (65705/s)
+    site 6 (block 3, variables from 98310): 94861 cases, 5851 needed so far; 1097595 cases in 16 s (68973/s)
+    site 7 (block 3, variables from 114695): 112377 cases, 6509 needed so far; 1209972 cases in 17 s (72499/s)
+sae e53/lowercase_s0_rand: E_b over K 0.015290 (leftovers dropped 0.063796); |K| 6509 (6509 changed) of 131080; 26 s
+ITEM 13 of 36 DONE (sae e53/lowercase_s0_rand)
+sae e53/lowercase_s1_rand:
+  512 windows of 8 tokens, read at -1, 131080 variables, 131080 changed, 256 pairs
+    site 0 (block 0, variables from 0): 229698 cases, 913 needed so far; 229698 cases in 4 s (54235/s)
+    site 1 (block 0, variables from 16385): 222043 cases, 2445 needed so far; 451741 cases in 8 s (54532/s)
+    site 2 (block 1, variables from 32770): 105997 cases, 2954 needed so far; 557738 cases in 10 s (56801/s)
+    site 3 (block 1, variables from 49155): 226109 cases, 3990 needed so far; 783847 cases in 13 s (59925/s)
+    site 4 (block 2, variables from 65540): 59019 cases, 4397 needed so far; 842866 cases in 14 s (61448/s)
+    site 5 (block 2, variables from 81925): 170464 cases, 5240 needed so far; 1013330 cases in 16 s (65261/s)
+    site 6 (block 3, variables from 98310): 90986 cases, 5515 needed so far; 1104316 cases in 16 s (68363/s)
+    site 7 (block 3, variables from 114695): 114562 cases, 6056 needed so far; 1218878 cases in 17 s (71927/s)
+sae e53/lowercase_s1_rand: E_b over K 0.020401 (leftovers dropped 0.084308); |K| 6056 (6056 changed) of 131080; 20 s
+ITEM 14 of 36 DONE (sae e53/lowercase_s1_rand)
+sae e53/lowercase_s2_rand:
+  512 windows of 8 tokens, read at -1, 131080 variables, 131080 changed, 256 pairs
+    site 0 (block 0, variables from 0): 221550 cases, 910 needed so far; 221550 cases in 4 s (54882/s)
+    site 1 (block 0, variables from 16385): 219779 cases, 3118 needed so far; 441329 cases in 8 s (54866/s)
+    site 2 (block 1, variables from 32770): 107124 cases, 3728 needed so far; 548453 cases in 10 s (57114/s)
+    site 3 (block 1, variables from 49155): 225576 cases, 5022 needed so far; 774029 cases in 13 s (60213/s)
+    site 4 (block 2, variables from 65540): 57231 cases, 5522 needed so far; 831260 cases in 13 s (61707/s)
+    site 5 (block 2, variables from 81925): 170455 cases, 6509 needed so far; 1001715 cases in 15 s (65554/s)
+    site 6 (block 3, variables from 98310): 90704 cases, 6898 needed so far; 1092419 cases in 16 s (68688/s)
+    site 7 (block 3, variables from 114695): 113597 cases, 7640 needed so far; 1206016 cases in 17 s (72265/s)
+sae e53/lowercase_s2_rand: E_b over K 0.019780 (leftovers dropped 0.071755); |K| 7640 (7640 changed) of 131080; 20 s
+ITEM 15 of 36 DONE (sae e53/lowercase_s2_rand)
+sae e53/cipher_s0_rand:
+  512 windows of 8 tokens, read at -1, 131080 variables, 131080 changed, 256 pairs
+    site 0 (block 0, variables from 0): 233169 cases, 773 needed so far; 233169 cases in 4 s (54844/s)
+    site 1 (block 0, variables from 16385): 220391 cases, 2276 needed so far; 453560 cases in 8 s (54881/s)
+    site 2 (block 1, variables from 32770): 106871 cases, 2733 needed so far; 560431 cases in 10 s (57107/s)
+    site 3 (block 1, variables from 49155): 221055 cases, 3607 needed so far; 781486 cases in 13 s (60084/s)
+    site 4 (block 2, variables from 65540): 61010 cases, 3950 needed so far; 842496 cases in 14 s (61647/s)
+    site 5 (block 2, variables from 81925): 172671 cases, 4769 needed so far; 1015167 cases in 16 s (65478/s)
+    site 6 (block 3, variables from 98310): 96581 cases, 5141 needed so far; 1111748 cases in 16 s (68765/s)
+    site 7 (block 3, variables from 114695): 117161 cases, 5833 needed so far; 1228909 cases in 17 s (72390/s)
+sae e53/cipher_s0_rand: E_b over K 0.015137 (leftovers dropped 0.065175); |K| 5833 (5833 changed) of 131080; 20 s
+ITEM 16 of 36 DONE (sae e53/cipher_s0_rand)
+sae e53/cipher_s1_rand:
+  512 windows of 8 tokens, read at -1, 131080 variables, 131080 changed, 256 pairs
+    site 0 (block 0, variables from 0): 228254 cases, 764 needed so far; 228254 cases in 4 s (54632/s)
+    site 1 (block 0, variables from 16385): 221099 cases, 2329 needed so far; 449353 cases in 8 s (54766/s)
+    site 2 (block 1, variables from 32770): 106764 cases, 2848 needed so far; 556117 cases in 10 s (57012/s)
+    site 3 (block 1, variables from 49155): 223888 cases, 3839 needed so far; 780005 cases in 13 s (60103/s)
+    site 4 (block 2, variables from 65540): 59650 cases, 4181 needed so far; 839655 cases in 14 s (61644/s)
+    site 5 (block 2, variables from 81925): 171235 cases, 5130 needed so far; 1010890 cases in 15 s (65481/s)
+    site 6 (block 3, variables from 98310): 98517 cases, 5460 needed so far; 1109407 cases in 16 s (68844/s)
+    site 7 (block 3, variables from 114695): 116960 cases, 6065 needed so far; 1226367 cases in 17 s (72476/s)
+sae e53/cipher_s1_rand: E_b over K 0.014887 (leftovers dropped 0.063648); |K| 6065 (6065 changed) of 131080; 20 s
+ITEM 17 of 36 DONE (sae e53/cipher_s1_rand)
+sae e53/cipher_s2_rand:
+  512 windows of 8 tokens, read at -1, 131080 variables, 131080 changed, 256 pairs
+    site 0 (block 0, variables from 0): 224309 cases, 731 needed so far; 224309 cases in 4 s (54865/s)
+    site 1 (block 0, variables from 16385): 220843 cases, 2341 needed so far; 445152 cases in 8 s (54853/s)
+    site 2 (block 1, variables from 32770): 108719 cases, 2787 needed so far; 553871 cases in 10 s (57163/s)
+    site 3 (block 1, variables from 49155): 222030 cases, 3625 needed so far; 775901 cases in 13 s (60170/s)
+    site 4 (block 2, variables from 65540): 58285 cases, 4010 needed so far; 834186 cases in 14 s (61690/s)
+    site 5 (block 2, variables from 81925): 171726 cases, 4927 needed so far; 1005912 cases in 15 s (65548/s)
+    site 6 (block 3, variables from 98310): 97089 cases, 5297 needed so far; 1103001 cases in 16 s (68885/s)
+    site 7 (block 3, variables from 114695): 115830 cases, 5964 needed so far; 1218831 cases in 17 s (72501/s)
+sae e53/cipher_s2_rand: E_b over K 0.015230 (leftovers dropped 0.061852); |K| 5964 (5964 changed) of 131080; 20 s
+ITEM 18 of 36 DONE (sae e53/cipher_s2_rand)
+sae e54/elicit_s0_rand:
+  512 windows of 8 tokens, read at -1, 131080 variables, 131080 changed, 256 pairs
+    site 0 (block 0, variables from 0): 202200 cases, 819 needed so far; 202200 cases in 4 s (54722/s)
+    site 1 (block 0, variables from 16385): 232901 cases, 2539 needed so far; 435101 cases in 8 s (54811/s)
+    site 2 (block 1, variables from 32770): 104907 cases, 2907 needed so far; 540008 cases in 9 s (57099/s)
+    site 3 (block 1, variables from 49155): 227732 cases, 3737 needed so far; 767740 cases in 13 s (60258/s)
+    site 4 (block 2, variables from 65540): 57184 cases, 4074 needed so far; 824924 cases in 13 s (61756/s)
+    site 5 (block 2, variables from 81925): 170662 cases, 4742 needed so far; 995586 cases in 15 s (65630/s)
+    site 6 (block 3, variables from 98310): 90482 cases, 5065 needed so far; 1086068 cases in 16 s (68772/s)
+    site 7 (block 3, variables from 114695): 112952 cases, 5553 needed so far; 1199020 cases in 17 s (72347/s)
+sae e54/elicit_s0_rand: E_b over K 0.014370 (leftovers dropped 0.055222); |K| 5553 (5553 changed) of 131080; 20 s
+ITEM 19 of 36 DONE (sae e54/elicit_s0_rand)
+sae e54/elicit_s1_rand:
+  512 windows of 8 tokens, read at -1, 131080 variables, 131080 changed, 256 pairs
+    site 0 (block 0, variables from 0): 200778 cases, 881 needed so far; 200778 cases in 4 s (54500/s)
+    site 1 (block 0, variables from 16385): 232824 cases, 2746 needed so far; 433602 cases in 8 s (54701/s)
+    site 2 (block 1, variables from 32770): 104732 cases, 3251 needed so far; 538334 cases in 9 s (57002/s)
+    site 3 (block 1, variables from 49155): 226988 cases, 4311 needed so far; 765322 cases in 13 s (60183/s)
+    site 4 (block 2, variables from 65540): 56506 cases, 4670 needed so far; 821828 cases in 13 s (61673/s)
+    site 5 (block 2, variables from 81925): 170374 cases, 5580 needed so far; 992202 cases in 15 s (65533/s)
+    site 6 (block 3, variables from 98310): 90682 cases, 5916 needed so far; 1082884 cases in 16 s (68687/s)
+    site 7 (block 3, variables from 114695): 112683 cases, 6438 needed so far; 1195567 cases in 17 s (72262/s)
+sae e54/elicit_s1_rand: E_b over K 0.011683 (leftovers dropped 0.044127); |K| 6438 (6438 changed) of 131080; 20 s
+ITEM 20 of 36 DONE (sae e54/elicit_s1_rand)
+sae e54/elicit_s2_rand:
+  512 windows of 8 tokens, read at -1, 131080 variables, 131080 changed, 256 pairs
+    site 0 (block 0, variables from 0): 201013 cases, 1020 needed so far; 201013 cases in 4 s (54629/s)
+    site 1 (block 0, variables from 16385): 232868 cases, 2910 needed so far; 433881 cases in 8 s (54771/s)
+    site 2 (block 1, variables from 32770): 104810 cases, 3432 needed so far; 538691 cases in 9 s (57064/s)
+    site 3 (block 1, variables from 49155): 229226 cases, 4563 needed so far; 767917 cases in 13 s (60267/s)
+    site 4 (block 2, variables from 65540): 57215 cases, 5023 needed so far; 825132 cases in 13 s (61771/s)
+    site 5 (block 2, variables from 81925): 170727 cases, 5861 needed so far; 995859 cases in 15 s (65645/s)
+    site 6 (block 3, variables from 98310): 91273 cases, 6210 needed so far; 1087132 cases in 16 s (68814/s)
+    site 7 (block 3, variables from 114695): 113071 cases, 6747 needed so far; 1200203 cases in 17 s (72390/s)
+sae e54/elicit_s2_rand: E_b over K 0.011418 (leftovers dropped 0.041351); |K| 6747 (6747 changed) of 131080; 20 s
+ITEM 21 of 36 DONE (sae e54/elicit_s2_rand)
+sae e54/cipher_s0_rand:
+  512 windows of 8 tokens, read at -1, 131080 variables, 131080 changed, 256 pairs
+    site 0 (block 0, variables from 0): 200195 cases, 993 needed so far; 200195 cases in 4 s (54724/s)
+    site 1 (block 0, variables from 16385): 224157 cases, 2941 needed so far; 424352 cases in 8 s (54834/s)
+    site 2 (block 1, variables from 32770): 105357 cases, 3516 needed so far; 529709 cases in 9 s (57181/s)
+    site 3 (block 1, variables from 49155): 225948 cases, 4756 needed so far; 755657 cases in 13 s (60351/s)
+    site 4 (block 2, variables from 65540): 58993 cases, 5226 needed so far; 814650 cases in 13 s (61921/s)
+    site 5 (block 2, variables from 81925): 169729 cases, 6277 needed so far; 984379 cases in 15 s (65808/s)
+    site 6 (block 3, variables from 98310): 90507 cases, 6683 needed so far; 1074886 cases in 16 s (68977/s)
+    site 7 (block 3, variables from 114695): 114622 cases, 7341 needed so far; 1189508 cases in 16 s (72643/s)
+sae e54/cipher_s0_rand: E_b over K 0.010508 (leftovers dropped 0.035453); |K| 7341 (7341 changed) of 131080; 20 s
+ITEM 22 of 36 DONE (sae e54/cipher_s0_rand)
+sae e54/cipher_s1_rand:
+  512 windows of 8 tokens, read at -1, 131080 variables, 131080 changed, 256 pairs
+    site 0 (block 0, variables from 0): 200580 cases, 764 needed so far; 200580 cases in 4 s (54736/s)
+    site 1 (block 0, variables from 16385): 224606 cases, 2583 needed so far; 425186 cases in 8 s (54708/s)
+    site 2 (block 1, variables from 32770): 105110 cases, 3082 needed so far; 530296 cases in 10 s (54426/s)
+    site 3 (block 1, variables from 49155): 226952 cases, 4068 needed so far; 757248 cases in 13 s (58121/s)
+    site 4 (block 2, variables from 65540): 59531 cases, 4449 needed so far; 816779 cases in 14 s (59741/s)
+    site 5 (block 2, variables from 81925): 169352 cases, 5241 needed so far; 986131 cases in 15 s (63709/s)
+    site 6 (block 3, variables from 98310): 91101 cases, 5577 needed so far; 1077232 cases in 16 s (66875/s)
+    site 7 (block 3, variables from 114695): 114280 cases, 6173 needed so far; 1191512 cases in 17 s (70495/s)
+sae e54/cipher_s1_rand: E_b over K 0.006700 (leftovers dropped 0.026870); |K| 6173 (6173 changed) of 131080; 20 s
+ITEM 23 of 36 DONE (sae e54/cipher_s1_rand)
+sae e54/cipher_s2_rand:
+  512 windows of 8 tokens, read at -1, 131080 variables, 131080 changed, 256 pairs
+    site 0 (block 0, variables from 0): 201071 cases, 1247 needed so far; 201071 cases in 4 s (54591/s)
+    site 1 (block 0, variables from 16385): 224279 cases, 3772 needed so far; 425350 cases in 8 s (54629/s)
+    site 2 (block 1, variables from 32770): 104783 cases, 4452 needed so far; 530133 cases in 9 s (56934/s)
+    site 3 (block 1, variables from 49155): 227048 cases, 6146 needed so far; 757181 cases in 13 s (60094/s)
+    site 4 (block 2, variables from 65540): 59056 cases, 6731 needed so far; 816237 cases in 13 s (61650/s)
+    site 5 (block 2, variables from 81925): 169464 cases, 8174 needed so far; 985701 cases in 15 s (65492/s)
+    site 6 (block 3, variables from 98310): 90823 cases, 8659 needed so far; 1076524 cases in 16 s (68662/s)
+    site 7 (block 3, variables from 114695): 114292 cases, 9388 needed so far; 1190816 cases in 16 s (72286/s)
+sae e54/cipher_s2_rand: E_b over K 0.007647 (leftovers dropped 0.024462); |K| 9388 (9388 changed) of 131080; 20 s
+ITEM 24 of 36 DONE (sae e54/cipher_s2_rand)
+sae e54/cipher_own_s0_rand:
+  512 windows of 8 tokens, read at -1, 131080 variables, 131080 changed, 256 pairs
+    site 0 (block 0, variables from 0): 204267 cases, 890 needed so far; 204267 cases in 4 s (54568/s)
+    site 1 (block 0, variables from 16385): 223617 cases, 2920 needed so far; 427884 cases in 8 s (54541/s)
+    site 2 (block 1, variables from 32770): 105384 cases, 3405 needed so far; 533268 cases in 9 s (56867/s)
+    site 3 (block 1, variables from 49155): 226935 cases, 4428 needed so far; 760203 cases in 13 s (60019/s)
+    site 4 (block 2, variables from 65540): 60192 cases, 4820 needed so far; 820395 cases in 13 s (61607/s)
+    site 5 (block 2, variables from 81925): 170344 cases, 5701 needed so far; 990739 cases in 15 s (65459/s)
+    site 6 (block 3, variables from 98310): 94420 cases, 6051 needed so far; 1085159 cases in 16 s (68742/s)
+    site 7 (block 3, variables from 114695): 114496 cases, 6671 needed so far; 1199655 cases in 17 s (72351/s)
+sae e54/cipher_own_s0_rand: E_b over K 0.009782 (leftovers dropped 0.038088); |K| 6671 (6671 changed) of 131080; 22 s
+ITEM 25 of 36 DONE (sae e54/cipher_own_s0_rand)
+sae e54/cipher_own_s1_rand:
+  512 windows of 8 tokens, read at -1, 131080 variables, 131080 changed, 256 pairs
+    site 0 (block 0, variables from 0): 203910 cases, 762 needed so far; 203910 cases in 4 s (54667/s)
+    site 1 (block 0, variables from 16385): 224237 cases, 2460 needed so far; 428147 cases in 8 s (54678/s)
+    site 2 (block 1, variables from 32770): 105008 cases, 2901 needed so far; 533155 cases in 9 s (56979/s)
+    site 3 (block 1, variables from 49155): 227945 cases, 3710 needed so far; 761100 cases in 13 s (60127/s)
+    site 4 (block 2, variables from 65540): 59488 cases, 4019 needed so far; 820588 cases in 13 s (61692/s)
+    site 5 (block 2, variables from 81925): 170390 cases, 4698 needed so far; 990978 cases in 15 s (65537/s)
+    site 6 (block 3, variables from 98310): 95170 cases, 5040 needed so far; 1086148 cases in 16 s (68833/s)
+    site 7 (block 3, variables from 114695): 114853 cases, 5575 needed so far; 1201001 cases in 17 s (72447/s)
+sae e54/cipher_own_s1_rand: E_b over K 0.013267 (leftovers dropped 0.057062); |K| 5575 (5575 changed) of 131080; 20 s
+ITEM 26 of 36 DONE (sae e54/cipher_own_s1_rand)
+sae e54/cipher_own_s2_rand:
+  512 windows of 8 tokens, read at -1, 131080 variables, 131080 changed, 256 pairs
+    site 0 (block 0, variables from 0): 205548 cases, 602 needed so far; 205548 cases in 4 s (54564/s)
+    site 1 (block 0, variables from 16385): 225220 cases, 2255 needed so far; 430768 cases in 8 s (54607/s)
+    site 2 (block 1, variables from 32770): 104806 cases, 2641 needed so far; 535574 cases in 9 s (56892/s)
+    site 3 (block 1, variables from 49155): 227582 cases, 3355 needed so far; 763156 cases in 13 s (60048/s)
+    site 4 (block 2, variables from 65540): 60249 cases, 3717 needed so far; 823405 cases in 13 s (61629/s)
+    site 5 (block 2, variables from 81925): 169528 cases, 4428 needed so far; 992933 cases in 15 s (65448/s)
+    site 6 (block 3, variables from 98310): 93679 cases, 4770 needed so far; 1086612 cases in 16 s (68677/s)
+    site 7 (block 3, variables from 114695): 113970 cases, 5417 needed so far; 1200582 cases in 17 s (72220/s)
+sae e54/cipher_own_s2_rand: E_b over K 0.008642 (leftovers dropped 0.035038); |K| 5417 (5417 changed) of 131080; 21 s
+ITEM 27 of 36 DONE (sae e54/cipher_own_s2_rand)
+sae c3/rank1_s0_rand:
+  512 windows of 8 tokens, read at -1, 131080 variables, 131080 changed, 256 pairs
+    site 0 (block 0, variables from 0): 204090 cases, 769 needed so far; 204090 cases in 4 s (54526/s)
+    site 1 (block 0, variables from 16385): 228523 cases, 2431 needed so far; 432613 cases in 8 s (54595/s)
+    site 2 (block 1, variables from 32770): 105719 cases, 2879 needed so far; 538332 cases in 9 s (56896/s)
+    site 3 (block 1, variables from 49155): 228177 cases, 3841 needed so far; 766509 cases in 13 s (60031/s)
+    site 4 (block 2, variables from 65540): 58797 cases, 4213 needed so far; 825306 cases in 13 s (61563/s)
+    site 5 (block 2, variables from 81925): 174042 cases, 5048 needed so far; 999348 cases in 15 s (65471/s)
+    site 6 (block 3, variables from 98310): 89065 cases, 5387 needed so far; 1088413 cases in 16 s (68528/s)
+    site 7 (block 3, variables from 114695): 114796 cases, 5959 needed so far; 1203209 cases in 17 s (72141/s)
+sae c3/rank1_s0_rand: E_b over K 0.008912 (leftovers dropped 0.033976); |K| 5959 (5959 changed) of 131080; 21 s
+ITEM 28 of 36 DONE (sae c3/rank1_s0_rand)
+sae c3/rank1_s1_rand:
+  512 windows of 8 tokens, read at -1, 131080 variables, 131080 changed, 256 pairs
+    site 0 (block 0, variables from 0): 204666 cases, 720 needed so far; 204666 cases in 4 s (54548/s)
+    site 1 (block 0, variables from 16385): 227797 cases, 2184 needed so far; 432463 cases in 8 s (54573/s)
+    site 2 (block 1, variables from 32770): 106402 cases, 2558 needed so far; 538865 cases in 9 s (56885/s)
+    site 3 (block 1, variables from 49155): 227591 cases, 3360 needed so far; 766456 cases in 13 s (60001/s)
+    site 4 (block 2, variables from 65540): 59203 cases, 3665 needed so far; 825659 cases in 13 s (61550/s)
+    site 5 (block 2, variables from 81925): 174038 cases, 4316 needed so far; 999697 cases in 15 s (65463/s)
+    site 6 (block 3, variables from 98310): 91416 cases, 4636 needed so far; 1091113 cases in 16 s (68606/s)
+    site 7 (block 3, variables from 114695): 114760 cases, 5202 needed so far; 1205873 cases in 17 s (72201/s)
+sae c3/rank1_s1_rand: E_b over K 0.006925 (leftovers dropped 0.026919); |K| 5202 (5202 changed) of 131080; 20 s
+ITEM 29 of 36 DONE (sae c3/rank1_s1_rand)
+sae c3/rank1_s2_rand:
+  512 windows of 8 tokens, read at -1, 131080 variables, 131080 changed, 256 pairs
+    site 0 (block 0, variables from 0): 205802 cases, 951 needed so far; 205802 cases in 4 s (54575/s)
+    site 1 (block 0, variables from 16385): 228549 cases, 2578 needed so far; 434351 cases in 8 s (54615/s)
+    site 2 (block 1, variables from 32770): 106405 cases, 3058 needed so far; 540756 cases in 10 s (56800/s)
+    site 3 (block 1, variables from 49155): 227745 cases, 4037 needed so far; 768501 cases in 13 s (59963/s)
+    site 4 (block 2, variables from 65540): 58582 cases, 4367 needed so far; 827083 cases in 13 s (61495/s)
+    site 5 (block 2, variables from 81925): 173625 cases, 5234 needed so far; 1000708 cases in 15 s (65399/s)
+    site 6 (block 3, variables from 98310): 92663 cases, 5577 needed so far; 1093371 cases in 16 s (68588/s)
+    site 7 (block 3, variables from 114695): 114498 cases, 6168 needed so far; 1207869 cases in 17 s (72173/s)
+sae c3/rank1_s2_rand: E_b over K 0.006892 (leftovers dropped 0.026448); |K| 6168 (6168 changed) of 131080; 20 s
+ITEM 30 of 36 DONE (sae c3/rank1_s2_rand)
+sae c3/cipher_s0_rand:
+  512 windows of 8 tokens, read at -1, 131080 variables, 131080 changed, 256 pairs
+    site 0 (block 0, variables from 0): 201516 cases, 809 needed so far; 201516 cases in 4 s (54441/s)
+    site 1 (block 0, variables from 16385): 228566 cases, 2482 needed so far; 430082 cases in 8 s (54550/s)
+    site 2 (block 1, variables from 32770): 106073 cases, 2904 needed so far; 536155 cases in 9 s (56870/s)
+    site 3 (block 1, variables from 49155): 230167 cases, 3708 needed so far; 766322 cases in 13 s (60073/s)
+    site 4 (block 2, variables from 65540): 59186 cases, 4018 needed so far; 825508 cases in 13 s (61622/s)
+    site 5 (block 2, variables from 81925): 173016 cases, 4750 needed so far; 998524 cases in 15 s (65493/s)
+    site 6 (block 3, variables from 98310): 90689 cases, 5090 needed so far; 1089213 cases in 16 s (68622/s)
+    site 7 (block 3, variables from 114695): 115500 cases, 5671 needed so far; 1204713 cases in 17 s (72247/s)
+sae c3/cipher_s0_rand: E_b over K 0.006772 (leftovers dropped 0.026332); |K| 5671 (5671 changed) of 131080; 20 s
+ITEM 31 of 36 DONE (sae c3/cipher_s0_rand)
+sae c3/cipher_s1_rand:
+  512 windows of 8 tokens, read at -1, 131080 variables, 131080 changed, 256 pairs
+    site 0 (block 0, variables from 0): 200684 cases, 1611 needed so far; 200684 cases in 4 s (54141/s)
+    site 1 (block 0, variables from 16385): 228403 cases, 4199 needed so far; 429087 cases in 8 s (54410/s)
+    site 2 (block 1, variables from 32770): 105743 cases, 4953 needed so far; 534830 cases in 9 s (56740/s)
+    site 3 (block 1, variables from 49155): 230892 cases, 6809 needed so far; 765722 cases in 13 s (59965/s)
+    site 4 (block 2, variables from 65540): 59545 cases, 7380 needed so far; 825267 cases in 13 s (61527/s)
+    site 5 (block 2, variables from 81925): 172928 cases, 9017 needed so far; 998195 cases in 15 s (65428/s)
+    site 6 (block 3, variables from 98310): 92920 cases, 9478 needed so far; 1091115 cases in 16 s (68632/s)
+    site 7 (block 3, variables from 114695): 115124 cases, 10189 needed so far; 1206239 cases in 17 s (72234/s)
+sae c3/cipher_s1_rand: E_b over K 0.008531 (leftovers dropped 0.026898); |K| 10189 (10189 changed) of 131080; 20 s
+ITEM 32 of 36 DONE (sae c3/cipher_s1_rand)
+sae c3/cipher_s2_rand:
+  512 windows of 8 tokens, read at -1, 131080 variables, 131080 changed, 256 pairs
+    site 0 (block 0, variables from 0): 200164 cases, 872 needed so far; 200164 cases in 4 s (53970/s)
+    site 1 (block 0, variables from 16385): 229370 cases, 2889 needed so far; 429534 cases in 8 s (54250/s)
+    site 2 (block 1, variables from 32770): 105518 cases, 3387 needed so far; 535052 cases in 9 s (56592/s)
+    site 3 (block 1, variables from 49155): 231941 cases, 4559 needed so far; 766993 cases in 13 s (59875/s)
+    site 4 (block 2, variables from 65540): 59720 cases, 4931 needed so far; 826713 cases in 13 s (61435/s)
+    site 5 (block 2, variables from 81925): 173996 cases, 5937 needed so far; 1000709 cases in 15 s (65358/s)
+    site 6 (block 3, variables from 98310): 92271 cases, 6323 needed so far; 1092980 cases in 16 s (68531/s)
+    site 7 (block 3, variables from 114695): 115513 cases, 6952 needed so far; 1208493 cases in 17 s (72149/s)
+sae c3/cipher_s2_rand: E_b over K 0.007696 (leftovers dropped 0.026874); |K| 6952 (6952 changed) of 131080; 20 s
+ITEM 33 of 36 DONE (sae c3/cipher_s2_rand)
+sae c3/copy_s0_rand:
+  512 windows of 8 tokens, read at -1, 131080 variables, 131080 changed, 256 pairs
+    site 0 (block 0, variables from 0): 207027 cases, 749 needed so far; 207027 cases in 4 s (54553/s)
+    site 1 (block 0, variables from 16385): 232763 cases, 2693 needed so far; 439790 cases in 8 s (54594/s)
+    site 2 (block 1, variables from 32770): 107839 cases, 3188 needed so far; 547629 cases in 10 s (56882/s)
+    site 3 (block 1, variables from 49155): 230183 cases, 4209 needed so far; 777812 cases in 13 s (60036/s)
+    site 4 (block 2, variables from 65540): 59542 cases, 4623 needed so far; 837354 cases in 14 s (61572/s)
+    site 5 (block 2, variables from 81925): 174003 cases, 5604 needed so far; 1011357 cases in 15 s (65436/s)
+    site 6 (block 3, variables from 98310): 92879 cases, 6007 needed so far; 1104236 cases in 16 s (68596/s)
+    site 7 (block 3, variables from 114695): 115886 cases, 6706 needed so far; 1220122 cases in 17 s (72187/s)
+sae c3/copy_s0_rand: E_b over K 0.007575 (leftovers dropped 0.026278); |K| 6706 (6706 changed) of 131080; 20 s
+ITEM 34 of 36 DONE (sae c3/copy_s0_rand)
+sae c3/copy_s1_rand:
+  512 windows of 8 tokens, read at -1, 131080 variables, 131080 changed, 256 pairs
+    site 0 (block 0, variables from 0): 206557 cases, 867 needed so far; 206557 cases in 4 s (54603/s)
+    site 1 (block 0, variables from 16385): 233328 cases, 2789 needed so far; 439885 cases in 8 s (54642/s)
+    site 2 (block 1, variables from 32770): 108180 cases, 3322 needed so far; 548065 cases in 10 s (56935/s)
+    site 3 (block 1, variables from 49155): 231494 cases, 4381 needed so far; 779559 cases in 13 s (60066/s)
+    site 4 (block 2, variables from 65540): 59998 cases, 4808 needed so far; 839557 cases in 14 s (61608/s)
+    site 5 (block 2, variables from 81925): 173944 cases, 5686 needed so far; 1013501 cases in 15 s (65458/s)
+    site 6 (block 3, variables from 98310): 91437 cases, 6083 needed so far; 1104938 cases in 16 s (68558/s)
+    site 7 (block 3, variables from 114695): 116509 cases, 6766 needed so far; 1221447 cases in 17 s (72164/s)
+sae c3/copy_s1_rand: E_b over K 0.008630 (leftovers dropped 0.030223); |K| 6766 (6766 changed) of 131080; 20 s
+ITEM 35 of 36 DONE (sae c3/copy_s1_rand)
+sae c3/copy_s2_rand:
+  512 windows of 8 tokens, read at -1, 131080 variables, 131080 changed, 256 pairs
+    site 0 (block 0, variables from 0): 206803 cases, 982 needed so far; 206803 cases in 4 s (54218/s)
+    site 1 (block 0, variables from 16385): 233244 cases, 3217 needed so far; 440047 cases in 8 s (54442/s)
+    site 2 (block 1, variables from 32770): 108468 cases, 3816 needed so far; 548515 cases in 10 s (56784/s)
+    site 3 (block 1, variables from 49155): 231649 cases, 5185 needed so far; 780164 cases in 13 s (59971/s)
+    site 4 (block 2, variables from 65540): 59795 cases, 5680 needed so far; 839959 cases in 14 s (61510/s)
+    site 5 (block 2, variables from 81925): 174165 cases, 6821 needed so far; 1014124 cases in 16 s (65368/s)
+    site 6 (block 3, variables from 98310): 92216 cases, 7260 needed so far; 1106340 cases in 16 s (68501/s)
+    site 7 (block 3, variables from 114695): 116002 cases, 8000 needed so far; 1222342 cases in 17 s (72089/s)
+sae c3/copy_s2_rand: E_b over K 0.009741 (leftovers dropped 0.032325); |K| 8000 (8000 changed) of 131080; 21 s
+ITEM 36 of 36 DONE (sae c3/copy_s2_rand)
+STAGE 1 DONE (sae, sae_a)
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/fig2_all_tasks/results/ (items/sae, stage0, state_files, large/sae) ===
