@@ -108,6 +108,7 @@ class Swap:
         self.z, self.a, self.hi = run.z[l], run.a[l], hi
         self.layer, self.off = l, l * PER_LAYER
         self.var: Tensor | None = None
+        self.ex: Tensor | None = None
         self.pt: Tensor | None = None
 
     def cases(self, local: Tensor | None, ex: Tensor, pt: Tensor, rows: int) -> list[tuple[Tensor, Tensor, int]]:
@@ -118,7 +119,7 @@ class Swap:
         return [net.h[self.layer].attn.o_proj.register_forward_pre_hook(self.head), net.h[self.layer].mlp.down_proj.register_forward_pre_hook(self.mlp)]
 
     def set(self, var: Tensor, ex: Tensor, pt: Tensor) -> None:
-        self.var, self.pt = var, pt
+        self.var, self.ex, self.pt = var, ex, pt
 
     def head(self, _m: Any, inp: tuple[Tensor, ...]) -> tuple[Tensor] | None:
         assert self.var is not None and self.pt is not None
@@ -132,21 +133,24 @@ class Swap:
         return (y,)
 
     def mlp(self, _m: Any, inp: tuple[Tensor, ...]) -> tuple[Tensor] | None:
-        assert self.var is not None and self.pt is not None
-        a, pt = inp[0], self.pt
+        assert self.var is not None and self.ex is not None and self.pt is not None
+        ex, pt = self.ex, self.pt
         neu = ((self.var >= H) & (self.var < H + NEUR)).nonzero().squeeze(1)
         rem = (self.var == H + NEUR).nonzero().squeeze(1)
         if not len(neu) and not len(rem):
             return None
-        a = a.clone()
+        # A neuron or remainder row swaps nothing before down_proj, so x's activation here is F's cached run on x: it is
+        # read from the cache. Split on the rerun's copy (off by rounding), an activation at its bound changed side and
+        # moved the identity swap by a whole bound (E326 stage 0, e62 and e46).
+        a = inp[0].clone()
         if len(neu):
             i = self.var[neu] - H
             th = self.hi[i][:, None]
-            cur, new = a[neu, :, i], self.a[pt[neu], :, i]  # (k, T)
+            cur, new = self.a[ex[neu], :, i], self.a[pt[neu], :, i]  # (k, T)
             a[neu, :, i] = (cur - strong(cur, th)) + strong(new, th)  # each part is exact: s is either a or 0
         if len(rem):
-            new = self.a[pt[rem]]
-            a[rem] = strong(a[rem], self.hi) + (new - strong(new, self.hi))
+            cur, new = self.a[ex[rem]], self.a[pt[rem]]
+            a[rem] = strong(cur, self.hi) + (new - strong(new, self.hi))
         return (a,)
 
 
