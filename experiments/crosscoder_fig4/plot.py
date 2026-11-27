@@ -6,6 +6,10 @@ fine-tune-specific part of the planted change per variant and crosscoder seed un
 0.5, with E203's miss (literal, 0.0) beside. A stage0b file that stopped at an early check is drawn as missing and
 listed in the CSV. Descriptive: no verdict.
 
+A second figure, `crosscoder_fig4_lengths.png` (`draw_lengths`, run 3 / E313), puts each state's d at 200M (results/)
+and 800M (results/long/) side by side in its task's column, the Gaussian updates as a column on the same axes, and the
+planted control at both lengths, literal (filled) beside floored (open).
+
 d = shared part of the change minus its fine-tune-specific part (`crosscoder.d_forms` d_authors).
 
     ~/commute-agents/fleet/cpu-run --mem 4G python experiments/crosscoder_fig4/plot.py [--results DIR] [--out PNG]
@@ -141,12 +145,94 @@ def draw(results: Path, out: Path) -> None:
     print(f"wrote {out}")
 
 
+LENGTH_STYLE = {"200M": ("#000000", "h", -0.17), "800M": ("#D55E00", "s", 0.17)}  # colour, marker, x shift
+RANDOM_COLUMN = "random update\n(Gaussian)"
+CONTROL_LABELS = {"random": "content-independent", "answer_half": "answer, half the windows", "answer": "answer, every window"}
+
+
+def tokens_label(tokens: int) -> str:
+    return f"{round(tokens / 1e8) * 100}M"
+
+
+def lengths_panel(ax: Axes, by_length: dict[str, list[dict[str, Any]]], state: dict[str, tuple[str, str]], order: list[str], records: list[dict[str, Any]]) -> None:
+    """d per fine-tune seed at each training length, side by side in each task's column; the Gaussian updates as a
+    column of their own on the same axes. Literal exclusion (the floored one is in the CSV)."""
+    columns = [*order, RANDOM_COLUMN]
+    for length, sides in by_length.items():
+        color, marker, dx = LENGTH_STYLE[length]
+        for s in (s for s in sides if s["kind"] in ("state", "gaussian")):
+            if s["kind"] == "state" and s["state"] not in state:
+                continue
+            column = RANDOM_COLUMN if s["kind"] == "gaussian" else state[s["state"]][0]
+            ax.scatter([columns.index(column) + dx], [num(s["d_authors"])], color=color, marker=marker, s=18, alpha=0.85, linewidths=0)
+            records.append({"panel": "d", "tokens": length, "key": s["key"], "column": column.replace("\n", " "), "kind": s["kind"],
+                            "d_literal": s.get("d_authors"), "d_floored": s.get("floored", {}).get("d_authors"),
+                            "specific_literal": s.get("specific"), "specific_floored": s.get("floored", {}).get("specific")})  # fmt: skip
+        ax.scatter([], [], color=color, marker=marker, s=18, label=f"{length} tokens, one fine-tune seed")
+    n_reuse = len({state[s][0] for s in state if state[s][1] == "reuse"})
+    for x in (n_reuse - 0.5, len(order) - 0.5):
+        ax.axvline(x, color="#999999", linewidth=0.8)
+    ax.set_xticks(range(len(columns)), columns, rotation=70, ha="right", fontsize=6)
+    ax.set_ylabel("crosscoder d\n(shared minus fine-tune-specific part)")
+    ax.text(n_reuse / 2 - 0.5, 0.97, "built to reuse", transform=ax.get_xaxis_transform(), ha="center", va="top", fontsize=7)
+    ax.text(n_reuse + (len(order) - n_reuse) / 2 - 0.5, 0.97, "built new", transform=ax.get_xaxis_transform(), ha="center", va="top", fontsize=7)
+    ax.set_ylim(-0.12, ax.get_ylim()[1] + 0.08)
+    ax.legend(fontsize=6, loc="lower left", ncols=2, frameon=False)
+    ax.set_title("Crosscoder d on Fig 4's states at 200M and 800M training tokens (literal exclusion)", loc="left", fontsize=7)
+
+
+def lengths_control_panel(bx: Axes, ctl: list[dict[str, Any]], records: list[dict[str, Any]]) -> None:
+    """The planted change's part on fine-tune-specific latents per variant and length; filled literal, open floored."""
+    e203 = json.loads(E203_0B.read_text())["checks"]["b planted: found, specific and carried"]
+    points = [("answer", "200M", "literal", float(e203["part"]), "E203 planted")]
+    for c in (c for c in ctl if "planted" in c):
+        for rule in RULES:
+            points.append((c["where"], tokens_label(c["planted"]["tokens"]), rule, num(reading(c["planted"], rule).get("specific")), c["planted"]["key"]))
+    columns = [f"{lab}, {length}" for lab in CONTROL_LABELS.values() for length in LENGTH_STYLE]
+    for where, length, rule, v, key in points:
+        color, marker, _ = LENGTH_STYLE[length]
+        face = color if rule == "literal" else "none"
+        dx = -0.12 if rule == "literal" else 0.12
+        bx.scatter([columns.index(f"{CONTROL_LABELS[where]}, {length}") + dx], [v], marker=marker, facecolors=face, edgecolors=color, s=20, linewidths=0.8)
+        records.append({"panel": "control", "tokens": length, "key": key, "where": where, "rule": rule, "specific_part": v})
+    bx.scatter([], [], marker="o", facecolors="#555555", edgecolors="#555555", s=20, label="literal exclusion")
+    bx.scatter([], [], marker="o", facecolors="none", edgecolors="#555555", s=20, label="floored exclusion")
+    bx.axhline(0.5, color="#777777", linewidth=0.8, linestyle="--")
+    bx.annotate("filed bar 0.5", (0, 0.5), xycoords=("axes fraction", "data"), xytext=(2, 2), textcoords="offset points", fontsize=6, color="#555555")
+    bx.set_ylim(-0.05, 1.05)
+    bx.set_xticks(range(len(columns)), columns, rotation=70, ha="right", fontsize=5)
+    bx.set_ylabel("planted change's part on\nfine-tune-specific latents")
+    bx.legend(fontsize=6, loc="center left", frameon=False)
+    bx.set_title("Planted control", loc="left", fontsize=8)
+
+
+def draw_lengths(results: Path, out: Path) -> None:
+    """Run 3's figure: every Fig 4 state's d at 200M (results/) and 800M (results/long/), with the planted control at both."""
+    state, order = fig4_layout()
+    short, ctl_short = load(results)
+    long_, ctl_long = load(results / "long")
+    records: list[dict[str, Any]] = []
+    fig, (ax, bx) = figure(FULL_WIDTH, ncols=2)
+    fig.set_layout_engine(None)
+    ax.set_position((0.1, 0.4, 0.58, 0.5))
+    bx.set_position((0.78, 0.4, 0.2, 0.5))
+    lengths_panel(ax, {"200M": short, "800M": long_}, state, order, records)
+    lengths_control_panel(bx, ctl_short + ctl_long, records)
+    n_long = sum(1 for s in long_ if s["kind"] == "state")
+    n = (f"States: 48 at 200M, {n_long} at 800M (16 tasks x 3 fine-tune seeds), one crosscoder each; 3 Gaussian updates at "
+         "each length. Control: one crosscoder per point. Literal: App. E.2 drops a latent with a negative base beta; "
+         "floored: only below -3 sd of that beta")  # fmt: skip
+    save(fig, out, n=n, data=records)
+    print(f"wrote {out}")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--results", type=Path, default=HERE / "results")
     ap.add_argument("--out", type=Path, default=HERE / "figures/crosscoder_fig4.png")
     a = ap.parse_args()
     draw(a.results, a.out)
+    draw_lengths(a.results, a.out.with_name(a.out.stem + "_lengths.png"))
 
 
 if __name__ == "__main__":
