@@ -22,3 +22,5 @@ tasks Fig 2 lacks, x 3 seeds, each with one matched random of E290's recipe, at 
 items per featurization). The 15 states E298 already read are reused after a stage-0 reproduction check. Rows go into
 figures/data/definition.csv's format. Estimate from E298's measured per-item times: 66 x (289 + 230 + 122) s = 11.7
 GPU-hours, ~$115, on up to 8 pods.
+
+Reuses: E325's code, predictions.json (PRED_SHA fa307f23...) and check_states pass (whip-lead's pod, commit 8cc7cf24) unchanged. E325's claim stayed with whip-lead when the cell moved to definition-lead (2026-11-27), so job-gate refused definition-lead's pods; this number is the same run under the cell's owner.
