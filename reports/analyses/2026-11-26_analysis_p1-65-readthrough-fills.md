@@ -1,10 +1,9 @@
 # Readthrough fills: four paper numbers re-read over the necessary set
 
-Two of the paper's numbers were read over the mean-ablation circuit and are re-read here, from saved files, over the
-necessary set the definition uses. Both readings keep their sense: the SAE's reconstruction error still carries most of
-the rebuilt edit's change, and the same three pairs keep their gap once output distance is regressed out. The other two
-numbers wait on runs that have not been made, so their sections are placeholders, and nothing here changes a claim of
-`GOALS.md`.
+Three of the paper's numbers were read over the mean-ablation circuit or a nearby set, and are re-read here over the
+necessary set the definition uses; the rescale-only control was also read at two more seeds and at SAE latents. All
+three numbers keep their sense, and the control reads near the full fine-tunes at VPD but two to six times above them
+at SAE latents. Nothing here changes a claim of `GOALS.md`; the paper's lines change only in their stated values.
 
 Two sets of variables appear throughout:
 - **the necessary set**, written $K$ in the paper, is every variable that changes the behaviour when it alone is swapped
@@ -106,17 +105,49 @@ Source of the existing value: `experiments/rho_saved_items/results/summary.json`
 
 ## 4. The rescale-only control at VPD seeds 0-2 and SAE seeds 0-2
 
-> **PENDING: run 2 of this cell, not yet made.** The rescale-only states have no reads yet at VPD seeds 1 and 2, at the
-> repeat of VPD seed 0, or at SAE seeds 0 to 2. No number is given here until they do.
+Run 2 (E322, 2026-11-27) read the rescale-only control over the necessary set on five tasks and three seeds, at VPD
+and at SAE latents. At VPD the control reads close to the full fine-tunes, but not consistently above or below them:
+it reads higher on copy, about half on cipher, and level or a little lower on the other three. At SAE latents it reads
+above the full fine-tune on every task and seed, two to three times on four tasks and about six times on copy.
 
-The rescale-only control trains only one gain per MLP neuron, so it is reuse by construction. Its states for five tasks
-and three seeds are already trained and saved; only the reads are missing. The table this section will hold puts each
-state beside the full fine-tune of the same task and seed, at VPD and at SAE latents. The full fine-tunes' values
-are in `experiments/fig2_standard/results/definition_rows.csv`, rows with block `trained` and side `trained`.
+The rescale-only control trains only one gain per MLP neuron, on the input of each MLP's output matrix, so it is reuse
+by construction. Its 15 states are the ones E290 trained and saved (learning rate 3e-3, the T-Few recipe, 100 times
+the full fine-tunes' rate, up to 300 steps); none was retrained or tuned here. Every read setting is E298's filed
+value, so the full fine-tunes and their matched random updates were read the same way.
 
-| task | seed | rescale-only, VPD | full fine-tune, VPD | rescale-only, SAE | full fine-tune, SAE |
-|---|---|---|---|---|---|
-| PENDING | | | | | |
+Each cell gives seeds 0, 1 and 2 in order.
+
+| task | rescale-only, VPD | full fine-tune, VPD | rescale-only, SAE | full fine-tune, SAE |
+|---|---|---|---|---|
+| copy | 0.072, 0.049, 0.063 | 0.034, 0.032, 0.032 | 0.286, 0.262, 0.275 | 0.045, 0.046, 0.042 |
+| rank1 | 0.029, 0.028, 0.023 | 0.030, 0.029, 0.029 | 0.101, 0.102, 0.098 | 0.038, 0.035, 0.032 |
+| elicit | 0.023, 0.025, 0.024 | 0.027, 0.030, 0.029 | 0.093, 0.090, 0.084 | 0.036, 0.037, 0.031 |
+| cipher | 0.023, 0.020, 0.022 | 0.037, 0.039, 0.042 | 0.087, 0.074, 0.083 | 0.036, 0.040, 0.038 |
+| prior_cipher | 0.019, 0.023, 0.026 | 0.030, 0.029, 0.029 | 0.072, 0.082, 0.085 | 0.046, 0.047, 0.043 |
+
+Every value is above its task's matched random updates, which read 0.013 to 0.015 at VPD and 0.008 to 0.017 at SAE.
+
+**The SAE error term.** At SAE latents part of each change falls in the SAE's reconstruction error, which the reading
+counts. That share is 0.51 to 0.69 for the rescale-only control and higher, 0.68 to 0.76, for the full fine-tunes,
+under the same convention. So the error term does not explain why the control reads higher than the full fine-tunes.
+At VPD the share is about zero on both sides.
+
+**Against the card's two rivals.** Rival A said the control would read inside the full fine-tunes' range. It fails
+at SAE on every row and at VPD on copy. Rival B said it would read 0.2 or more. It holds only at SAE on copy. Neither
+fits, and the run was filed as descriptive, so no claim is made at the bar.
+
+**Checks.** Stage 0 passed at both featurizations: do-nothing reads 0, the identity swap flips nothing, and all
+10,248 of the SAE's must-flip cases flip. The repeat of VPD seed 0 matches E290's saved values to 3.9e-5 relative,
+against a tolerance of 5e-4. redteam-lead passed the data (`reports/reviews/2026-11-27_review_e322-rescale-seeds.md`).
+
+**For writeup-lead.** Wherever the paper says the rescale-only control was read at seed 0 only, it now has three
+seeds at VPD and three at SAE latents. At VPD it reads near the full fine-tunes, above them on copy and below on
+cipher. At SAE latents it reads two to six times the full fine-tunes on every task.
+
+Sources: `experiments/p165_gain_reads/results/definition_rows.csv` (block `gain`, columns `value` and
+`leftover_share`) and `summary.json` (`repeat_max_rel_dev`). The full fine-tunes and random updates come from
+`experiments/fig2_standard/results/definition_rows.csv`, block `trained`, sides `trained` and `random`. The figure
+script `experiments/p165_gain_reads/plot.py` has not yet been rendered.
 
 ## Departures from the literature
 
@@ -124,9 +155,10 @@ None: this page re-reads saved results and changes no definition or procedure.
 
 ## Not run
 
-- Run 2, the rescale-only control reads at VPD seeds 1 and 2, the repeat of seed 0, and SAE seeds 0 to 2.
+- The figure of section 4 (`experiments/p165_gain_reads/plot.py`). The cluster worker timed out on job steps on
+  2026-11-27, so only the table is given.
 - The fifteen per-fine-tune random updates over the necessary set at SAE latents, which would complete the random
   group of section 1.
 - Matched random updates of the rescale-only states at SAE latents.
 - A rescale-only control at the full fine-tunes' step and learning rate, which would need retraining and a new cell.
-- No figure: each section is one or two values beside their earlier reading, so a table carries it.
+- No figure for sections 1 to 3: each is one or two values beside its earlier reading, so a table carries it.
