@@ -9,7 +9,7 @@ the rest, so the pieces sum to delta-W in both. K is then found by E268's single
 (`commute.needed.needed_set`, E268's settings) on the arm's own featurization, and E_b over K is
 `commute.stand_in.explained_share` on a write pass (`stand_in.write_change`) over every position of D in F's own run.
 
-One job, in this order; any miss stops it (a `.stopped` marker beside the line file):
+One job, in this order; a miss in 0(a) or 0(b) stops it (0(c) and 1 are recorded with over_tol, not stops: E268 ran on an L40) (a `.stopped` marker beside the line file):
     0  controls: (a) the do-nothing (F = M) under both splits: no changed variable, every dd exactly 0, E_b exactly 1;
        (b) the identity interchange (x' = x) on `control` under the adjoint featurization: 0 argmax changes (its
        largest logit deviation is recorded); (c) least squares on every item: a fresh write pass scored over E268's
@@ -149,8 +149,8 @@ def stage0(w: Any, cfg: Config, out: Lines) -> None:
         num, den, dd, ch = write_pass(F, feat, toks, cfg)
         eb = SI.explained_share(num, den, dd, K & ch)
         r = {"stage": "0", "split": "least_squares", "item": item, "E_b_K_saved_K": eb, "E_b_K_E268": eb_saved,
-             "rel_dev": rel(eb, eb_saved), "seconds": time.time() - t0}  # fmt: skip
-        out.add(r, f"{item}: E_b over E268's K {eb!r}, E268 {eb_saved!r}" if r["rel_dev"] > cfg.repro_rel_tol else None)
+             "rel_dev": rel(eb, eb_saved), "over_tol": rel(eb, eb_saved) > cfg.repro_rel_tol, "seconds": time.time() - t0}  # fmt: skip
+        out.add(r, None)  # read, not a stop: E268 ran on an L40, these pods on H100s (card difference, E327)
 
 
 def read(w: Any, cfg: Config, item: str, split: str) -> dict[str, Any]:
@@ -181,8 +181,7 @@ def main(shard: tuple[int, int], tag: str) -> int:
     log("STAGE 0 DONE")
     if shard[0] == 0 and not out.has("1", "least_squares", cfg.rescan):
         r = read(w, cfg, cfg.rescan, "least_squares")
-        out.add({"stage": "1"} | r, f"{cfg.rescan}: rescanned E_b {r['E_b_K']!r}, E268 {r['E_b_K_E268']!r}"
-                if rel(r["E_b_K"], r["E_b_K_E268"]) > cfg.repro_rel_tol else None)  # fmt: skip
+        out.add({"stage": "1", "over_tol": rel(r["E_b_K"], r["E_b_K_E268"]) > cfg.repro_rel_tol} | r, None)  # read, not a stop (card)
     todo = list(cfg.items)[shard[0] :: shard[1]]
     log(f"stage 2: {todo}")
     for k, item in enumerate(todo):
