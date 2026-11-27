@@ -1,0 +1,47 @@
+usage: run.py [-h] --pair {copy_cipher,facts,gold} [--draws DRAWS]
+              --decomp DECOMP [--fetch-to FETCH_TO]
+
+P3.15: more random draws for the frozen-neuron share
+
+options:
+  -h, --help            show this help message and exit
+  --pair {copy_cipher,facts,gold}
+  --draws DRAWS         draw seeds read in stage 1 (draw 0 is P3.9's and
+                        E187's)
+  --decomp DECOMP       p-015e0710's directory ($COMMUTE_QWEN_FROZEN_DIR),
+                        fetched if incomplete
+  --fetch-to FETCH_TO   where the seed-0 states land and stay
+copy_cipher last cipher copy 0.457686 ['cipher_s0_last', 'cipher_s1_last', 'cipher_s2_last']
+copy_cipher 5x cipher copy 0.378698 ['cipher_s0_5x', 'cipher_s1_5x', 'cipher_s2_5x']
+facts last invented known 0.46763 ['invented_s0_last', 'invented_s1_last', 'invented_s2_last']
+facts 5x invented known 0.490171 ['invented_s0_5x', 'invented_s1_5x', 'invented_s2_5x']
+gold last gold_shuf gold 0.968076 ['gold_shuf_s0_last', 'gold_shuf_s1_last', 'gold_shuf_s2_last']
+gold 5x gold gold_shuf 0.814613 ['gold_s0_5x', 'gold_s1_5x', 'gold_s2_5x']
+[edge] above {'range': [-0.0014, 0.002], 'n_draws': 3, 'seeds_vs_range': 'all above'}
+[edge] below {'range': [-0.001, 0.002], 'n_draws': 3, 'seeds_vs_range': 'all below'}
+[edge] one unscored {'range': [0.001, 0.002], 'n_draws': 2, 'seeds_vs_range': 'all above'}
+[edge] none scored {'range': None, 'n_draws': 0, 'seeds_vs_range': 'unreadable'}
+[edge] tie at max {'range': [-0.001, 0.002], 'n_draws': 3, 'seeds_vs_range': 'not all outside'}
+[edge] both sides {'range': [-0.005, 0.005], 'n_draws': 3, 'seeds_vs_range': 'not all outside'}
+[edge] do-nothing {'range': [0.0, 0.0], 'n_draws': 3, 'seeds_vs_range': 'not all outside'}
+[matched] copy_cipher last: seeds [0.01902, 0.0123, 0.00309], random {0: -0.15246, 1: -0.15246, 2: -0.15246}, all above, cells {0: 'inside band', 1: 'inside band', 2: 'inside band'}, mean seed gap 0.01147
+[matched] copy_cipher 5x: seeds [0.0353, 0.0322, 0.02818], random {0: 0.10564, 1: 0.10564, 2: 0.10564}, all below, cells {0: 'inside band', 1: 'inside band', 2: 'inside band'}, mean seed gap 0.03189
+[matched] facts last: seeds [-0.0101, 0.00318, 0.00332], random {0: -0.01142, 1: -0.01142, 2: -0.01142}, all above, cells {0: 'inside band', 1: 'inside band', 2: 'inside band'}, mean seed gap -0.00120
+[matched] facts 5x: seeds [-0.00142, -0.00093, -0.00129], random {0: 0.03653, 1: 0.03653, 2: 0.03653}, all below, cells {0: 'inside band', 1: 'inside band', 2: 'inside band'}, mean seed gap -0.00121
+[matched] gold last: seeds [0.00583, 0.00436, 0.00472], random {0: -0.00143, 1: -0.00143, 2: -0.00143}, all above, cells {0: 'beyond band', 1: 'beyond band', 2: 'beyond band'}, mean seed gap 0.00497
+[matched] gold 5x: seeds [-0.00075, -0.00116, -0.00082], random {0: 0.00483, 1: 0.00483, 2: 0.00483}, all below, cells {0: 'inside band', 1: 'inside band', 2: 'inside band'}, mean seed gap -0.00091
+/tmp/p315_stub/figures:
+size_matched_draws.csv
+size_matched_draws.pdf
+size_matched_draws.png
+unmatched_last_draws.csv
+unmatched_last_draws.pdf
+unmatched_last_draws.png
+
+/tmp/p315_stub/results:
+copy_cipher
+facts
+gold
+size_matched_draws.csv
+summary.json
+CPU CHECKS DONE
