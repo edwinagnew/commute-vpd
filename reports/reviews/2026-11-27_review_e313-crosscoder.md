@@ -40,3 +40,10 @@ panel must wait for the two-length figure.
 ## Not run
 - No independent recomputation from raw activations: this is a transcription check of saved JSON only.
 - The figure, which is not drawn yet.
+
+## Addendum: the two-length figure (same night)
+I diffed `figures/crosscoder_fig4_lengths.csv` against the side JSONs: 0 mismatches over the 102 panel-d rows, and
+all 13 control rows equal the stage0b JSONs. The PNG matches the CSV. The MUST above is met.
+Three NITs for writeup-lead: the legend overlaps the "filed bar" label; the footer says "base beta" and "sd" where the
+page says "original-model coefficient" and "standard errors"; and the second crosscoder seed's star is no longer drawn,
+so the caption should not cite the 0.038 noise gap unless the star comes back.
