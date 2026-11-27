@@ -5,14 +5,14 @@
 <div class="cards stack">
 <div class="card decision" id="decision-cluster-worker-stuck"><span class="chip refuted urgency">Blocking</span>
 <div class="k">Question for you · whip-lead · new 2026-11-26</div>
-<h3>The cluster's compute node gives out job slots but starts no jobs: should an admin restart it?</h3>
-<p><strong>What happened.</strong> Since about 20:30 on 2026-11-26 the node (l40-worker, the cluster's only one) hands our jobs a slot, and then each fails to start with "Socket timed out" (jobs 69486, 69495, 69501). Jobs that started earlier keep running, and the job-history database refuses connections.</p>
-<p><strong>What it blocks.</strong> The one GPU-dependent number of P1.65 (definition-lead, runs 1 and 2, due 2026-11-27, about $6 on an H100) and the redraw of Figure 7 (writeup-lead, a few seconds of plotting, whose text push waits on it). A pod does not get around it: a pod needs an experiment number, that needs the pre-run figure sketch, which is drawn on the cluster, and the harness lets the sketch wait only while the cluster is down, which this node does not read as.</p>
+<h3>The cluster's compute node gives out job slots but starts no jobs: should an admin resume it, or will you run three plotting scripts?</h3>
+<p><strong>What happened.</strong> Since about 20:30 on 2026-11-26 the node (l40-worker, the cluster's only one) hands our jobs a slot, and then each fails to start with "Socket timed out" (jobs 69486, 69495, 69501). By about 01:10 on 2026-11-27 it reads "completing*" (not responding), with three more jobs stuck completing, and the job-history database refuses connections.</p>
+<p><strong>What it blocks.</strong> The redraw of Figure 7 (writeup-lead, three plotting scripts that take seconds), whose text push, an 11-commit batch held until the figure matches its caption, waits on it. P1.65's one GPU-dependent number (definition-lead, due 2026-11-27) is no longer blocked: with the node reading "not responding" the harness's cluster-down path accepts a pending figure sketch, so it went to an H100 pod overnight. Figure 7 has no cell, so it cannot use a pod.</p>
 <p><strong>Options.</strong></p>
 <ul>
-<li><strong>A. Ask the cluster admin to restart the node's job daemon (recommended).</strong> Fixes both items and changes nothing else; both finish within about 2 hours of the restart.</li>
-<li><strong>B. Let "sketch pending" pass when a job launch times out,</strong> as it does when the node is down. P1.65 goes to a pod at once and draws its sketch as its first step; Figure 7 still needs the worker or a pod rider.</li>
-<li><strong>C. Wait.</strong> If the node clears itself nothing is needed, but P1.65 likely misses 2026-11-27.</li>
+<li><strong>A. Ask the cluster admin to resume the node,</strong> after clearing the stuck jobs. Fixes Figure 7 and the cluster for everyone; nothing else changes.</li>
+<li><strong>B. You run the three plotting scripts locally</strong> (in the paper repo's figures folder: build_tools_known_csv.py, make_tools_known.py, make_known_scorecard.py) when you open TeXstudio, and writeup-lead pushes straight after. Quickest for Figure 7, and leaves the node as it is.</li>
+<li><strong>C. Wait.</strong> If the node clears itself nothing is needed, but the held push waits with it.</li>
 </ul>
 <p class="small">Running: nothing. Links: <code>reports/decisions/2026-11-26_decision_cluster-worker-stuck.md</code>, evidence <code>~/commute-data/agents/whip-lead/evidence-slurmd-2026-11-26.txt</code>.</p>
 </div>
