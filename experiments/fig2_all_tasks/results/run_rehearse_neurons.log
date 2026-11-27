@@ -1,0 +1,29 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+E325 start, feat neurons, 1 items ['e62/copy_s0']; settings {'control': 'e62/copy_s0', 'tasks': ('e62/copy', 'e62/lookup', 'e46/ident32', 'e46/rand32', 'e53/lowercase', 'e53/cipher', 'e54/elicit', 'e54/cipher', 'e54/cipher_own', 'c3/rank1', 'c3/cipher', 'c3/copy'), 'overlap': {'e58/copy': 'copy', 'e58/rank1': 'rank1', 'e58/cipher': 'cipher', 'e58/prior_cipher': 'prior_cipher'}, 'seeds': (0, 1, 2), 'random_seed': 325000, 'split_tol': 1e-06, 'n_read': 512, 'read_seed': 195200, 'band': 'p97', 'sae_size': 'scored', 'sae_seed': 0, 'derangements': 4, 'examples': 64, 'seed': 268, 'rows': 1024, 'logit_rows': 8192, 'cache_batch': 32, 'ident_vars': 3, 'sae_err_rows': 64, 'sae_chunk': 32, 'repro': {'vpd': {'state': 'e58/cipher_s1', 'json': 'experiments/fig2_standard/results/items/vpd/trained__cipher_s1.json', 'npz': 'experiments/fig2_standard/results/large/vpd/trained__cipher_s1.npz'}, 'neurons': {'state': 'e58/copy_s0', 'json': 'experiments/ia3_control/results/items/full__copy_s0.json', 'npz': 'experiments/ia3_control/results/large/items_full__copy_s0.npz'}, 'sae': {'state': 'e58/cipher_s0', 'json': 'experiments/fig2_standard/results/items/sae/trained__cipher_s0.json', 'npz': 'experiments/fig2_standard/results/large/sae/trained__cipher_s0.npz'}}, 'repro_rel_tol': {'vpd': 0.0005, 'neurons': 5e-05, 'sae': 1e-06}}
+stage 0 neurons do_nothing: {"experiment": "E325", "feat": "neurons", "part": "do_nothing", "on": "e62/copy_s0", "n_changed": 0, "dd_max": 0.0, "E_b": 1.0, "seconds": 7.063977479934692, "card": "NVIDIA H100 80GB HBM3"}; checks hold
+    site 0 (block 0, variables from 0): 197056 cases, 0 needed so far; 197056 cases in 4 s (54629/s)
+    site 1 (block 1, variables from 3079): 197056 cases, 0 needed so far; 394112 cases in 6 s (61225/s)
+    site 2 (block 2, variables from 6158): 197056 cases, 0 needed so far; 591168 cases in 9 s (69463/s)
+    site 3 (block 3, variables from 9237): 197056 cases, 0 needed so far; 788224 cases in 10 s (80198/s)
+stage 0 neurons identity: {"experiment": "E325", "feat": "neurons", "part": "identity", "item": "e62/copy_s0", "flips": 0, "max_dev": 0.027153849601745605, "min_margin": 0.0033941268920898438, "cases": 788224, "cases_per_s": 80195.3621040221, "n_windows": 512, "window_len": 8, "seconds": 10.258285999298096, "card": "NVIDIA H100 80GB HBM3"}; checks hold
+  512 windows of 8 tokens, read at -1, 12316 variables, 12316 changed, 256 pairs
+    site 0 (block 0, variables from 0): 788224 cases, 1752 needed so far; 788224 cases in 14 s (54831/s)
+    site 1 (block 1, variables from 3079): 788224 cases, 2778 needed so far; 1576448 cases in 26 s (61301/s)
+    site 2 (block 2, variables from 6158): 788224 cases, 3564 needed so far; 2364672 cases in 34 s (69466/s)
+    site 3 (block 3, variables from 9237): 788224 cases, 4170 needed so far; 3152896 cases in 39 s (80130/s)
+stage 0 neurons repro: {"experiment": "E325", "feat": "neurons", "part": "repro", "state": "e58/copy_s0", "E_b": 0.011681124193181725, "saved": 0.011681065992999671, "source": "experiments/ia3_control/results/items/full__copy_s0.json", "rel_dev": 4.9824375693794176e-06, "tol": 5e-05, "n_K_differ": 0, "size_K": 4170, "size_K_saved": 4170, "n_windows": 512, "seconds": 39.96531271934509, "card": "NVIDIA H100 80GB HBM3"}; checks hold
+STAGE 0 DONE (neurons, rehearse)
+neurons e62/copy_s0:
+  512 windows of 8 tokens, read at -1, 12316 variables, 12316 changed, 256 pairs
+    site 0 (block 0, variables from 0): 788224 cases, 1767 needed so far; 788224 cases in 14 s (54824/s)
+    site 1 (block 1, variables from 3079): 788224 cases, 2743 needed so far; 1576448 cases in 26 s (61286/s)
+    site 2 (block 2, variables from 6158): 788224 cases, 3449 needed so far; 2364672 cases in 34 s (69443/s)
+    site 3 (block 3, variables from 9237): 788224 cases, 4046 needed so far; 3152896 cases in 39 s (80104/s)
+neurons e62/copy_s0: E_b over K 0.018658 (leftovers dropped 0.056924); |K| 4046 (4046 changed) of 12316; 41 s
+ITEM 1 of 1 DONE (neurons e62/copy_s0)
+STAGE 1 DONE (neurons, rehearse)
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) rehearse neurons in experiments/fig2_all_tasks/results ===

@@ -1,0 +1,25 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+    site 0 (block 0, variables from 0): 197056 cases, 0 needed so far; 197056 cases in 4 s (54474/s)
+    site 1 (block 1, variables from 3079): 197056 cases, 0 needed so far; 394112 cases in 6 s (61247/s)
+    site 2 (block 2, variables from 6158): 197056 cases, 0 needed so far; 591168 cases in 9 s (69446/s)
+    site 3 (block 3, variables from 9237): 197056 cases, 0 needed so far; 788224 cases in 10 s (80256/s)
+IDENT e58/copy_s0 {"item": "e58/copy_s0", "flips": 0, "max_dev": 5.14984130859375e-05, "min_margin": 0.0051288604736328125, "cases": 788224, "cases_per_s": 80252.67492272523, "n_windows": 512, "window_len": 8} miss: []
+    site 0 (block 0, variables from 0): 197056 cases, 0 needed so far; 197056 cases in 4 s (55482/s)
+    site 1 (block 1, variables from 3079): 197056 cases, 0 needed so far; 394112 cases in 6 s (61812/s)
+    site 2 (block 2, variables from 6158): 197056 cases, 0 needed so far; 591168 cases in 8 s (69916/s)
+    site 3 (block 3, variables from 9237): 197056 cases, 0 needed so far; 788224 cases in 10 s (80716/s)
+IDENT e62/copy_s0 {"item": "e62/copy_s0", "flips": 0, "max_dev": 0.027153849601745605, "min_margin": 0.0033941268920898438, "cases": 788224, "cases_per_s": 80709.8833851995, "n_windows": 512, "window_len": 8} miss: []
+    site 0 (block 0, variables from 0): 197056 cases, 0 needed so far; 197056 cases in 4 s (55437/s)
+    site 1 (block 1, variables from 3079): 197056 cases, 0 needed so far; 394112 cases in 6 s (61919/s)
+    site 2 (block 2, variables from 6158): 197056 cases, 0 needed so far; 591168 cases in 8 s (70189/s)
+    site 3 (block 3, variables from 9237): 197056 cases, 0 needed so far; 788224 cases in 10 s (80997/s)
+IDENT c3/copy_s0 {"item": "c3/copy_s0", "flips": 0, "max_dev": 4.57763671875e-05, "min_margin": 0.001598358154296875, "cases": 788224, "cases_per_s": 80991.95225576128, "n_windows": 512, "window_len": 8} miss: []
+    site 0 (block 0, variables from 0): 197056 cases, 0 needed so far; 197056 cases in 4 s (55239/s)
+    site 1 (block 1, variables from 3079): 197056 cases, 0 needed so far; 394112 cases in 6 s (61788/s)
+    site 2 (block 2, variables from 6158): 197056 cases, 0 needed so far; 591168 cases in 8 s (70059/s)
+    site 3 (block 3, variables from 9237): 197056 cases, 0 needed so far; 788224 cases in 10 s (80860/s)
+IDENT e46/ident32_s0 {"item": "e46/ident32_s0", "flips": 0, "max_dev": 0.06920576095581055, "min_margin": 0.005087852478027344, "cases": 788224, "cases_per_s": 80858.28486466841, "n_windows": 512, "window_len": 8} miss: []
+=== FINISHED (exit 0) ident diag ===
