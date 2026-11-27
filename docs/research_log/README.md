@@ -702,3 +702,4 @@ Figures already published (their sources, for a re-upload; grep `fig/eN_` here f
 - "fig/e268_eb_k.png": "experiments/kstar_needed/figures/eb_k.png"
 - "fig/e274_cos2_vs_eb.png": "experiments/cos_admissible/figures/cos2_vs_eb.png"
 - "fig/e273_eb_pairs.png": "experiments/realtext_eb/figures/eb_pairs.png"
+- "fig/e320_size_matched.png": "experiments/qwen_neuron_draws/figures/size_matched_draws.png"
