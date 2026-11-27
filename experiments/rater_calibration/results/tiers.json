@@ -1,0 +1,359 @@
+{
+ "experiment": "E315, E316",
+ "cell": "P2.86",
+ "rule": "E315 and E316 (P2.86): the two blind raters' tiers on Fig 3's 16 known-answer tasks, beside the construction label.\n\nRun 1 (E315) read results/raters/rater_{opus,gpt}.md; run 2 (E316, descriptions with no construction wording, real\nexample pairs, no step counts) reads results/raters/run2/rater_{opus,gpt}.md. All answers verbatim, filed before this\nscript. Writes results/tiers.json and figures/tiers.png. Consensus is E272/E276's rule: mean tier code (reuse 3, middle 2, new 1); a mean of 2.5-3\nreads reuse, 2 middle, 1-1.5 new (the reuse and new sides of E276's common-support rule).\nExpected: if the raters recover construction, every task built to reuse reads 2.5-3 and every task built new 1-1.5.\n",
+ "tasks": [
+  {
+   "number": 2,
+   "task": "Lowercase text",
+   "run": "e53/lowercase",
+   "construction": "reuse",
+   "run1": {
+    "opus_tier": "expected reuse",
+    "gpt_tier": "expected reuse",
+    "opus_code": 3,
+    "gpt_code": 3,
+    "consensus_code": 3.0,
+    "consensus_tier": "reuse"
+   },
+   "run2": {
+    "opus_tier": "middle",
+    "gpt_tier": "expected reuse",
+    "opus_code": 2,
+    "gpt_code": 3,
+    "consensus_code": 2.5,
+    "consensus_tier": "reuse"
+   }
+  },
+  {
+   "number": 3,
+   "task": "Top guess",
+   "run": "c3/rank1",
+   "construction": "reuse",
+   "run1": {
+    "opus_tier": "expected reuse",
+    "gpt_tier": "expected reuse",
+    "opus_code": 3,
+    "gpt_code": 3,
+    "consensus_code": 3.0,
+    "consensus_tier": "reuse"
+   },
+   "run2": {
+    "opus_tier": "expected reuse",
+    "gpt_tier": "expected reuse",
+    "opus_code": 3,
+    "gpt_code": 3,
+    "consensus_code": 3.0,
+    "consensus_tier": "reuse"
+   }
+  },
+  {
+   "number": 16,
+   "task": "Top guess (96 keys)",
+   "run": "e58/rank1",
+   "construction": "reuse",
+   "run1": {
+    "opus_tier": "expected reuse",
+    "gpt_tier": "expected reuse",
+    "opus_code": 3,
+    "gpt_code": 3,
+    "consensus_code": 3.0,
+    "consensus_tier": "reuse"
+   },
+   "run2": {
+    "opus_tier": "expected reuse",
+    "gpt_tier": "expected reuse",
+    "opus_code": 3,
+    "gpt_code": 3,
+    "consensus_code": 3.0,
+    "consensus_tier": "reuse"
+   }
+  },
+  {
+   "number": 4,
+   "task": "Runner-up guess",
+   "run": "e54/elicit",
+   "construction": "reuse",
+   "run1": {
+    "opus_tier": "expected reuse",
+    "gpt_tier": "middle",
+    "opus_code": 3,
+    "gpt_code": 2,
+    "consensus_code": 2.5,
+    "consensus_tier": "reuse"
+   },
+   "run2": {
+    "opus_tier": "expected reuse",
+    "gpt_tier": "middle",
+    "opus_code": 3,
+    "gpt_code": 2,
+    "consensus_code": 2.5,
+    "consensus_tier": "reuse"
+   }
+  },
+  {
+   "number": 7,
+   "task": "Copy at a new marker",
+   "run": "e62/copy",
+   "construction": "reuse",
+   "run1": {
+    "opus_tier": "expected reuse",
+    "gpt_tier": "middle",
+    "opus_code": 3,
+    "gpt_code": 2,
+    "consensus_code": 2.5,
+    "consensus_tier": "reuse"
+   },
+   "run2": {
+    "opus_tier": "expected reuse",
+    "gpt_tier": "middle",
+    "opus_code": 3,
+    "gpt_code": 2,
+    "consensus_code": 2.5,
+    "consensus_tier": "reuse"
+   }
+  },
+  {
+   "number": 5,
+   "task": "Copy key",
+   "run": "e46/ident32",
+   "construction": "reuse",
+   "run1": {
+    "opus_tier": "middle",
+    "gpt_tier": "middle",
+    "opus_code": 2,
+    "gpt_code": 2,
+    "consensus_code": 2.0,
+    "consensus_tier": "middle"
+   },
+   "run2": {
+    "opus_tier": "middle",
+    "gpt_tier": "middle",
+    "opus_code": 2,
+    "gpt_code": 2,
+    "consensus_code": 2.0,
+    "consensus_tier": "middle"
+   }
+  },
+  {
+   "number": 9,
+   "task": "Copy key (24 keys)",
+   "run": "c3/copy",
+   "construction": "reuse",
+   "run1": {
+    "opus_tier": "middle",
+    "gpt_tier": "middle",
+    "opus_code": 2,
+    "gpt_code": 2,
+    "consensus_code": 2.0,
+    "consensus_tier": "middle"
+   },
+   "run2": {
+    "opus_tier": "middle",
+    "gpt_tier": "middle",
+    "opus_code": 2,
+    "gpt_code": 2,
+    "consensus_code": 2.0,
+    "consensus_tier": "middle"
+   }
+  },
+  {
+   "number": 15,
+   "task": "Copy key (96 keys)",
+   "run": "e58/copy",
+   "construction": "reuse",
+   "run1": {
+    "opus_tier": "middle",
+    "gpt_tier": "middle",
+    "opus_code": 2,
+    "gpt_code": 2,
+    "consensus_code": 2.0,
+    "consensus_tier": "middle"
+   },
+   "run2": {
+    "opus_tier": "middle",
+    "gpt_tier": "middle",
+    "opus_code": 2,
+    "gpt_code": 2,
+    "consensus_code": 2.0,
+    "consensus_tier": "middle"
+   }
+  },
+  {
+   "number": 12,
+   "task": "Ciphered text",
+   "run": "e53/cipher",
+   "construction": "new",
+   "run1": {
+    "opus_tier": "middle",
+    "gpt_tier": "middle",
+    "opus_code": 2,
+    "gpt_code": 2,
+    "consensus_code": 2.0,
+    "consensus_tier": "middle"
+   },
+   "run2": {
+    "opus_tier": "middle",
+    "gpt_tier": "middle",
+    "opus_code": 2,
+    "gpt_code": 2,
+    "consensus_code": 2.0,
+    "consensus_tier": "middle"
+   }
+  },
+  {
+   "number": 1,
+   "task": "Random map",
+   "run": "e46/rand32",
+   "construction": "new",
+   "run1": {
+    "opus_tier": "new",
+    "gpt_tier": "new",
+    "opus_code": 1,
+    "gpt_code": 1,
+    "consensus_code": 1.0,
+    "consensus_tier": "new"
+   },
+   "run2": {
+    "opus_tier": "new",
+    "gpt_tier": "new",
+    "opus_code": 1,
+    "gpt_code": 1,
+    "consensus_code": 1.0,
+    "consensus_tier": "new"
+   }
+  },
+  {
+   "number": 6,
+   "task": "Lookup",
+   "run": "e62/lookup",
+   "construction": "new",
+   "run1": {
+    "opus_tier": "new",
+    "gpt_tier": "new",
+    "opus_code": 1,
+    "gpt_code": 1,
+    "consensus_code": 1.0,
+    "consensus_tier": "new"
+   },
+   "run2": {
+    "opus_tier": "new",
+    "gpt_tier": "new",
+    "opus_code": 1,
+    "gpt_code": 1,
+    "consensus_code": 1.0,
+    "consensus_tier": "new"
+   }
+  },
+  {
+   "number": 8,
+   "task": "Cipher (late step)",
+   "run": "e54/cipher_own",
+   "construction": "new",
+   "run1": {
+    "opus_tier": "new",
+    "gpt_tier": "new",
+    "opus_code": 1,
+    "gpt_code": 1,
+    "consensus_code": 1.0,
+    "consensus_tier": "new"
+   },
+   "run2": {
+    "opus_tier": "new",
+    "gpt_tier": "new",
+    "opus_code": 1,
+    "gpt_code": 1,
+    "consensus_code": 1.0,
+    "consensus_tier": "new"
+   }
+  },
+  {
+   "number": 10,
+   "task": "Prior-matched cipher",
+   "run": "e58/prior_cipher",
+   "construction": "new",
+   "run1": {
+    "opus_tier": "new",
+    "gpt_tier": "new",
+    "opus_code": 1,
+    "gpt_code": 1,
+    "consensus_code": 1.0,
+    "consensus_tier": "new"
+   },
+   "run2": {
+    "opus_tier": "new",
+    "gpt_tier": "middle",
+    "opus_code": 1,
+    "gpt_code": 2,
+    "consensus_code": 1.5,
+    "consensus_tier": "new"
+   }
+  },
+  {
+   "number": 11,
+   "task": "Cipher (24 keys)",
+   "run": "c3/cipher",
+   "construction": "new",
+   "run1": {
+    "opus_tier": "new",
+    "gpt_tier": "new",
+    "opus_code": 1,
+    "gpt_code": 1,
+    "consensus_code": 1.0,
+    "consensus_tier": "new"
+   },
+   "run2": {
+    "opus_tier": "new",
+    "gpt_tier": "new",
+    "opus_code": 1,
+    "gpt_code": 1,
+    "consensus_code": 1.0,
+    "consensus_tier": "new"
+   }
+  },
+  {
+   "number": 13,
+   "task": "Cipher (96 keys)",
+   "run": "e58/cipher",
+   "construction": "new",
+   "run1": {
+    "opus_tier": "new",
+    "gpt_tier": "new",
+    "opus_code": 1,
+    "gpt_code": 1,
+    "consensus_code": 1.0,
+    "consensus_tier": "new"
+   },
+   "run2": {
+    "opus_tier": "new",
+    "gpt_tier": "new",
+    "opus_code": 1,
+    "gpt_code": 1,
+    "consensus_code": 1.0,
+    "consensus_tier": "new"
+   }
+  },
+  {
+   "number": 14,
+   "task": "Cipher (early step)",
+   "run": "e54/cipher",
+   "construction": "new",
+   "run1": {
+    "opus_tier": "new",
+    "gpt_tier": "new",
+    "opus_code": 1,
+    "gpt_code": 1,
+    "consensus_code": 1.0,
+    "consensus_tier": "new"
+   },
+   "run2": {
+    "opus_tier": "new",
+    "gpt_tier": "new",
+    "opus_code": 1,
+    "gpt_code": 1,
+    "consensus_code": 1.0,
+    "consensus_tier": "new"
+   }
+  }
+ ]
+}

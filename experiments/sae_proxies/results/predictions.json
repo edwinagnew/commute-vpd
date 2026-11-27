@@ -1,0 +1,68 @@
+{
+ "experiment": "E314",
+ "cell": "P2.85",
+ "plan": "reports/plans/2026-11-26_plan_e314-sae-proxies.md",
+ "spec": "reports/plans/2026-11-26_spec_kissane-sae-transfer.md",
+ "card": "~/commute-data/agents/sae-lead/card_p285.md",
+ "descriptive": "user 2026-11-26 ~18:50 in writeup-lead's chat: \"tell whip-lead to run 1 and 2. as you suggest, put in appendix G unless it works well\"; two cheap proxies reported per task and seed beside their random references, no verdict on reuse, no claim at the bar",
+ "settings": {
+  "sae_size": "scored",
+  "sae_seed": 0,
+  "sae_size_source": "E234's scored SAEs, seed 0, at all 13 sites (experiments/sae_train/results/large/scored/sae_<site>_s0.pt), loaded as E245 (sae_r_a load_saes)",
+  "norm_rows": 128,
+  "norm_rows_source": "Kissane et al. estimate each model's norm factor on Pile activations (their activation store, SAELens expected_average_only_in: mean norm sqrt(d_model)); 128 Pile val rows from E234's eval_start 4096 at positions 1.. = 65,408 tokens, inside their 50k-100k eval tokens",
+  "outlier_threshold": 100000,
+  "outlier_threshold_source": "sae-transfer utils.py get_explained_variance_from_batch default outlier_threshold=100_000, applied to the norm of each token in their scale (mean norm sqrt(d)); the post says outliers were excluded from the evals",
+  "gain_floor": 1e-06,
+  "gain_floor_source": "E136's two-sided gain floor on the trained states (card floor line); a trained state under it gives nan",
+  "random_gain_min": 1.0,
+  "random_gain_min_source": "the card's floor: a random reference's error share only if |gain| >= 1 log-odds (local_faith.MIN_GAIN, where shares are scored), else null with the reason",
+  "gain_rel_tol": 0.01,
+  "gain_rel_tol_source": "the plan's stage 0: T1 - T0 against E136's saved gain_fp32 per state at relative 0.01 (same rows, model and fp32 path; a wrong-rows error is far larger)",
+  "e234_fve_tol": 0.001,
+  "e234_fve_tol_source": "E234's own do_nothing_tol (sae_train predictions.json): the bar for the same weights read by the same bf16 code; E234's do-nothing item read fve_drop exactly 0 at all 14 SAEs (measured floor 0 on its card), so 1e-3 leaves room only for another card's bf16 kernels"
+ },
+ "states": "the 48 states of experiments/known_3seeds/results/known3.json cells with method share (16 tasks x seeds 0-2; e54/elicit and c3/cipher shared by two pairs, read once); side = reuse for the pair's first task (known_3seeds assemble.py PAIRS), new for the second",
+ "random_reference": "one per state: finetune.random_direction(dW, seed), a Gaussian per matrix at that matrix's Frobenius norm in the state's update (fp64 norms, E237's convention), seed = int(sha256(state name)[:8], 16); read on the state's own rows",
+ "expected": {
+  "error_share": {
+   "definition": "(L_patch - T0) / (T1 - T0) in mean log-odds of the target on E136's rows; L_patch = base model with each of the 8 block-output sites set to hat(o_cur) + e_FT, all at once",
+   "zero_update": "nan (gain 0); numerator L_patch - T0 exactly 0",
+   "control": "full patch (o_FT at all 8 sites) reproduces T1: max |logit - FT logit| at the read position within the measured run-to-run floor (share 1)",
+   "random": "gain ~0, share not read (null when |gain| < 1 log-odds)",
+   "trained_if_rival_a": "reuse <= 0.25, new > 0.5",
+   "trained_if_rival_b": "> 0.5 on both sides",
+   "blind_to": "error that cancels across sites or positions before the read position; changes the SAE latents absorb (a fine-tune inside the dictionary reads 0 whether or not it reuses)"
+  },
+  "error_energy_frac": {
+   "definition": "sum over the 8 sites and every position of |e_FT - e_0|^2 over |o_FT - o_0|^2, each model's own run",
+   "zero_update": "0/0: nan; max |e_FT - e_0| exactly 0",
+   "random": "high, ~0.7-0.95",
+   "trained_if_rival_a": "reuse below random, new near random",
+   "trained_if_rival_b": "near random on both sides",
+   "blind_to": "whether the changed energy matters for the target (size-free, not behaviour-weighted)"
+  },
+  "ev_gap": {
+   "definition": "headline of reading (2), Kissane et al. 2024: EV(base) - EV(FT) per site of E234's 13, EV per token 1 - |SAE(x) - x|^2 / |x - mean x|^2 averaged over the task rows' positions 1.., each model scaled by its own Pile norm factor, outliers over the threshold excluded; mean over the 13 sites",
+   "zero_update": "exactly 0 at every site",
+   "random": "> 0, grows with size",
+   "trained_if_rival_a": "new > reuse and > random",
+   "trained_if_rival_b": "~ random on both sides",
+   "blind_to": "anything the base dictionary reconstructs as well after the update (a change along existing latents); a global norm change (removed by the per-model norm factor)"
+  },
+  "fvu_gap": {
+   "definition": "secondary: FVU(FT) - FVU(base), FVU a ratio of sums over the task rows' positions 1.. (sae.read's convention), no rescaling; mean over the 13 sites",
+   "zero_update": "exactly 0 at every site",
+   "random": "> 0, grows with size"
+  }
+ },
+ "stage0": {
+  "rule": "first and alone; any miss writes results/results.json stage0.stopped, prints STOP and exits 1 before any state is read",
+  "zero_update": "on the first state's rows: gain 0, error share nan, max |e_FT - e_0| = 0, energy numerator = 0 and fraction nan, L_patch - T0 = 0, max |EV gap| = 0 and max |FVU gap| = 0 over 13 sites, all exactly",
+  "run_to_run_floor": "the first state's fine-tuned model run twice: max |logit| difference at the read position (measured, the full patch's tolerance)",
+  "full_patch": "o_FT at all 8 sites in the base model: max |logit - FT logit| at the read position <= the floor",
+  "e234_fve": "E234's base FVE on its Pile val rows 4096-4607 by its own bf16 capture (sae.capture) and sae.read's formula, per site within e234_fve_tol of stage0_resid_pre0_s0+13.json; the fp32 FVE on the same rows recorded beside, no stop",
+  "gain": "every state's T1 - T0 within gain_rel_tol relative of its saved gain_fp32 (share_untrained stage1.json .states.<s>.gain_fp32; known_3seeds stage2.json and refit_96key stage1.json .states.<s>.e136.gain_fp32); the job stops naming each state missed"
+ },
+ "not_a_verdict": "the readings are plotted per task and seed beside the random reference against the re-gating share (known3.json); writeup-lead decides placement"
+}

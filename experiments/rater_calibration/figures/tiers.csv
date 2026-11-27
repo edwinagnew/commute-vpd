@@ -1,0 +1,33 @@
+task,construction,run,opus_tier,gpt_tier,opus_code,gpt_code,consensus_code,consensus_tier
+Lowercase text,reuse,run1,expected reuse,expected reuse,3,3,3.0,reuse
+Lowercase text,reuse,run2,middle,expected reuse,2,3,2.5,reuse
+Top guess,reuse,run1,expected reuse,expected reuse,3,3,3.0,reuse
+Top guess,reuse,run2,expected reuse,expected reuse,3,3,3.0,reuse
+Top guess (96 keys),reuse,run1,expected reuse,expected reuse,3,3,3.0,reuse
+Top guess (96 keys),reuse,run2,expected reuse,expected reuse,3,3,3.0,reuse
+Runner-up guess,reuse,run1,expected reuse,middle,3,2,2.5,reuse
+Runner-up guess,reuse,run2,expected reuse,middle,3,2,2.5,reuse
+Copy at a new marker,reuse,run1,expected reuse,middle,3,2,2.5,reuse
+Copy at a new marker,reuse,run2,expected reuse,middle,3,2,2.5,reuse
+Copy key,reuse,run1,middle,middle,2,2,2.0,middle
+Copy key,reuse,run2,middle,middle,2,2,2.0,middle
+Copy key (24 keys),reuse,run1,middle,middle,2,2,2.0,middle
+Copy key (24 keys),reuse,run2,middle,middle,2,2,2.0,middle
+Copy key (96 keys),reuse,run1,middle,middle,2,2,2.0,middle
+Copy key (96 keys),reuse,run2,middle,middle,2,2,2.0,middle
+Ciphered text,new,run1,middle,middle,2,2,2.0,middle
+Ciphered text,new,run2,middle,middle,2,2,2.0,middle
+Random map,new,run1,new,new,1,1,1.0,new
+Random map,new,run2,new,new,1,1,1.0,new
+Lookup,new,run1,new,new,1,1,1.0,new
+Lookup,new,run2,new,new,1,1,1.0,new
+Cipher (late step),new,run1,new,new,1,1,1.0,new
+Cipher (late step),new,run2,new,new,1,1,1.0,new
+Prior-matched cipher,new,run1,new,new,1,1,1.0,new
+Prior-matched cipher,new,run2,new,middle,1,2,1.5,new
+Cipher (24 keys),new,run1,new,new,1,1,1.0,new
+Cipher (24 keys),new,run2,new,new,1,1,1.0,new
+Cipher (96 keys),new,run1,new,new,1,1,1.0,new
+Cipher (96 keys),new,run2,new,new,1,1,1.0,new
+Cipher (early step),new,run1,new,new,1,1,1.0,new
+Cipher (early step),new,run2,new,new,1,1,1.0,new

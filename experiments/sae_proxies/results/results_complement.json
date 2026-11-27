@@ -1,0 +1,2120 @@
+{
+ "experiment": "E317",
+ "stage0": {
+  "card": "NVIDIA L40",
+  "checks": {
+   "full patch max |logit - FT logit| e62/copy_s0 (tol = run-to-run floor)": {
+    "pass": true,
+    "tol": 0.0,
+    "value": 0.0
+   },
+   "zero update both shares nan (0 = nan)": {
+    "pass": true,
+    "tol": 0.0,
+    "value": 0.0
+   },
+   "zero update error numerator L_patch - T0": {
+    "pass": true,
+    "tol": 0.0,
+    "value": 0.0
+   },
+   "zero update gain": {
+    "pass": true,
+    "tol": 0.0,
+    "value": 0.0
+   },
+   "zero update recon numerator L_recon - T0": {
+    "pass": true,
+    "tol": 0.0,
+    "value": 0.0
+   }
+  },
+  "floor": {
+   "max_abs_logit_ft_twice": 0.0,
+   "state": "e62/copy_s0"
+  },
+  "full_patch": {
+   "max_abs_logit_vs_ft": 0.0,
+   "share": 1.0,
+   "state": "e62/copy_s0"
+  },
+  "host": "vm9377243875336",
+  "pass": true,
+  "zero_update": {
+   "L_patch": -8.053399331569672,
+   "L_recon": -8.053399331569672,
+   "T0": -8.053399331569672,
+   "T1": -8.053399331569672,
+   "error_share": "nan",
+   "gain": 0.0,
+   "recon_share": "nan",
+   "sum_share": "nan"
+  }
+ },
+ "states": {
+  "c3/cipher_s0": {
+   "L_patch": -3.8526312255859376,
+   "L_recon": -6.43306526184082,
+   "T0": -13.746721687316894,
+   "T1": -0.891321964263916,
+   "checks": {
+    "error share random c3/cipher_s0 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    },
+    "error share trained c3/cipher_s0 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    }
+   },
+   "error_share": 0.7696447154411196,
+   "error_share_vs_e314": {
+    "random": 0.0,
+    "trained": 0.0
+   },
+   "gain": 12.855399723052978,
+   "random": {
+    "L_patch": -13.771634712219239,
+    "L_recon": -13.733319180806477,
+    "T0": -13.746721687316894,
+    "T1": -13.751240272521972,
+    "error_share": null,
+    "gain": -0.004518585205078196,
+    "recon_share": null,
+    "seed": 3054351329,
+    "share_why_none": "|gain| 0.00452 under 1 log-odds",
+    "sum_share": null
+   },
+   "recon_share": 0.5689170763286996,
+   "regating_share": 0.23632404751112837,
+   "rows": "c3/cipher",
+   "seed": 0,
+   "side": "new",
+   "sum_share": 1.3385617917698192,
+   "task": "c3/cipher"
+  },
+  "c3/cipher_s1": {
+   "L_patch": -4.052139987945557,
+   "L_recon": -6.095363305409749,
+   "T0": -13.746721687316894,
+   "T1": -1.217792148590088,
+   "checks": {
+    "error share random c3/cipher_s1 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    },
+    "error share trained c3/cipher_s1 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    }
+   },
+   "error_share": 0.7737757379355893,
+   "error_share_vs_e314": {
+    "random": 0.0,
+    "trained": 0.0
+   },
+   "gain": 12.528929538726807,
+   "random": {
+    "L_patch": -13.782119979858399,
+    "L_recon": -13.719256629943848,
+    "T0": -13.746721687316894,
+    "T1": -13.747552057902018,
+    "error_share": null,
+    "gain": -0.0008303705851240295,
+    "recon_share": null,
+    "seed": 2485273776,
+    "share_why_none": "|gain| 0.00083 under 1 log-odds",
+    "sum_share": null
+   },
+   "recon_share": 0.6106952998863044,
+   "regating_share": 0.2384323212900442,
+   "rows": "c3/cipher",
+   "seed": 1,
+   "side": "new",
+   "sum_share": 1.3844710378218936,
+   "task": "c3/cipher"
+  },
+  "c3/cipher_s2": {
+   "L_patch": -4.015286191304525,
+   "L_recon": -6.651705888112386,
+   "T0": -13.746721687316894,
+   "T1": -1.0926947784423828,
+   "checks": {
+    "error share random c3/cipher_s2 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    },
+    "error share trained c3/cipher_s2 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    }
+   },
+   "error_share": 0.7690386282636659,
+   "error_share_vs_e314": {
+    "random": 0.0,
+    "trained": 0.0
+   },
+   "gain": 12.654026908874512,
+   "random": {
+    "L_patch": -13.760396372477214,
+    "L_recon": -13.782366523742676,
+    "T0": -13.746721687316894,
+    "T1": -13.751759173075358,
+    "error_share": null,
+    "gain": -0.0050374857584643,
+    "recon_share": null,
+    "seed": 996152571,
+    "share_why_none": "|gain| 0.00504 under 1 log-odds",
+    "sum_share": null
+   },
+   "recon_share": 0.560692327454167,
+   "regating_share": 0.2170782048159956,
+   "rows": "c3/cipher",
+   "seed": 2,
+   "side": "new",
+   "sum_share": 1.329730955717833,
+   "task": "c3/cipher"
+  },
+  "c3/copy_s0": {
+   "L_patch": 0.14906550089518228,
+   "L_recon": 2.121567866007487,
+   "T0": -8.855229142506918,
+   "T1": 4.095885721842448,
+   "checks": {
+    "error share random c3/copy_s0 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    },
+    "error share trained c3/copy_s0 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    }
+   },
+   "error_share": 0.6952524734521729,
+   "error_share_vs_e314": {
+    "random": 0.0,
+    "trained": 0.0
+   },
+   "gain": 12.951114864349366,
+   "random": {
+    "L_patch": -8.888082122802734,
+    "L_recon": -8.855433292388916,
+    "T0": -8.855229142506918,
+    "T1": -8.860875860850017,
+    "error_share": null,
+    "gain": -0.005646718343099266,
+    "recon_share": null,
+    "seed": 3773565277,
+    "share_why_none": "|gain| 0.00565 under 1 log-odds",
+    "sum_share": null
+   },
+   "recon_share": 0.8475561465932419,
+   "regating_share": 0.8461436225319128,
+   "rows": "c3/copy",
+   "seed": 0,
+   "side": "reuse",
+   "sum_share": 1.5428086200454147,
+   "task": "c3/copy"
+  },
+  "c3/copy_s1": {
+   "L_patch": -0.022064940134684245,
+   "L_recon": 2.3720281728108725,
+   "T0": -8.855229142506918,
+   "T1": 4.2254109319051105,
+   "checks": {
+    "error share random c3/copy_s1 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    },
+    "error share trained c3/copy_s1 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    }
+   },
+   "error_share": 0.6752853187705558,
+   "error_share_vs_e314": {
+    "random": 0.0,
+    "trained": 0.0
+   },
+   "gain": 13.080640074412027,
+   "random": {
+    "L_patch": -8.878968969980876,
+    "L_recon": -8.826878992716471,
+    "T0": -8.855229142506918,
+    "T1": -8.858370119730631,
+    "error_share": null,
+    "gain": -0.003140977223713648,
+    "recon_share": null,
+    "seed": 1254608117,
+    "share_why_none": "|gain| 0.00314 under 1 log-odds",
+    "sum_share": null
+   },
+   "recon_share": 0.858311004006618,
+   "regating_share": 0.8425401825652695,
+   "rows": "c3/copy",
+   "seed": 1,
+   "side": "reuse",
+   "sum_share": 1.5335963227771736,
+   "task": "c3/copy"
+  },
+  "c3/copy_s2": {
+   "L_patch": 0.7976458231608073,
+   "L_recon": 2.3223609924316406,
+   "T0": -8.855229142506918,
+   "T1": 4.415162035624186,
+   "checks": {
+    "error share random c3/copy_s2 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    },
+    "error share trained c3/copy_s2 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    }
+   },
+   "error_share": 0.7273994290066709,
+   "error_share_vs_e314": {
+    "random": 0.0,
+    "trained": 0.0
+   },
+   "gain": 13.270391178131103,
+   "random": {
+    "L_patch": -8.90176155726115,
+    "L_recon": -8.827914161682129,
+    "T0": -8.855229142506918,
+    "T1": -8.839617048899333,
+    "error_share": null,
+    "gain": 0.015612093607584754,
+    "recon_share": null,
+    "seed": 3472172314,
+    "share_why_none": "|gain| 0.0156 under 1 log-odds",
+    "sum_share": null
+   },
+   "recon_share": 0.8422954519501001,
+   "regating_share": 0.834231371851741,
+   "rows": "c3/copy",
+   "seed": 2,
+   "side": "reuse",
+   "sum_share": 1.569694880956771,
+   "task": "c3/copy"
+  },
+  "c3/rank1_s0": {
+   "L_patch": 2.321330108642578,
+   "L_recon": 2.1311677424112956,
+   "T0": -5.13608652750651,
+   "T1": 5.791557312011719,
+   "checks": {
+    "error share random c3/rank1_s0 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    },
+    "error share trained c3/rank1_s0 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    }
+   },
+   "error_share": 0.6824359162567533,
+   "error_share_vs_e314": {
+    "random": 0.0,
+    "trained": 0.0
+   },
+   "gain": 10.927643839518229,
+   "random": {
+    "L_patch": -5.143046366373698,
+    "L_recon": -5.156096928914388,
+    "T0": -5.13608652750651,
+    "T1": -5.132094866434733,
+    "error_share": null,
+    "gain": 0.003991661071776953,
+    "recon_share": null,
+    "seed": 2381691987,
+    "share_why_none": "|gain| 0.00399 under 1 log-odds",
+    "sum_share": null
+   },
+   "recon_share": 0.6650339612677384,
+   "regating_share": 0.8446171948548371,
+   "rows": "c3/rank1",
+   "seed": 0,
+   "side": "reuse",
+   "sum_share": 1.3474698775244915,
+   "task": "c3/rank1"
+  },
+  "c3/rank1_s1": {
+   "L_patch": 2.329499740600586,
+   "L_recon": 2.2325420633951825,
+   "T0": -5.13608652750651,
+   "T1": 5.735356051127116,
+   "checks": {
+    "error share random c3/rank1_s1 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    },
+    "error share trained c3/rank1_s1 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    }
+   },
+   "error_share": 0.6867153290934648,
+   "error_share_vs_e314": {
+    "random": 0.0,
+    "trained": 0.0
+   },
+   "gain": 10.871442578633626,
+   "random": {
+    "L_patch": -5.14639586130778,
+    "L_recon": -5.150603853861491,
+    "T0": -5.13608652750651,
+    "T1": -5.144390233357748,
+    "error_share": null,
+    "gain": -0.00830370585123763,
+    "recon_share": null,
+    "seed": 308170004,
+    "share_why_none": "|gain| 0.0083 under 1 log-odds",
+    "sum_share": null
+   },
+   "recon_share": 0.677796763180606,
+   "regating_share": 0.8427860331443,
+   "rows": "c3/rank1",
+   "seed": 1,
+   "side": "reuse",
+   "sum_share": 1.3645120922740708,
+   "task": "c3/rank1"
+  },
+  "c3/rank1_s2": {
+   "L_patch": 2.2699712562561034,
+   "L_recon": 2.478326047261556,
+   "T0": -5.13608652750651,
+   "T1": 5.721389528910319,
+   "checks": {
+    "error share random c3/rank1_s2 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    },
+    "error share trained c3/rank1_s2 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    }
+   },
+   "error_share": 0.6821159674016128,
+   "error_share_vs_e314": {
+    "random": 0.0,
+    "trained": 0.0
+   },
+   "gain": 10.857476056416829,
+   "random": {
+    "L_patch": -5.154748942057291,
+    "L_recon": -5.157175521850586,
+    "T0": -5.13608652750651,
+    "T1": -5.1428593762715655,
+    "error_share": null,
+    "gain": -0.00677284876505535,
+    "recon_share": null,
+    "seed": 2105337729,
+    "share_why_none": "|gain| 0.00677 under 1 log-odds",
+    "sum_share": null
+   },
+   "recon_share": 0.7013059513281548,
+   "regating_share": 0.8429197716575669,
+   "rows": "c3/rank1",
+   "seed": 2,
+   "side": "reuse",
+   "sum_share": 1.3834219187297676,
+   "task": "c3/rank1"
+  },
+  "e46/ident32_s0": {
+   "L_patch": -1.9688353636830123,
+   "L_recon": 2.9361686608226027,
+   "T0": -10.153915641234093,
+   "T1": 3.844421406382138,
+   "checks": {
+    "error share random e46/ident32_s0 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    },
+    "error share trained e46/ident32_s0 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    }
+   },
+   "error_share": 0.5847180454156098,
+   "error_share_vs_e314": {
+    "random": 0.0,
+    "trained": 0.0
+   },
+   "gain": 13.99833704761623,
+   "random": {
+    "L_patch": -10.126237579227723,
+    "L_recon": -10.154961335290338,
+    "T0": -10.153915641234093,
+    "T1": -10.143767602664909,
+    "error_share": null,
+    "gain": 0.010148038569184337,
+    "recon_share": null,
+    "seed": 782477596,
+    "share_why_none": "|gain| 0.0101 under 1 log-odds",
+    "sum_share": null
+   },
+   "recon_share": 0.9351170969472977,
+   "regating_share": 0.8024425814544892,
+   "rows": "e46/ident32",
+   "seed": 0,
+   "side": "reuse",
+   "sum_share": 1.5198351423629075,
+   "task": "e46/ident32"
+  },
+  "e46/ident32_s1": {
+   "L_patch": -2.071429164139266,
+   "L_recon": 2.883054802098225,
+   "T0": -10.153915641234093,
+   "T1": 3.9195350961586866,
+   "checks": {
+    "error share random e46/ident32_s1 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    },
+    "error share trained e46/ident32_s1 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    }
+   },
+   "error_share": 0.5743073698066018,
+   "error_share_vs_e314": {
+    "random": 0.0,
+    "trained": 0.0
+   },
+   "gain": 14.073450737392779,
+   "random": {
+    "L_patch": -10.134181578134752,
+    "L_recon": -10.12856146232369,
+    "T0": -10.153915641234093,
+    "T1": -10.141352653503418,
+    "error_share": null,
+    "gain": 0.01256298773067499,
+    "recon_share": null,
+    "seed": 2087458732,
+    "share_why_none": "|gain| 0.0126 under 1 log-odds",
+    "sum_share": null
+   },
+   "recon_share": 0.9263520856824006,
+   "regating_share": 0.7612543829145286,
+   "rows": "e46/ident32",
+   "seed": 1,
+   "side": "reuse",
+   "sum_share": 1.5006594554890023,
+   "task": "e46/ident32"
+  },
+  "e46/ident32_s2": {
+   "L_patch": -2.76535696835862,
+   "L_recon": 3.0756992458068217,
+   "T0": -10.153915641234093,
+   "T1": 4.0959040258348605,
+   "checks": {
+    "error share random e46/ident32_s2 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    },
+    "error share trained e46/ident32_s2 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    }
+   },
+   "error_share": 0.518501907076781,
+   "error_share_vs_e314": {
+    "random": 0.0,
+    "trained": 0.0
+   },
+   "gain": 14.249819667068953,
+   "random": {
+    "L_patch": -10.162343880564896,
+    "L_recon": -10.140871146290573,
+    "T0": -10.153915641234093,
+    "T1": -10.145293614299026,
+    "error_share": null,
+    "gain": 0.008622026935066529,
+    "recon_share": null,
+    "seed": 1331620205,
+    "share_why_none": "|gain| 0.00862 under 1 log-odds",
+    "sum_share": null
+   },
+   "recon_share": 0.9284057760825064,
+   "regating_share": 0.7827190325999683,
+   "rows": "e46/ident32",
+   "seed": 2,
+   "side": "reuse",
+   "sum_share": 1.4469076831592873,
+   "task": "e46/ident32"
+  },
+  "e46/rand32_s0": {
+   "L_patch": -2.9911913036071147,
+   "L_recon": -5.029238843426262,
+   "T0": -13.214480950660313,
+   "T1": 0.5110960694932446,
+   "checks": {
+    "error share random e46/rand32_s0 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    },
+    "error share trained e46/rand32_s0 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    }
+   },
+   "error_share": 0.7448349626425267,
+   "error_share_vs_e314": {
+    "random": 0.0,
+    "trained": 0.0
+   },
+   "gain": 13.725577020153558,
+   "random": {
+    "L_patch": -13.194922260402404,
+    "L_recon": -13.223601439564499,
+    "T0": -13.214480950660313,
+    "T1": -13.203519363993221,
+    "error_share": null,
+    "gain": 0.010961586667091794,
+    "recon_share": null,
+    "seed": 3320958678,
+    "share_why_none": "|gain| 0.011 under 1 log-odds",
+    "sum_share": null
+   },
+   "recon_share": 0.596349581166277,
+   "regating_share": 0.27327685374408744,
+   "rows": "e46/rand32",
+   "seed": 0,
+   "side": "new",
+   "sum_share": 1.3411845438088037,
+   "task": "e46/rand32"
+  },
+  "e46/rand32_s1": {
+   "L_patch": -3.5073999916155314,
+   "L_recon": -4.6477754288113,
+   "T0": -13.214480950660313,
+   "T1": -0.04959221476132108,
+   "checks": {
+    "error share random e46/rand32_s1 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    },
+    "error share trained e46/rand32_s1 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    }
+   },
+   "error_share": 0.7373462209805689,
+   "error_share_vs_e314": {
+    "random": 0.0,
+    "trained": 0.0
+   },
+   "gain": 13.164888735898993,
+   "random": {
+    "L_patch": -13.252183398020636,
+    "L_recon": -13.227871206617847,
+    "T0": -13.214480950660313,
+    "T1": -13.224020505688854,
+    "error_share": null,
+    "gain": -0.009539555028540647,
+    "recon_share": null,
+    "seed": 912873047,
+    "share_why_none": "|gain| 0.00954 under 1 log-odds",
+    "sum_share": null
+   },
+   "recon_share": 0.6507237314120768,
+   "regating_share": 0.266001933954146,
+   "rows": "e46/rand32",
+   "seed": 1,
+   "side": "new",
+   "sum_share": 1.3880699523926459,
+   "task": "e46/rand32"
+  },
+  "e46/rand32_s2": {
+   "L_patch": -3.1732628714178026,
+   "L_recon": -4.8851237739484334,
+   "T0": -13.214480950660313,
+   "T1": 0.4206598861930297,
+   "checks": {
+    "error share random e46/rand32_s2 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    },
+    "error share trained e46/rand32_s2 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    }
+   },
+   "error_share": 0.7364220288875123,
+   "error_share_vs_e314": {
+    "random": 0.0,
+    "trained": 0.0
+   },
+   "gain": 13.635140836853342,
+   "random": {
+    "L_patch": -13.193003448014407,
+    "L_recon": -13.197161861301698,
+    "T0": -13.214480950660313,
+    "T1": -13.219396527280512,
+    "error_share": null,
+    "gain": -0.004915576620199147,
+    "recon_share": null,
+    "seed": 2348598740,
+    "share_why_none": "|gain| 0.00492 under 1 log-odds",
+    "sum_share": null
+   },
+   "recon_share": 0.6108743045909083,
+   "regating_share": 0.2458411249207034,
+   "rows": "e46/rand32",
+   "seed": 2,
+   "side": "new",
+   "sum_share": 1.3472963334784205,
+   "task": "e46/rand32"
+  },
+  "e53/cipher_s0": {
+   "L_patch": -6.868963866233826,
+   "L_recon": -8.519691774368287,
+   "T0": -10.140826698303222,
+   "T1": -6.272751408576966,
+   "checks": {
+    "error share random e53/cipher_s0 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    },
+    "error share trained e53/cipher_s0 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    }
+   },
+   "error_share": 0.8458632748849482,
+   "error_share_vs_e314": {
+    "random": 0.0,
+    "trained": 0.0
+   },
+   "gain": 3.8680752897262565,
+   "random": {
+    "L_patch": -10.14508160686493,
+    "L_recon": -10.16480236339569,
+    "T0": -10.140826698303222,
+    "T1": -10.176068797111512,
+    "error_share": null,
+    "gain": -0.03524209880828977,
+    "recon_share": null,
+    "seed": 2117231716,
+    "share_why_none": "|gain| 0.0352 under 1 log-odds",
+    "sum_share": null
+   },
+   "recon_share": 0.4191063519990747,
+   "regating_share": 0.12431340168715405,
+   "rows": "e53/cipher",
+   "seed": 0,
+   "side": "new",
+   "sum_share": 1.264969626884023,
+   "task": "e53/cipher"
+  },
+  "e53/cipher_s1": {
+   "L_patch": -6.871607480049133,
+   "L_recon": -8.606502460479737,
+   "T0": -10.140826698303222,
+   "T1": -6.336730251312256,
+   "checks": {
+    "error share random e53/cipher_s1 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    },
+    "error share trained e53/cipher_s1 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    }
+   },
+   "error_share": 0.8593944091086428,
+   "error_share_vs_e314": {
+    "random": 0.0,
+    "trained": 0.0
+   },
+   "gain": 3.8040964469909664,
+   "random": {
+    "L_patch": -10.112981519699098,
+    "L_recon": -10.100591183662415,
+    "T0": -10.140826698303222,
+    "T1": -10.105018969535827,
+    "error_share": null,
+    "gain": 0.03580772876739502,
+    "recon_share": null,
+    "seed": 180699383,
+    "share_why_none": "|gain| 0.0358 under 1 log-odds",
+    "sum_share": null
+   },
+   "recon_share": 0.40333473643580536,
+   "regating_share": 0.11604955639019224,
+   "rows": "e53/cipher",
+   "seed": 1,
+   "side": "new",
+   "sum_share": 1.2627291455444483,
+   "task": "e53/cipher"
+  },
+  "e53/cipher_s2": {
+   "L_patch": -6.817938340187073,
+   "L_recon": -8.555606657028198,
+   "T0": -10.140826698303222,
+   "T1": -6.276370678901673,
+   "checks": {
+    "error share random e53/cipher_s2 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    },
+    "error share trained e53/cipher_s2 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    }
+   },
+   "error_share": 0.8598592768124536,
+   "error_share_vs_e314": {
+    "random": 0.0,
+    "trained": 0.0
+   },
+   "gain": 3.8644560194015494,
+   "random": {
+    "L_patch": -10.097880047798157,
+    "L_recon": -10.132284642219544,
+    "T0": -10.140826698303222,
+    "T1": -10.132617510795594,
+    "error_share": null,
+    "gain": 0.008209187507628002,
+    "recon_share": null,
+    "seed": 1900870485,
+    "share_why_none": "|gain| 0.00821 under 1 log-odds",
+    "sum_share": null
+   },
+   "recon_share": 0.41020522249869246,
+   "regating_share": 0.11714675917091408,
+   "rows": "e53/cipher",
+   "seed": 2,
+   "side": "new",
+   "sum_share": 1.270064499311146,
+   "task": "e53/cipher"
+  },
+  "e53/lowercase_s0": {
+   "L_patch": -5.673129808425903,
+   "L_recon": -5.396616539955139,
+   "T0": -6.755572259902954,
+   "T1": -5.083443450927734,
+   "checks": {
+    "error share random e53/lowercase_s0 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    },
+    "error share trained e53/lowercase_s0 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    }
+   },
+   "error_share": 0.6473439400523432,
+   "error_share_vs_e314": {
+    "random": 0.0,
+    "trained": 0.0
+   },
+   "gain": 1.67212880897522,
+   "random": {
+    "L_patch": -6.7678450603485105,
+    "L_recon": -6.75554462814331,
+    "T0": -6.755572259902954,
+    "T1": -6.74772633266449,
+    "error_share": null,
+    "gain": 0.007845927238464334,
+    "recon_share": null,
+    "seed": 807807470,
+    "share_why_none": "|gain| 0.00785 under 1 log-odds",
+    "sum_share": null
+   },
+   "recon_share": 0.8127099495287471,
+   "regating_share": 0.7518811175785213,
+   "rows": "e53/lowercase",
+   "seed": 0,
+   "side": "reuse",
+   "sum_share": 1.4600538895810904,
+   "task": "e53/lowercase"
+  },
+  "e53/lowercase_s1": {
+   "L_patch": -5.667850212097168,
+   "L_recon": -5.456532021522522,
+   "T0": -6.755572259902954,
+   "T1": -5.142613134384155,
+   "checks": {
+    "error share random e53/lowercase_s1 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    },
+    "error share trained e53/lowercase_s1 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    }
+   },
+   "error_share": 0.6743642976420291,
+   "error_share_vs_e314": {
+    "random": 0.0,
+    "trained": 0.0
+   },
+   "gain": 1.612959125518799,
+   "random": {
+    "L_patch": -6.760465891838074,
+    "L_recon": -6.74335081577301,
+    "T0": -6.755572259902954,
+    "T1": -6.749462168693542,
+    "error_share": null,
+    "gain": 0.006110091209412083,
+    "recon_share": null,
+    "seed": 1078601639,
+    "share_why_none": "|gain| 0.00611 under 1 log-odds",
+    "sum_share": null
+   },
+   "recon_share": 0.8053770351822175,
+   "regating_share": 0.7700725841766312,
+   "rows": "e53/lowercase",
+   "seed": 1,
+   "side": "reuse",
+   "sum_share": 1.4797413328242466,
+   "task": "e53/lowercase"
+  },
+  "e53/lowercase_s2": {
+   "L_patch": -5.6319032468795776,
+   "L_recon": -5.361282593727112,
+   "T0": -6.755572259902954,
+   "T1": -5.0536435546875,
+   "checks": {
+    "error share random e53/lowercase_s2 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    },
+    "error share trained e53/lowercase_s2 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    }
+   },
+   "error_share": 0.6602327169052163,
+   "error_share_vs_e314": {
+    "random": 0.0,
+    "trained": 0.0
+   },
+   "gain": 1.7019287052154546,
+   "random": {
+    "L_patch": -6.816341236114502,
+    "L_recon": -6.834665222167969,
+    "T0": -6.755572259902954,
+    "T1": -6.798957983970642,
+    "error_share": null,
+    "gain": -0.04338572406768826,
+    "recon_share": null,
+    "seed": 2841737767,
+    "share_why_none": "|gain| 0.0434 under 1 log-odds",
+    "sum_share": null
+   },
+   "recon_share": 0.8192409364170945,
+   "regating_share": 0.7712453089058533,
+   "rows": "e53/lowercase",
+   "seed": 2,
+   "side": "reuse",
+   "sum_share": 1.479473653322311,
+   "task": "e53/lowercase"
+  },
+  "e54/cipher_own_s0": {
+   "L_patch": 1.1764816598793895,
+   "L_recon": -0.15344685131741553,
+   "T0": -13.736651046988891,
+   "T1": 7.067357210768867,
+   "checks": {
+    "error share random e54/cipher_own_s0 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    },
+    "error share trained e54/cipher_own_s0 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    }
+   },
+   "error_share": 0.7168393956634397,
+   "error_share_vs_e314": {
+    "random": 0.0,
+    "trained": 0.0
+   },
+   "gain": 20.804008257757758,
+   "random": {
+    "L_patch": -13.743519232445156,
+    "L_recon": -13.749423302326006,
+    "T0": -13.736651046988891,
+    "T1": -13.730017986494241,
+    "error_share": null,
+    "gain": 0.006633060494650067,
+    "recon_share": null,
+    "seed": 3132088582,
+    "share_why_none": "|gain| 0.00663 under 1 log-odds",
+    "sum_share": null
+   },
+   "recon_share": 0.6529128438798008,
+   "regating_share": 0.2652401392487863,
+   "rows": "e54/cipher",
+   "seed": 0,
+   "side": "new",
+   "sum_share": 1.3697522395432404,
+   "task": "e54/cipher_own"
+  },
+  "e54/cipher_own_s1": {
+   "L_patch": 0.4102695307780787,
+   "L_recon": -0.15618053908200608,
+   "T0": -13.736651046988891,
+   "T1": 6.726860980397647,
+   "checks": {
+    "error share random e54/cipher_own_s1 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    },
+    "error share trained e54/cipher_own_s1 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    }
+   },
+   "error_share": 0.6913241753827004,
+   "error_share_vs_e314": {
+    "random": 0.0,
+    "trained": 0.0
+   },
+   "gain": 20.46351202738654,
+   "random": {
+    "L_patch": -13.74734162792717,
+    "L_recon": -13.728997358341807,
+    "T0": -13.736651046988891,
+    "T1": -13.76427556067398,
+    "error_share": null,
+    "gain": -0.02762451368508856,
+    "recon_share": null,
+    "seed": 1930722955,
+    "share_why_none": "|gain| 0.0276 under 1 log-odds",
+    "sum_share": null
+   },
+   "recon_share": 0.6636431952507466,
+   "regating_share": 0.24304463624795386,
+   "rows": "e54/cipher",
+   "seed": 1,
+   "side": "new",
+   "sum_share": 1.3549673706334469,
+   "task": "e54/cipher_own"
+  },
+  "e54/cipher_own_s2": {
+   "L_patch": 1.0505363080919403,
+   "L_recon": -0.5432720872544751,
+   "T0": -13.736651046988891,
+   "T1": 6.501922302639361,
+   "checks": {
+    "error share random e54/cipher_own_s2 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    },
+    "error share trained e54/cipher_own_s2 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    }
+   },
+   "error_share": 0.730643761278383,
+   "error_share_vs_e314": {
+    "random": 0.0,
+    "trained": 0.0
+   },
+   "gain": 20.238573349628254,
+   "random": {
+    "L_patch": -13.74212335802845,
+    "L_recon": -13.72482284073977,
+    "T0": -13.736651046988891,
+    "T1": -13.734103753394688,
+    "error_share": null,
+    "gain": 0.002547293594203026,
+    "recon_share": null,
+    "seed": 3977692312,
+    "share_why_none": "|gain| 0.00255 under 1 log-odds",
+    "sum_share": null
+   },
+   "recon_share": 0.651892736301828,
+   "regating_share": 0.2678317644621348,
+   "rows": "e54/cipher",
+   "seed": 2,
+   "side": "new",
+   "sum_share": 1.382536497580211,
+   "task": "e54/cipher_own"
+  },
+  "e54/cipher_s0": {
+   "L_patch": -4.971314479395287,
+   "L_recon": -7.209808595401725,
+   "T0": -13.736651046988891,
+   "T1": -2.630095068941411,
+   "checks": {
+    "error share random e54/cipher_s0 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    },
+    "error share trained e54/cipher_s0 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    }
+   },
+   "error_share": 0.7892038346467273,
+   "error_share_vs_e314": {
+    "random": 0.0,
+    "trained": 0.0
+   },
+   "gain": 11.10655597804748,
+   "random": {
+    "L_patch": -13.802060776150103,
+    "L_recon": -13.732024900692025,
+    "T0": -13.736651046988891,
+    "T1": -13.748108362414174,
+    "error_share": null,
+    "gain": -0.011457315425282388,
+    "recon_share": null,
+    "seed": 768874004,
+    "share_why_none": "|gain| 0.0115 under 1 log-odds",
+    "sum_share": null
+   },
+   "recon_share": 0.5876567375600242,
+   "regating_share": 0.24138288826323226,
+   "rows": "e54/cipher",
+   "seed": 0,
+   "side": "new",
+   "sum_share": 1.3768605722067515,
+   "task": "e54/cipher"
+  },
+  "e54/cipher_s1": {
+   "L_patch": -5.459428669251118,
+   "L_recon": -7.603233293159721,
+   "T0": -13.736651046988891,
+   "T1": -2.8566746465938606,
+   "checks": {
+    "error share random e54/cipher_s1 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    },
+    "error share trained e54/cipher_s1 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    }
+   },
+   "error_share": 0.7607757657854152,
+   "error_share_vs_e314": {
+    "random": 0.0,
+    "trained": 0.0
+   },
+   "gain": 10.87997640039503,
+   "random": {
+    "L_patch": -13.734420353604346,
+    "L_recon": -13.73396473324176,
+    "T0": -13.736651046988891,
+    "T1": -13.734965688174533,
+    "error_share": null,
+    "gain": 0.00168535881435794,
+    "recon_share": null,
+    "seed": 362671000,
+    "share_why_none": "|gain| 0.00169 under 1 log-odds",
+    "sum_share": null
+   },
+   "recon_share": 0.5637344722187521,
+   "regating_share": 0.21194771673478274,
+   "rows": "e54/cipher",
+   "seed": 1,
+   "side": "new",
+   "sum_share": 1.3245102380041671,
+   "task": "e54/cipher"
+  },
+  "e54/cipher_s2": {
+   "L_patch": -5.128764708017566,
+   "L_recon": -6.994094912538824,
+   "T0": -13.736651046988891,
+   "T1": -2.76166501979238,
+   "checks": {
+    "error share random e54/cipher_s2 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    },
+    "error share trained e54/cipher_s2 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    }
+   },
+   "error_share": 0.7843186604193021,
+   "error_share_vs_e314": {
+    "random": 0.0,
+    "trained": 0.0
+   },
+   "gain": 10.974986027196511,
+   "random": {
+    "L_patch": -13.75351338534011,
+    "L_recon": -13.741798037106228,
+    "T0": -13.736651046988891,
+    "T1": -13.729927121978445,
+    "error_share": null,
+    "gain": 0.006723925010446052,
+    "recon_share": null,
+    "seed": 1387043608,
+    "share_why_none": "|gain| 0.00672 under 1 log-odds",
+    "sum_share": null
+   },
+   "recon_share": 0.6143566941900162,
+   "regating_share": 0.25949295256877297,
+   "rows": "e54/cipher",
+   "seed": 2,
+   "side": "new",
+   "sum_share": 1.3986753546093182,
+   "task": "e54/cipher"
+  },
+  "e54/elicit_s0": {
+   "L_patch": 1.6250812736983151,
+   "L_recon": 1.504953467968813,
+   "T0": -6.343810273199966,
+   "T1": 4.443060226047162,
+   "checks": {
+    "error share random e54/elicit_s0 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    },
+    "error share trained e54/elicit_s0 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    }
+   },
+   "error_share": 0.7387584329907799,
+   "error_share_vs_e314": {
+    "random": 0.0,
+    "trained": 0.0
+   },
+   "gain": 10.78687049924713,
+   "random": {
+    "L_patch": -6.373808467511049,
+    "L_recon": -6.333220599852886,
+    "T0": -6.343810273199966,
+    "T1": -6.344974458832102,
+    "error_share": null,
+    "gain": -0.0011641856321356059,
+    "recon_share": null,
+    "seed": 2023171615,
+    "share_why_none": "|gain| 0.00116 under 1 log-odds",
+    "sum_share": null
+   },
+   "recon_share": 0.7276219494538833,
+   "regating_share": 0.7725536396045862,
+   "rows": "e54/elicit",
+   "seed": 0,
+   "side": "reuse",
+   "sum_share": 1.466380382444663,
+   "task": "e54/elicit"
+  },
+  "e54/elicit_s1": {
+   "L_patch": 1.5629640559560245,
+   "L_recon": 1.2531718814495914,
+   "T0": -6.343810273199966,
+   "T1": 4.476208794977247,
+   "checks": {
+    "error share random e54/elicit_s1 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    },
+    "error share trained e54/elicit_s1 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    }
+   },
+   "error_share": 0.7307541954718569,
+   "error_share_vs_e314": {
+    "random": 0.0,
+    "trained": 0.0
+   },
+   "gain": 10.820019068177213,
+   "random": {
+    "L_patch": -6.378162059587302,
+    "L_recon": -6.33890841670872,
+    "T0": -6.343810273199966,
+    "T1": -6.341727438661241,
+    "error_share": null,
+    "gain": 0.0020828345387249314,
+    "recon_share": null,
+    "seed": 664614177,
+    "share_why_none": "|gain| 0.00208 under 1 log-odds",
+    "sum_share": null
+   },
+   "recon_share": 0.7021228065108556,
+   "regating_share": 0.7578237100072733,
+   "rows": "e54/elicit",
+   "seed": 1,
+   "side": "reuse",
+   "sum_share": 1.4328770019827126,
+   "task": "e54/elicit"
+  },
+  "e54/elicit_s2": {
+   "L_patch": 1.5130377749806827,
+   "L_recon": 1.4839150831871426,
+   "T0": -6.343810273199966,
+   "T1": 4.509091092139175,
+   "checks": {
+    "error share random e54/elicit_s2 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    },
+    "error share trained e54/elicit_s2 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    }
+   },
+   "error_share": 0.7239398741126521,
+   "error_share_vs_e314": {
+    "random": 0.0,
+    "trained": 0.0
+   },
+   "gain": 10.852901365339141,
+   "random": {
+    "L_patch": -6.364376014040918,
+    "L_recon": -6.362900099803492,
+    "T0": -6.343810273199966,
+    "T1": -6.349287691804552,
+    "error_share": null,
+    "gain": -0.0054774186045856155,
+    "recon_share": null,
+    "seed": 3337989875,
+    "share_why_none": "|gain| 0.00548 under 1 log-odds",
+    "sum_share": null
+   },
+   "recon_share": 0.7212564726135333,
+   "regating_share": 0.767052989191262,
+   "rows": "e54/elicit",
+   "seed": 2,
+   "side": "reuse",
+   "sum_share": 1.4451963467261855,
+   "task": "e54/elicit"
+  },
+  "e58/cipher_s0": {
+   "L_patch": -3.679886272737196,
+   "L_recon": -2.483082702943495,
+   "T0": -13.492073200799368,
+   "T1": 2.359380613673817,
+   "checks": {
+    "error share random e58/cipher_s0 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    },
+    "error share trained e58/cipher_s0 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    }
+   },
+   "error_share": 0.6190086438067368,
+   "error_share_vs_e314": {
+    "random": 0.0,
+    "trained": 0.0
+   },
+   "gain": 15.851453814473185,
+   "random": {
+    "L_patch": -13.497868111083557,
+    "L_recon": -13.53218867061855,
+    "T0": -13.492073200799368,
+    "T1": -13.513174803940567,
+    "error_share": null,
+    "gain": -0.02110160314119902,
+    "recon_share": null,
+    "seed": 875180265,
+    "share_why_none": "|gain| 0.0211 under 1 log-odds",
+    "sum_share": null
+   },
+   "recon_share": 0.6945098302468701,
+   "regating_share": 0.3036869320840205,
+   "rows": "e58/cipher",
+   "seed": 0,
+   "side": "new",
+   "sum_share": 1.3135184740536068,
+   "task": "e58/cipher"
+  },
+  "e58/cipher_s1": {
+   "L_patch": -3.2960371054135837,
+   "L_recon": -2.6576047293789737,
+   "T0": -13.492073200799368,
+   "T1": 2.474781523217688,
+   "checks": {
+    "error share random e58/cipher_s1 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    },
+    "error share trained e58/cipher_s1 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    }
+   },
+   "error_share": 0.6385751152385128,
+   "error_share_vs_e314": {
+    "random": 0.0,
+    "trained": 0.0
+   },
+   "gain": 15.966854724017056,
+   "random": {
+    "L_patch": -13.501206918196244,
+    "L_recon": -13.506608322783784,
+    "T0": -13.492073200799368,
+    "T1": -13.510013380250731,
+    "error_share": null,
+    "gain": -0.01794017945136339,
+    "recon_share": null,
+    "seed": 3143726522,
+    "share_why_none": "|gain| 0.0179 under 1 log-odds",
+    "sum_share": null
+   },
+   "recon_share": 0.6785599705572182,
+   "regating_share": 0.2876403595714583,
+   "rows": "e58/cipher",
+   "seed": 1,
+   "side": "new",
+   "sum_share": 1.317135085795731,
+   "task": "e58/cipher"
+  },
+  "e58/cipher_s2": {
+   "L_patch": -4.064561365367649,
+   "L_recon": -3.097094939305232,
+   "T0": -13.492073200799368,
+   "T1": 1.3678262900639246,
+   "checks": {
+    "error share random e58/cipher_s2 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    },
+    "error share trained e58/cipher_s2 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    }
+   },
+   "error_share": 0.6344263526969538,
+   "error_share_vs_e314": {
+    "random": 0.0,
+    "trained": 0.0
+   },
+   "gain": 14.859899490863292,
+   "random": {
+    "L_patch": -13.4644281113898,
+    "L_recon": -13.473358451069652,
+    "T0": -13.492073200799368,
+    "T1": -13.464302924963144,
+    "error_share": null,
+    "gain": 0.02777027583622349,
+    "recon_share": null,
+    "seed": 3943638141,
+    "share_why_none": "|gain| 0.0278 under 1 log-odds",
+    "sum_share": null
+   },
+   "recon_share": 0.6995322053076843,
+   "regating_share": 0.30749449689181363,
+   "rows": "e58/cipher",
+   "seed": 2,
+   "side": "new",
+   "sum_share": 1.333958558004638,
+   "task": "e58/cipher"
+  },
+  "e58/copy_s0": {
+   "L_patch": 0.025540241828331582,
+   "L_recon": 5.70977923586652,
+   "T0": -9.735882243910035,
+   "T1": 6.71465760344392,
+   "checks": {
+    "error share random e58/copy_s0 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    },
+    "error share trained e58/copy_s0 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    }
+   },
+   "error_share": 0.5933800699743284,
+   "error_share_vs_e314": {
+    "random": 0.0,
+    "trained": 0.0
+   },
+   "gain": 16.450539847353955,
+   "random": {
+    "L_patch": -9.75292867713875,
+    "L_recon": -9.752321093232482,
+    "T0": -9.735882243910035,
+    "T1": -9.743340779017736,
+    "error_share": null,
+    "gain": -0.007458535107700115,
+    "recon_share": null,
+    "seed": 3157265992,
+    "share_why_none": "|gain| 0.00746 under 1 log-odds",
+    "sum_share": null
+   },
+   "recon_share": 0.9389151737935802,
+   "regating_share": 0.7707141185704521,
+   "rows": "e58/copy",
+   "seed": 0,
+   "side": "reuse",
+   "sum_share": 1.5322952437679085,
+   "task": "e58/copy"
+  },
+  "e58/copy_s1": {
+   "L_patch": -0.5151176102511532,
+   "L_recon": 5.494086302243746,
+   "T0": -9.735882243910035,
+   "T1": 6.5951747560834555,
+   "checks": {
+    "error share random e58/copy_s1 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    },
+    "error share trained e58/copy_s1 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    }
+   },
+   "error_share": 0.5646152991605232,
+   "error_share_vs_e314": {
+    "random": 0.0,
+    "trained": 0.0
+   },
+   "gain": 16.331056999993493,
+   "random": {
+    "L_patch": -9.739787203448635,
+    "L_recon": -9.741185403370357,
+    "T0": -9.735882243910035,
+    "T1": -9.734560072838843,
+    "error_share": null,
+    "gain": 0.0013221710711928125,
+    "recon_share": null,
+    "seed": 2009358268,
+    "share_why_none": "|gain| 0.00132 under 1 log-odds",
+    "sum_share": null
+   },
+   "recon_share": 0.9325770246322604,
+   "regating_share": 0.7719526369281162,
+   "rows": "e58/copy",
+   "seed": 1,
+   "side": "reuse",
+   "sum_share": 1.4971923237927838,
+   "task": "e58/copy"
+  },
+  "e58/copy_s2": {
+   "L_patch": -0.6981335419874924,
+   "L_recon": 5.695709878748113,
+   "T0": -9.735882243910035,
+   "T1": 6.680885695077323,
+   "checks": {
+    "error share random e58/copy_s2 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    },
+    "error share trained e58/copy_s2 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    }
+   },
+   "error_share": 0.5505193674851947,
+   "error_share_vs_e314": {
+    "random": 0.0,
+    "trained": 0.0
+   },
+   "gain": 16.41676793898736,
+   "random": {
+    "L_patch": -9.73964717838314,
+    "L_recon": -9.719290349866961,
+    "T0": -9.735882243910035,
+    "T1": -9.729265379738974,
+    "error_share": null,
+    "gain": 0.00661686417106111,
+    "recon_share": null,
+    "seed": 253832182,
+    "share_why_none": "|gain| 0.00662 under 1 log-odds",
+    "sum_share": null
+   },
+   "recon_share": 0.9399896605720078,
+   "regating_share": 0.7705457921068278,
+   "rows": "e58/copy",
+   "seed": 2,
+   "side": "reuse",
+   "sum_share": 1.4905090280572026,
+   "task": "e58/copy"
+  },
+  "e58/prior_cipher_s0": {
+   "L_patch": -0.25508384771280357,
+   "L_recon": 0.36794395046634276,
+   "T0": -10.19735332135554,
+   "T1": 4.711135700866059,
+   "checks": {
+    "error share random e58/prior_cipher_s0 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    },
+    "error share trained e58/prior_cipher_s0 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    }
+   },
+   "error_share": 0.6668864603799521,
+   "error_share_vs_e314": {
+    "random": 0.0,
+    "trained": 0.0
+   },
+   "gain": 14.908489022221598,
+   "random": {
+    "L_patch": -10.19078292379846,
+    "L_recon": -10.224036740256356,
+    "T0": -10.19735332135554,
+    "T1": -10.207376261691113,
+    "error_share": null,
+    "gain": -0.010022940335574049,
+    "recon_share": null,
+    "seed": 1395169355,
+    "share_why_none": "|gain| 0.01 under 1 log-odds",
+    "sum_share": null
+   },
+   "recon_share": 0.7086765973449056,
+   "regating_share": 0.3732250693258398,
+   "rows": "e58/prior_cipher",
+   "seed": 0,
+   "side": "new",
+   "sum_share": 1.3755630577248579,
+   "task": "e58/prior_cipher"
+  },
+  "e58/prior_cipher_s1": {
+   "L_patch": -0.22722117050544366,
+   "L_recon": -0.15144244607511934,
+   "T0": -10.19735332135554,
+   "T1": 4.450113843370985,
+   "checks": {
+    "error share random e58/prior_cipher_s1 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    },
+    "error share trained e58/prior_cipher_s1 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    }
+   },
+   "error_share": 0.6806727769876685,
+   "error_share_vs_e314": {
+    "random": 0.0,
+    "trained": 0.0
+   },
+   "gain": 14.647467164726525,
+   "random": {
+    "L_patch": -10.233103590411739,
+    "L_recon": -10.201657480293221,
+    "T0": -10.19735332135554,
+    "T1": -10.20162596235742,
+    "error_share": null,
+    "gain": -0.004272641001881183,
+    "recon_share": null,
+    "seed": 749795675,
+    "share_why_none": "|gain| 0.00427 under 1 log-odds",
+    "sum_share": null
+   },
+   "recon_share": 0.6858462806097017,
+   "regating_share": 0.3804098771528746,
+   "rows": "e58/prior_cipher",
+   "seed": 1,
+   "side": "new",
+   "sum_share": 1.3665190575973702,
+   "task": "e58/prior_cipher"
+  },
+  "e58/prior_cipher_s2": {
+   "L_patch": -0.4320204808161809,
+   "L_recon": -0.3054437503948078,
+   "T0": -10.19735332135554,
+   "T1": 4.211640644740392,
+   "checks": {
+    "error share random e58/prior_cipher_s2 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    },
+    "error share trained e58/prior_cipher_s2 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    }
+   },
+   "error_share": 0.6777248198949203,
+   "error_share_vs_e314": {
+    "random": 0.0,
+    "trained": 0.0
+   },
+   "gain": 14.408993966095931,
+   "random": {
+    "L_patch": -10.22246251739822,
+    "L_recon": -10.17875351939168,
+    "T0": -10.19735332135554,
+    "T1": -10.182862538557787,
+    "error_share": null,
+    "gain": 0.014490782797752289,
+    "recon_share": null,
+    "seed": 2921064349,
+    "share_why_none": "|gain| 0.0145 under 1 log-odds",
+    "sum_share": null
+   },
+   "recon_share": 0.686509383947012,
+   "regating_share": 0.38148005969315935,
+   "rows": "e58/prior_cipher",
+   "seed": 2,
+   "side": "new",
+   "sum_share": 1.3642342038419324,
+   "task": "e58/prior_cipher"
+  },
+  "e58/rank1_s0": {
+   "L_patch": 2.2696280779538456,
+   "L_recon": 2.486186821143944,
+   "T0": -4.263255441105449,
+   "T1": 5.66701763659924,
+   "checks": {
+    "error share random e58/rank1_s0 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    },
+    "error share trained e58/rank1_s0 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    }
+   },
+   "error_share": 0.6578755154001589,
+   "error_share_vs_e314": {
+    "random": 0.0,
+    "trained": 0.0
+   },
+   "gain": 9.93027307770469,
+   "random": {
+    "L_patch": -4.286256159935798,
+    "L_recon": -4.2231376787999295,
+    "T0": -4.263255441105449,
+    "T1": -4.2401145188124865,
+    "error_share": null,
+    "gain": 0.023140922292962607,
+    "recon_share": null,
+    "seed": 1891052414,
+    "share_why_none": "|gain| 0.0231 under 1 log-odds",
+    "sum_share": null
+   },
+   "recon_share": 0.6796834497334364,
+   "regating_share": 0.8473278908255046,
+   "rows": "e58/rank1",
+   "seed": 0,
+   "side": "reuse",
+   "sum_share": 1.3375589651335953,
+   "task": "e58/rank1"
+  },
+  "e58/rank1_s1": {
+   "L_patch": 2.0716283788214196,
+   "L_recon": 2.4254161377886794,
+   "T0": -4.263255441105449,
+   "T1": 5.290125013231398,
+   "checks": {
+    "error share random e58/rank1_s1 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    },
+    "error share trained e58/rank1_s1 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    }
+   },
+   "error_share": 0.6631038981652918,
+   "error_share_vs_e314": {
+    "random": 0.0,
+    "trained": 0.0
+   },
+   "gain": 9.553380454336846,
+   "random": {
+    "L_patch": -4.290505039108383,
+    "L_recon": -4.297605559542463,
+    "T0": -4.263255441105449,
+    "T1": -4.2696732974552605,
+    "error_share": null,
+    "gain": -0.006417856349811402,
+    "recon_share": null,
+    "seed": 2920222371,
+    "share_why_none": "|gain| 0.00642 under 1 log-odds",
+    "sum_share": null
+   },
+   "recon_share": 0.7001366281668122,
+   "regating_share": 0.8834228571583856,
+   "rows": "e58/rank1",
+   "seed": 1,
+   "side": "reuse",
+   "sum_share": 1.363240526332104,
+   "task": "e58/rank1"
+  },
+  "e58/rank1_s2": {
+   "L_patch": 2.158152676962472,
+   "L_recon": 2.7153934131969106,
+   "T0": -4.263255441105449,
+   "T1": 5.640623005953702,
+   "checks": {
+    "error share random e58/rank1_s2 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    },
+    "error share trained e58/rank1_s2 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    }
+   },
+   "error_share": 0.648373074487267,
+   "error_share_vs_e314": {
+    "random": 0.0,
+    "trained": 0.0
+   },
+   "gain": 9.903878447059151,
+   "random": {
+    "L_patch": -4.300321317219234,
+    "L_recon": -4.288786549668212,
+    "T0": -4.263255441105449,
+    "T1": -4.26311284512073,
+    "error_share": null,
+    "gain": 0.0001425959847187741,
+    "recon_share": null,
+    "seed": 1814584508,
+    "share_why_none": "|gain| 0.000143 under 1 log-odds",
+    "sum_share": null
+   },
+   "recon_share": 0.7046379750727447,
+   "regating_share": 0.8378710493654826,
+   "rows": "e58/rank1",
+   "seed": 2,
+   "side": "reuse",
+   "sum_share": 1.3530110495600116,
+   "task": "e58/rank1"
+  },
+  "e62/copy_s0": {
+   "L_patch": 0.35657850503921507,
+   "L_recon": 4.34208468914032,
+   "T0": -8.053399331569672,
+   "T1": 4.596205067634583,
+   "checks": {
+    "error share random e62/copy_s0 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    },
+    "error share trained e62/copy_s0 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    }
+   },
+   "error_share": 0.6648411737791524,
+   "error_share_vs_e314": {
+    "random": 0.0,
+    "trained": 0.0
+   },
+   "gain": 12.649604399204254,
+   "random": {
+    "L_patch": -8.086008207798004,
+    "L_recon": -8.090625247955323,
+    "T0": -8.053399331569672,
+    "T1": -8.052066118717194,
+    "error_share": null,
+    "gain": 0.001333212852477672,
+    "recon_share": null,
+    "seed": 1028682732,
+    "share_why_none": "|gain| 0.00133 under 1 log-odds",
+    "sum_share": null
+   },
+   "recon_share": 0.9799108042848954,
+   "regating_share": 1.094561204230981,
+   "rows": "e62/copy",
+   "seed": 0,
+   "side": "reuse",
+   "sum_share": 1.6447519780640478,
+   "task": "e62/copy"
+  },
+  "e62/copy_s1": {
+   "L_patch": 0.11938381433486939,
+   "L_recon": 4.197063174247742,
+   "T0": -8.053399331569672,
+   "T1": 4.5825400018692015,
+   "checks": {
+    "error share random e62/copy_s1 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    },
+    "error share trained e62/copy_s1 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    }
+   },
+   "error_share": 0.646788729372628,
+   "error_share_vs_e314": {
+    "random": 0.0,
+    "trained": 0.0
+   },
+   "gain": 12.635939333438873,
+   "random": {
+    "L_patch": -8.08739755153656,
+    "L_recon": -8.070100474357606,
+    "T0": -8.053399331569672,
+    "T1": -8.033554520606994,
+    "error_share": null,
+    "gain": 0.01984481096267743,
+    "recon_share": null,
+    "seed": 823381938,
+    "share_why_none": "|gain| 0.0198 under 1 log-odds",
+    "sum_share": null
+   },
+   "recon_share": 0.9694936151995158,
+   "regating_share": 1.090851303139447,
+   "rows": "e62/copy",
+   "seed": 1,
+   "side": "reuse",
+   "sum_share": 1.6162823445721437,
+   "task": "e62/copy"
+  },
+  "e62/copy_s2": {
+   "L_patch": 0.09990707874298095,
+   "L_recon": 4.284704298973083,
+   "T0": -8.053399331569672,
+   "T1": 4.493612885475159,
+   "checks": {
+    "error share random e62/copy_s2 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    },
+    "error share trained e62/copy_s2 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    }
+   },
+   "error_share": 0.6498205524369037,
+   "error_share_vs_e314": {
+    "random": 0.0,
+    "trained": 0.0
+   },
+   "gain": 12.54701221704483,
+   "random": {
+    "L_patch": -8.08747452020645,
+    "L_recon": -8.099412717819213,
+    "T0": -8.053399331569672,
+    "T1": -8.071278936862946,
+    "error_share": null,
+    "gain": -0.017879605293273926,
+    "recon_share": null,
+    "seed": 75522206,
+    "share_why_none": "|gain| 0.0179 under 1 log-odds",
+    "sum_share": null
+   },
+   "recon_share": 0.9833499336026565,
+   "regating_share": 1.098954624393048,
+   "rows": "e62/copy",
+   "seed": 2,
+   "side": "reuse",
+   "sum_share": 1.6331704860395604,
+   "task": "e62/copy"
+  },
+  "e62/lookup_s0": {
+   "L_patch": 1.3626786327362062,
+   "L_recon": 2.671839561462402,
+   "T0": -8.338311295509339,
+   "T1": 7.026084938049316,
+   "checks": {
+    "error share random e62/lookup_s0 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    },
+    "error share trained e62/lookup_s0 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    }
+   },
+   "error_share": 0.6313941518285506,
+   "error_share_vs_e314": {
+    "random": 0.0,
+    "trained": 0.0
+   },
+   "gain": 15.364396233558654,
+   "random": {
+    "L_patch": -8.35105516910553,
+    "L_recon": -8.36707896232605,
+    "T0": -8.338311295509339,
+    "T1": -8.326308145523072,
+    "error_share": null,
+    "gain": 0.012003149986266948,
+    "recon_share": null,
+    "seed": 1068267872,
+    "share_why_none": "|gain| 0.012 under 1 log-odds",
+    "sum_share": null
+   },
+   "recon_share": 0.7166015956372926,
+   "regating_share": 0.41523081235832887,
+   "rows": "e62/lookup",
+   "seed": 0,
+   "side": "new",
+   "sum_share": 1.3479957474658433,
+   "task": "e62/lookup"
+  },
+  "e62/lookup_s1": {
+   "L_patch": 1.1271934247016906,
+   "L_recon": 2.4102906560897828,
+   "T0": -8.338311295509339,
+   "T1": 6.64941554069519,
+   "checks": {
+    "error share random e62/lookup_s1 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    },
+    "error share trained e62/lookup_s1 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    }
+   },
+   "error_share": 0.6315503894390472,
+   "error_share_vs_e314": {
+    "random": 0.0,
+    "trained": 0.0
+   },
+   "gain": 14.98772683620453,
+   "random": {
+    "L_patch": -8.31655550479889,
+    "L_recon": -8.336058495044709,
+    "T0": -8.338311295509339,
+    "T1": -8.319104769229888,
+    "error_share": null,
+    "gain": 0.019206526279450742,
+    "recon_share": null,
+    "seed": 295004851,
+    "share_why_none": "|gain| 0.0192 under 1 log-odds",
+    "sum_share": null
+   },
+   "recon_share": 0.7171602517891287,
+   "regating_share": 0.38180563766821546,
+   "rows": "e62/lookup",
+   "seed": 1,
+   "side": "new",
+   "sum_share": 1.348710641228176,
+   "task": "e62/lookup"
+  },
+  "e62/lookup_s2": {
+   "L_patch": 1.4566895651817322,
+   "L_recon": 2.7789997959136965,
+   "T0": -8.338311295509339,
+   "T1": 6.9930415439605715,
+   "checks": {
+    "error share random e62/lookup_s2 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    },
+    "error share trained e62/lookup_s2 vs E314 (tol = run-to-run floor)": {
+     "pass": true,
+     "tol": 0.0,
+     "value": 0.0
+    }
+   },
+   "error_share": 0.638886924282002,
+   "error_share_vs_e314": {
+    "random": 0.0,
+    "trained": 0.0
+   },
+   "gain": 15.331352839469911,
+   "random": {
+    "L_patch": -8.371708240509033,
+    "L_recon": -8.390105187892914,
+    "T0": -8.338311295509339,
+    "T1": -8.342794177532197,
+    "error_share": null,
+    "gain": -0.004482882022857737,
+    "recon_share": null,
+    "seed": 312397237,
+    "share_why_none": "|gain| 0.00448 under 1 log-odds",
+    "sum_share": null
+   },
+   "recon_share": 0.7251356881437099,
+   "regating_share": 0.41542997264149084,
+   "rows": "e62/lookup",
+   "seed": 2,
+   "side": "new",
+   "sum_share": 1.3640226124257118,
+   "task": "e62/lookup"
+  }
+ }
+}
