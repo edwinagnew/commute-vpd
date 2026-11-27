@@ -72,3 +72,13 @@
 1.10	given	E302's band, predictions_random.json .random_reference: 1.00-1.10 log-odds	
 -2.4e-5	experiments/sae_proxies/results/run_random_h100_stop.log	[scan("minus E314.s. (-?[0-9.e-]+) .tol")] | first[0] | tonumber	this
 5.3	experiments/sae_proxies/results/run_random.log	[scan("GB, ([0-9.]+) min")] | last[0] | tonumber	this
+37.2	experiments/sae_proxies/results/results_random.json	[.draws[] | select(.task == "c3/cipher" and .draw_seed == 228002) | -.signed_c] | min	this
+40.2	experiments/sae_proxies/results/results_random.json	[.draws[] | select(.task == "c3/cipher" and .draw_seed == 228002) | -.signed_c] | max	this
+29.5	experiments/sae_proxies/results/results_random.json	[.draws[] | select(.task == "c3/cipher" and .draw_seed == 228003) | -.signed_c] | min	this
+31.0	experiments/sae_proxies/results/results_random.json	[.draws[] | select(.task == "c3/cipher" and .draw_seed == 228003) | -.signed_c] | max	this
+9.6	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e58/rank1") | .gain] | min	earlier
+9.9	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e58/rank1") | .gain] | max	earlier
+1.6	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e53/lowercase") | .gain] | min	earlier
+1.7	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e53/lowercase") | .gain] | max	earlier
+3.8	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e53/cipher") | .gain] | min	earlier
+3.9	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e53/cipher") | .gain] | max	earlier

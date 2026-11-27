@@ -9,7 +9,9 @@ missing random reference to the error share and reconstruction share of E314 and
 We read the random updates of the paper's known-answer figure through the same sparse-autoencoder patches as the
 fine-tunes, on the four tasks where those random updates reach a gain of about one log-odds on the trained answer. On
 every one of the four tasks the random updates read a higher error share than the fine-tunes. Their reconstruction
-share is mostly as high or higher, so neither share on its own tells a trained change from an untrained one. All four
+share is mostly as high or higher. Both shares put the random draws above the fine-tunes, but the draws differ from
+them in gain and in size as well as in being untrained, so the gap cannot be read as trained against untrained, and a
+high error share does not need training. All four
 tasks were built to be new and the reuse side has no random reference at all, so this page cannot speak to reuse
 against new, which is the measure `GOALS.md` asks for.
 
@@ -66,7 +68,7 @@ reuse side, and 45 of the 72 on the new side, hit the cap. So the reuse side has
 comparison below is on new tasks only.
 
 On these four tasks the fine-tunes raise the trained answer by 10.9 to 20.8 log-odds and the ok draws by 1.01 to
-1.09. Across all 16 tasks the fine-tunes span 1.6 to 20.8 log-odds; only the two `e53` tasks sit under 10. The random
+1.09. Across all 16 tasks the fine-tunes span 1.6 to 20.8 log-odds; three tasks sit under 10 (`e53/lowercase` 1.6 to 1.7, `e53/cipher` 3.8 to 3.9, `e58/rank1` 9.6 to 9.9). The random
 reference is therefore one log-odds against a gain of about eleven to twenty-one.
 
 ### Error share: random draws read higher than the fine-tunes on all four tasks
@@ -96,8 +98,8 @@ Ranges over the three fine-tune seeds and over the task's ok draws. Gains are in
 | `e54/cipher` | 9 | 10.9 to 11.1 | 1.03 to 1.09 | 0.76 to 0.79 | 1.01 to 1.46 | 0.56 to 0.61 | 0.75 to 0.99 |
 | `e54/cipher_own` | 6 | 20.2 to 20.8 | 1.01 to 1.06 | 0.69 to 0.73 | 0.97 to 0.99 | 0.65 to 0.66 | 0.51 to 0.99 |
 
-The draws are not independent within a task. The three draws that share a seed use the same Gaussian seed and the
-same saved scale, on fine-tune updates of similar norms. They read close together: on `e54/cipher_own` the draws of
+The draws are not independent within a task. The three draws that share a seed use the same Gaussian seed and close saved
+scales (on `c3/cipher`, 37.2 to 40.2 for one seed and 29.5 to 31.0 for the other), on fine-tune updates of similar norms. They read close together: on `e54/cipher_own` the draws of
 one seed read reconstruction shares of 0.51 to 0.53 and those of the other 0.94 to 0.99. A task's random spread is
 therefore set by its two or three seeds.
 
