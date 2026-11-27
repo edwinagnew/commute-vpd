@@ -9,7 +9,7 @@ Verdict: **code OK; E327 holds; E328's fine-tune numbers are correct as read but
 | Item | Finding | Level |
 |---|---|---|
 | `share.answer_logodds` (src/commute/share.py:110-130) | Derived by hand: `identity.log_odds` is log p - log(1-p), so d = -log_odds gives log p = -softplus(d) and log(1-p) = -softplus(-d). The recursion 1 - P_{<=t} = (1 - P_{<t}) + P_{<t}(1 - p_t) is exact, and the update order (log_q before log_p) uses P_{<t}. Position start + j predicts ids[j], matching `spans_from_marks` (positions p..q predict t[p+1..q+1]). Padded positions are clamped and masked by `on`. One-token answers take `log_odds` itself. | OK |
-| Numerical test of the multi-token path | Not run: the CPU worker is down (compute node completing). E327 tests only one-token answers (max \|ans - lo\| = 0 on all 48). On real Qwen logits the multi-token recursion has no numeric check. | SHOULD 1 |
+| Numerical test of the multi-token path | Closed (update 11-27, after regating-lead's reply): `tests/test_share_unit.py::test_multi_token_against_brute_force` checks answers of 1, 3 and 6 tokens in float64 against log P - log(-expm1(log P)) within 1e-5, and `test_finite_near_one` covers P near 1. Both passed on the E328 rerun pod and on the four E330 pods. I read the tests: the reference is computed without the recursion. | OK |
 | What "the answer" includes | `spans_from_marks` keeps ids = t[p+1 : q+2], and t[q+1] is the end-of-response token, so P(ans) includes P(end token). That is a defensible choice, but the paper's definition ("the product of the answer tokens' probabilities") should say so. | SHOULD 2 |
 | Qwen W0 controls (10 rows) | All numerators are exactly 0, as filed. But T1 and T0 (and L01, L00) are the same weights here, so the check passes whenever the forward pass is deterministic. It also reads 16 rows, not the 128 that are scored. It is a determinism check, not a control of the share, and it must not be described as one. | MUST 2 |
 | Qwen fine-tune shares (36 rows) | Recomputed from `means`: numerator = L01 - L00 and gain = T1 - T0 match `numerator` and `gain` on every row I spot-checked. VPD 0.56-0.74 and neuron control 0.30-0.46, with a seed spread of 0.03 or less per side. | OK |
@@ -28,7 +28,6 @@ Verdict: **code OK; E327 holds; E328's fine-tune numbers are correct as read but
 
 ## Not run
 
-- A numerical test of the multi-token `answer_logodds` (CPU worker down).
 - Any check of E330 (gain-matched randoms): still running.
 - `qwen_reread.py` and `share_reading.answer_cells` read line by line: I checked their outputs' arithmetic, not the row selection (128 rows, whole answers only) against the App H inventory.
 - The draft CSV and analysis (`qwen_share_new.csv`, `2026-11-27_analysis_p290-share-unified.md`): not yet in the repo.
