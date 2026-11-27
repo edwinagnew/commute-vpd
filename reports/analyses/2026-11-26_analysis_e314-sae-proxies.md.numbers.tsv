@@ -133,3 +133,42 @@
 0.15	given	Kissane et al. 2024, Qwen1.5 0.5B base SAE explained variance 74.4% on base vs 59.2% on chat (spec table)
 0.7	given	E314 plan expected-values table, random update error-energy fraction ~0.7-0.95 (reports/plans/2026-11-26_plan_e314-sae-proxies.md)
 0.95	given	E314 plan expected-values table, random update error-energy fraction ~0.7-0.95 (reports/plans/2026-11-26_plan_e314-sae-proxies.md)
+0.56	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "c3/cipher") | .recon_share] | min	this
+0.61	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "c3/cipher") | .recon_share] | max	this
+0.84	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "c3/copy") | .recon_share] | min	this
+0.86	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "c3/copy") | .recon_share] | max	this
+0.67	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "c3/rank1") | .recon_share] | min	this
+0.70	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "c3/rank1") | .recon_share] | max	this
+0.93	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e46/ident32") | .recon_share] | min	this
+0.94	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e46/ident32") | .recon_share] | max	this
+0.60	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e46/rand32") | .recon_share] | min	this
+0.65	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e46/rand32") | .recon_share] | max	this
+0.40	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e53/cipher") | .recon_share] | min	this
+0.42	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e53/cipher") | .recon_share] | max	this
+0.81	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e53/lowercase") | .recon_share] | min	this
+0.82	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e53/lowercase") | .recon_share] | max	this
+0.56	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e54/cipher") | .recon_share] | min	this
+0.61	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e54/cipher") | .recon_share] | max	this
+0.65	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e54/cipher_own") | .recon_share] | min	this
+0.66	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e54/cipher_own") | .recon_share] | max	this
+0.70	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e54/elicit") | .recon_share] | min	this
+0.73	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e54/elicit") | .recon_share] | max	this
+0.68	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e58/cipher") | .recon_share] | min	this
+0.70	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e58/cipher") | .recon_share] | max	this
+0.93	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e58/copy") | .recon_share] | min	this
+0.94	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e58/copy") | .recon_share] | max	this
+0.69	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e58/prior_cipher") | .recon_share] | min	this
+0.71	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e58/prior_cipher") | .recon_share] | max	this
+0.68	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e58/rank1") | .recon_share] | min	this
+0.70	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e58/rank1") | .recon_share] | max	this
+0.97	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e62/copy") | .recon_share] | min	this
+0.98	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e62/copy") | .recon_share] | max	this
+0.72	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e62/lookup") | .recon_share] | min	this
+0.73	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e62/lookup") | .recon_share] | max	this
+0.67	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.side == "reuse") | .recon_share] | min	this
+0.98	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.side == "reuse") | .recon_share] | max	this
+0.40	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.side == "new") | .recon_share] | min	this
+0.73	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.side == "new") | .recon_share] | max	this
+1.26	experiments/sae_proxies/results/results_complement.json	[.states[] | .sum_share] | min	this
+1.64	experiments/sae_proxies/results/results_complement.json	[.states[] | .sum_share] | max	this
+3.7	experiments/sae_proxies/results/run_complement.log	[scan("peak GPU [0-9.]+ GB, ([0-9.]+) min")] | last[0] | tonumber	this
