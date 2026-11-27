@@ -7,7 +7,7 @@ or new. Card `experiments/subspace_share/card.md`, plan `reports/plans/2026-11-2
 
 On the eight tasks built to reuse a skill, we trained updates that could move the weights only inside fixed random
 directions, and read the re-gating share on them as on the fine-tunes. At the end of training each task's share sat
-within 0.10 of its own fine-tune's. At their first small gain, the share sat 0.39 to 0.47 under its own fine-tune's on
+within about 0.10 of its own fine-tune's. At their first small gain, the share sat 0.39 to 0.47 under its own fine-tune's on
 all four copying tasks. It sat a little under on the two rank tasks, and level or above on the other two. For `GOALS.md` this
 means a reuse-like share at the trained gain does not need an update free to choose its own directions.
 
@@ -15,7 +15,7 @@ means a reuse-like share at the trained gain does not need an update free to cho
 
 An update confined to random directions reaches a one log-odds gain within 23 steps on every reuse task. It trains as
 many numbers as a rank-8 LoRA, but it is not low rank: its change to each matrix can reach rank 111 or 175. At the end
-of the recipe its share is within 0.10 of the fine-tune's own on each task, at a weight change mostly three to six
+of the recipe its share is within about 0.10 of the fine-tune's own on each task, at a weight change mostly three to six
 times larger. At its first one log-odds gain, the share falls furthest below the task's own fine-tune on all four
 copying tasks. The filed rule, read there, put the tasks with the reuse-like rival, but only because one task cleared
 the bar by about one batch spread; without it the rule reads "between".
@@ -73,10 +73,9 @@ No expectation was filed for how fast the gain would be reached, for the update'
 
 ![Per reuse task, the fine-tunes' re-gating share beside the random-subspace updates at their first one log-odds state and at step 300](../../experiments/subspace_share/figures/shares.png)
 
-FIGURE PENDING: the CPU worker failed with srun socket timeouts while this page was written, so `plot.py` had not
-drawn `experiments/subspace_share/figures/shares.png` or written `results/summary.json`. The tables below are read
-directly from `experiments/subspace_share/results/updates/*.json` with jq. The figure, when drawn, plots per task the
-three fine-tune seeds, the three at-one states and the three end states on one share axis.
+Each row is one reuse task: the three fine-tune seeds (dots), the three random-subspace updates at their first state
+with one log-odds gain (crosses) and the same updates at step 300 (pluses), on one share axis. `results/summary.json`
+holds the filed rule's task means and call ("rival a" at both reads).
 
 ### What states are being compared?
 
@@ -214,7 +213,6 @@ No filed prediction was reversed; the rule had no expectation beyond its two riv
   and e62/copy.
 - Other subspace sizes and other learning-rate multipliers on every task; the grid ran on e62/copy seed 0 only.
 - Matching at-one to the fine-tune on size or KL rather than on the floor.
-- The rendered figure and `results/summary.json`, at the time of writing: the CPU worker was failing.
 
 ## Provenance
 
