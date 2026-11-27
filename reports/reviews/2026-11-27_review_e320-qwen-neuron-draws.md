@@ -21,3 +21,6 @@ The unclipped figure title is cosmetic and not a blocker.
 ## Not run
 - No recompute from the raw states (this is a transcription and wording check). The appendix line is not in the answer paragraph, so no independent check is owed.
 - Figures checked by their CSV only, not opened.
+
+## Addendum, 2026-11-27: paper wording (writeup-lead commit 5ad4fc9, appH_qwen_short.tex:17, 31-39)
+OK after two fixes, both sent to writeup-lead. First, the Fig 12 caption's "first of three draws per side" must be limited to the neuron control, since the VPD crosses are still one draw. Second, ":36 by less than half its seeds' spread" becomes "by less than 0.001": the 0.002 is the band rule's fixed allowance, not copy-cipher's own spread. Confirmed: the figure's neuron-panel cross is draw 0 (`make_qwen_share.py` reads run1, and copy's 0.8095 matches).
