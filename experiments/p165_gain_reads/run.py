@@ -1,4 +1,4 @@
-"""E_TBD_RUN2 (cell P1.65, plan reports/plans/2026-11-26_plan_p1-65-readthrough-fills.md, Run 2): the rescale-only
+"""E322 (cell P1.65, plan reports/plans/2026-11-26_plan_p1-65-readthrough-fills.md, Run 2): the rescale-only
 control (E290's FFN-gain states: only down_proj's input gains trained, one per MLP neuron, saved 2026-11-23 as
 ia3_control/results/large/gains_ffn_<task>_s<seed>.pt) read under E298's protocol at VPD (seeds 1, 2, and seed 0 again
 as the repeat check) and at SAE latents (seeds 0-2). Nothing is trained. The reader is E298's (fig2_standard/run.py
