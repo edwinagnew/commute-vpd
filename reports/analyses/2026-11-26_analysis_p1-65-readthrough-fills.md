@@ -38,7 +38,7 @@ updates matched to each fine-tune, which the earlier reading also held, have no 
 highest of the group is the KL-matched draw.
 
 The standard-figure run also read one random update beside each built edit. The highest of those, beside the doubled
-edit, reads 0.041. Counting it would make the margin 0.086. The filed rule does not name these updates, so the margin
+head V edit, reads 0.061. Counting them would make the margin 0.067. The filed rule does not name these updates, so the margin
 it gives is 0.104.
 
 **For writeup-lead.** Line 438's "0.83" becomes 0.78 over $K$. Its other three numbers are also values over $K^*$,
