@@ -1,4 +1,4 @@
-"""E_TBD_RUN2 rows, $0, CPU, saved arrays only: every gain item read (results/large/<feat>/gain__<item>.npz) through
+"""E322 rows, $0, CPU, saved arrays only: every gain item read (results/large/<feat>/gain__<item>.npz) through
 E298's one expression (fig2_standard/eb.py from_npz), as rows in fig2_standard/results/definition_rows.csv's columns
 with block "gain", side "gain", beside the full fine-tunes' rows of the same task and seed at that featurization (from
 that file) and the VPD repeat checks (results/repeat/*.json). Writes results/definition_rows.csv and results/summary.json.

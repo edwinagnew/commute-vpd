@@ -1,4 +1,4 @@
-"""E_TBD_RUN1 (cell P1.65, plan reports/plans/2026-11-26_plan_p1-65-readthrough-fills.md, Run 1): main.tex:432's graded
+"""E321 (cell P1.65, plan reports/plans/2026-11-26_plan_p1-65-readthrough-fills.md, Run 1): main.tex:432's graded
 cos^2 clause ("0.999 or more") read over the needed set K instead of E208's KL-closure set. K is E277's neuron swap test
 (experiments/needed_neurons, `read_item`, its trained world: E229's 20 E196 pair fine-tunes, D = E208's 512 read windows,
 last position, 256 pairs of seed 268) with one change, the band "width" (`topk_upper.feat_of`: hi = -inf), so every

@@ -1,4 +1,4 @@
-"""E_TBD_RUN1 scoring, $0, CPU, saved arrays only (plan reports/plans/2026-11-26_plan_p1-65-readthrough-fills.md, Run 1).
+"""E321 scoring, $0, CPU, saved arrays only (plan reports/plans/2026-11-26_plan_p1-65-readthrough-fills.md, Run 1).
 Per fine-tune: E208's saved per-part r_main (rho_saved_items/results/large/parts/<item>.npz, keys parts and r_main) is
 mapped by part name ("L<l>.n<i>", "L<l>.h<h>") onto this run's K (results/large/items_<item>.npz: in_K, changed, in
 E277's variable order: per layer 6 heads, 3072 neurons, one remainder). Two K values:
