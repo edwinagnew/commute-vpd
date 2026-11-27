@@ -6,17 +6,19 @@ or new. Card `experiments/subspace_share/card.md`, plan `reports/plans/2026-11-2
 `experiments/subspace_share/results/predictions.json` and `experiments/subspace_share/rules.py`.
 
 On the eight tasks built to reuse a skill, we trained updates that could move the weights only inside fixed random
-directions, and read the re-gating share on them as on the fine-tunes. At the end of training they read shares close
-to the fine-tunes' on every task, while at their first small gain the share sat lower on three copying tasks. For
-`GOALS.md` this means a reuse-like share does not need an update free to choose its own directions.
+directions, and read the re-gating share on them as on the fine-tunes. At the end of training each task's share sat
+within about 0.10 of its own fine-tune's. At their first small gain, the share sat 0.39 to 0.47 under its own fine-tune's on
+all four copying tasks. It sat a little under on the two rank tasks, and level or above on the other two. For `GOALS.md` this
+means a reuse-like share at the trained gain does not need an update free to choose its own directions.
 
 ## The answer
 
-An update confined to random directions, with about as many trainable numbers as a small LoRA, reaches a one log-odds
-gain within 23 steps on every reuse task. At the end of the recipe it reads a re-gating share close to the
-fine-tune's own on each task, at a weight change mostly three to six times larger. At its first state with a one log-odds
-gain, the share sits lower on three copying tasks and near or above the fine-tune's elsewhere. The filed rule, read at
-that first state, put the tasks with the reuse-like rival.
+An update confined to random directions reaches a one log-odds gain within 23 steps on every reuse task. It trains as
+many numbers as a rank-8 LoRA, but it is not low rank: its change to each matrix can reach rank 111 or 175. At the end
+of the recipe its share is within about 0.10 of the fine-tune's own on each task, at a weight change mostly three to six
+times larger. At its first one log-odds gain, the share falls furthest below the task's own fine-tune on all four
+copying tasks. The filed rule, read there, put the tasks with the reuse-like rival, but only because one task cleared
+the bar by about one batch spread; without it the rule reads "between".
 
 ## What we were trying to test
 
@@ -38,7 +40,9 @@ trains, but only in directions nobody chose.
 drawn: $U$ with $k$ columns in the output space and $V$ with $k$ columns in the input space. Only the $k \times k$ matrix
 $Z$ is trained, starting at zero, and the update is $U Z V^\top$. The size $k$ is 111 on attention matrices and 175 on
 MLP matrices, so the update has 442,136 trainable numbers against 442,368 for a rank-8 LoRA on the same matrices and
-28,311,552 for the full fine-tune. Each seed draws its own bases and uses its fine-tune's own batch order.
+28,311,552 for the full fine-tune. The count matches the LoRA's, but the rank does not: $U Z V^\top$ can reach rank
+$k$, 111 or 175 per matrix, against the LoRA's 8. Each seed draws its own bases and uses its fine-tune's own batch
+order.
 
 **What was held fixed.** Each task's own fine-tune recipe: data, loss, batch, clipping and 300 steps. The one change is
 the learning rate, ten times each recipe's own. A three-point grid on one task chose it as the lowest multiplier
@@ -69,10 +73,9 @@ No expectation was filed for how fast the gain would be reached, for the update'
 
 ![Per reuse task, the fine-tunes' re-gating share beside the random-subspace updates at their first one log-odds state and at step 300](../../experiments/subspace_share/figures/shares.png)
 
-FIGURE PENDING: the CPU worker failed with srun socket timeouts while this page was written, so `plot.py` had not
-drawn `experiments/subspace_share/figures/shares.png` or written `results/summary.json`. The tables below are read
-directly from `experiments/subspace_share/results/updates/*.json` with jq. The figure, when drawn, plots per task the
-three fine-tune seeds, the three at-one states and the three end states on one share axis.
+Each row is one reuse task: the three fine-tune seeds (dots), the three random-subspace updates at their first state
+with one log-odds gain (crosses) and the same updates at step 300 (pluses), on one share axis. `results/summary.json`
+holds the filed rule's task means and call ("rival a" at both reads).
 
 ### What states are being compared?
 
@@ -100,11 +103,14 @@ is the Frobenius norm of the whole update over the fine-tune's; KL is to the ori
 
 ### What share does the subspace update read, beside the fine-tune's?
 
-**Reading it.** At the end of training, the subspace update reads a share close to its fine-tune's on every task, from
-0.68 on e54/elicit to 1.08 on e62/copy. At one the picture is mixed. On e53/lowercase and e54/elicit the at-one share
-is at or above the fine-tune's. On c3/rank1, e58/rank1 and e62/copy it is 0.68 to 0.74, under the fine-tune's but
-above the new-side range. On c3/copy, e46/ident32 and e58/copy it is 0.31 to 0.46, inside or near the new-side range,
-and it rises to near the fine-tune's by step 300. The three seeds of each task agree closely at both states, each seed with its own random bases.
+**Reading it.** Against each task's own fine-tune, the at-one share falls furthest on the four copying tasks and the
+end share comes back near the fine-tune's everywhere. At one, c3/copy, e46/ident32, e58/copy and e62/copy fall by
+0.39 to 0.47. The two rank tasks, c3/rank1 and e58/rank1, fall by 0.12 to 0.14. On e54/elicit the at-one share rises
+by 0.02, and on e53/lowercase by 0.15. Against the new-side range, a second reference, three copying tasks read 0.31
+to 0.46 at one, inside or near it; e62/copy reads 0.68, above it, because its fine-tune starts highest, at 1.09. At
+step 300 the end share runs from 0.68 on e54/elicit to 1.08 on e62/copy. The largest end gaps to the fine-tune are on
+e53/lowercase, 0.10 above, and e54/elicit, 0.09 below, each about three batch spreads. The three seeds of each task
+agree closely at both states, each seed with its own random bases.
 
 | task | fine-tune share, mean | at-one share, mean | at-one, seed range | end share, mean | end, seed range |
 |---|---|---|---|---|---|
@@ -120,26 +126,30 @@ and it rises to near the fine-tune's by step 300. The three seeds of each task a
 The do-nothing reference reads no share at all, since its gain is 0. The fine-tune column is the figure's own values,
 reproduced exactly by the control.
 
-The lower at-one shares fall on c3/copy, e46/ident32 and e58/copy, whose targets copy an earlier token. This run does
-not say why, and e62/copy, also a copying task, reads 0.68 at one. It is an observation, and a test is listed under "Not
-run".
+The four tasks whose targets copy an earlier token, c3/copy, e46/ident32, e58/copy and e62/copy, are the four with
+the largest fall at one, each by about the same amount against its own fine-tune. This run does not say why. It is an
+observation, and a test is listed under "Not run".
 
 ### What did the filed rule read?
 
 Applied to the at-one task means above, the rule's reading is "rival a": more than half of the tasks have a mean at or
-above 0.65. Applied to the end means, which the card reports beside as descriptive only, it is also "rival a". Every
+above 0.65. That label rests on one task. Five tasks clear the bar, and one of them, e62/copy, reads 0.683, only 0.033
+over it. That margin is about one batch spread of the share, 0.031. Were e62/copy under the bar, four of eight would clear it, not more than half,
+and only two would sit at or below 0.42, so the rule would read "between". Applied to the end means, which the card
+reports beside as descriptive only, it is also "rival a". Every
 task had a mean at both states, so none was left out as "no comparable null". This is what was read under the card's
 labels. It is not a verdict on whether any task is reuse or new, and the reading depends on which state is read, as
 the copying tasks show.
 
 ## What we learned
 
-On the tasks built to reuse, an update that could move only inside random directions, with a small LoRA's number of
-trainable values, reaches the fine-tune's gain and reads a share close to the fine-tune's at the end. So a reuse-like
-share on these tasks does not need the update to have found its own directions. The share's value is closer to a
-property of the task, given enough training, than of how the update was parameterised. Early in training the share
-can sit much lower on some copying tasks, so a reading taken at a small gain is not the same as one taken at the
-trained gain. The new side has no subspace reference yet, so this page cannot say whether the share would separate a
+On the tasks built to reuse, an update that could move only inside random directions reaches the fine-tune's gain. At
+the end it reads a share within about three batch spreads of the fine-tune's. It has a rank-8 LoRA's number of
+trainable values, but not its low rank. So a reuse-like share on these tasks does not need the update to have found its own
+directions. One hypothesis, which this run cannot test without a new-side reference, is that the share's value is
+closer to a property of the task, given enough training, than of how the update was parameterised. Early in training
+the share sits much lower on all four copying tasks, so a reading taken at a small gain is not the same as one taken
+at the trained gain. The new side has no subspace reference yet, so this page cannot say whether the share would separate a
 subspace update from a fine-tune on tasks built to need something new.
 
 ## How compelling is the evidence
@@ -147,6 +157,10 @@ subspace update from a fine-tune on tasks built to need something new.
 - **Blind to.** One subspace size, one learning-rate multiplier for every task, and one decomposition. The at-one
   comparison is at matched floor, not matched gain, size or KL. The end comparison is near matched gain but at three to
   six times the size on most tasks. The fine-tunes were kept by their own step rules, not at a first gain of one.
+- **Blind to the step size at one.** At one is the very first step on all three seeds of e62/copy and two of c3/copy,
+  and within four steps on every task but e53/lowercase. On the learning-rate grid every multiplier, ten, thirty and a
+  hundred times, already reached a gain of 1 at step 1, so the grid does not bound the rate from below. The at-one
+  share therefore depends on how large that first step is, which this run did not vary.
 - **Noise.** The share's batch spread, measured on one fine-tune over five batches, is 0.0314. The seed ranges in the
   tables are of the same order, with each seed on its own bases.
 - **Coverage.** All eight reuse tasks of the paper's figure, three seeds each; the reuse side only.
@@ -199,7 +213,6 @@ No filed prediction was reversed; the rule had no expectation beyond its two riv
   and e62/copy.
 - Other subspace sizes and other learning-rate multipliers on every task; the grid ran on e62/copy seed 0 only.
 - Matching at-one to the fine-tune on size or KL rather than on the floor.
-- The rendered figure and `results/summary.json`, at the time of writing: the CPU worker was failing.
 
 ## Provenance
 

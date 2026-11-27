@@ -50,3 +50,12 @@ tasks, e62/copy included, and not on three.
 ## Not run
 - No independent recomputation from the saved updates; this is a transcription check of the JSONs.
 - The figure, which is not drawn yet.
+
+## Re-check of ab8e5b3b
+All six findings are applied, and the added numbers check with jq. One NIT is left: the e53 end gap is 0.1007, so the
+page's "within 0.10" should read "within about 0.10". The page text is cleared. The figure is still to be checked when
+it is drawn.
+
+## Figure (7ed149df)
+I diffed the 72 rows of `figures/shares.csv` against `updates/*.json`: 0 mismatches, and the PNG matches. NITs: draw
+the 0.65 rule bar and the 0.12-0.42 new-side band, and move the legend off e58/copy's at-one marks. P2.87 is cleared.
