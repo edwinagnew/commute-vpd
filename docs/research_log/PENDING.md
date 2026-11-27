@@ -10,3 +10,4 @@ A line starting `HOLD ` (not `- `) stays in `PENDING.md` through a flush: use it
 - 2026-11-27 · fleet/paper/cells.tsv (cell P1.66) · next · New cell P1.66 for whip-lead, 2 runs, due 2026-11-28: Fig 2 on all 16 known-answer tasks: retained share at VPD, top neurons and SAE, three seeds
 - 2026-11-27 · fleet/paper/cells.tsv (cell P2.90) · next · New cell P2.90 for regating-lead, 2 runs, due 2026-11-28: One re-gating share on both models: whole-answer log-odds form (corrected from "log-probability" by whip-lead), Qwen re-read
 - 2026-11-27 · fleet/paper/cells.tsv (cell P1.67) · next · New cell P1.67 for regating-lead, 2 runs, due 2026-11-28: rho at VPD under the adjoint split (built edits first)
+- 2026-11-27 · fleet/paper/cells.tsv (cell P1.67) · next · New cell P1.67 for regating-lead, 2 runs, due 2026-11-28: rho at VPD under the adjoint split, built edits first (E329 running on 4 H100 pods)

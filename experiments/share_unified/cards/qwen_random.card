@@ -1,0 +1,16 @@
+cell: P2.90
+rival_a: the Qwen fine-tunes reuse old subcomponents more than a random change that moves the answer as much predicts the gain-matched random draws read a share well below the fine-tunes 0.56-0.74
+rival_b: the answer log-odds share reads any change that raises the answer about the same predicts the gain-matched random draws read near the fine-tunes 0.56-0.74
+rung: strategy
+smallest_gap: 0.1
+spread: 0.05
+n: 18
+design: unpaired
+unit: states (6 sides x seeds 0-2) per decomposition
+spread_source: experiments/qwen_library_share/results/run2
+spread_of: proxy: the KL-form share's seed spread on the same states, same states and rows, a ratio in the same 0-1 range
+floor: |gain| >= 1e-6 in whole-answer log-odds; a side whose gain fails it is reported unreadable; both rivals expect the fine-tunes to pass
+stop: the zero control (gain and numerator exactly 0) stops the job; a first draw over 12 min or a projected total over $35 stops and reports to whip-lead
+sketch: experiments/share_unified/cards/sketch_qwen.png
+rehearsal: none possible (cluster GPU node times out on every srun); the zero control at the full 128 rows and the first draw timed on each pod, with the whip-lead stop rule
+descriptive: user raised P2.90 to 3 runs 2026-11-27 for whip-lead approved gain-matched Qwen randoms (P2.82 recipe); values reported beside the fine-tunes, no-match draws as read

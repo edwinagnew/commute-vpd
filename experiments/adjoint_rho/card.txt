@@ -1,0 +1,15 @@
+cell: P1.67
+rival_a: the adjoint split carries each built edit onto the subcomponents more faithfully than least squares predicts new_thin and new_few at or below their least-squares rho (0.019, 0.013) and x2, x10 nearer 1 than their least-squares 0.76
+rival_b: the split choice does not matter for rho at VPD predicts every built edit within the scan noise (0.003) of its least-squares rho
+rung: strategy
+smallest_gap: 0.05
+spread: 0.0026
+n: 7
+design: paired
+unit: built edits (one state each), each read under both splits
+spread_source: experiments/adjoint_rho/results/spread_rows_E301.csv
+spread_of: this reading
+floor: none
+stop: do-nothing not at rho 1 or the least-squares reproduction off E268 by more than 1e-4 relative stops the job; a rival-b result ends the line (no run 2)
+sketch: experiments/adjoint_rho/figures/sketch.png
+rehearsal: none possible (cluster GPU node times out on every srun since 11-27 afternoon); stage 0 on each pod runs at the full read sizes (E268's 41 positions x 75 windows and 512 windows): the do-nothing control, the adjoint identity swap and the least-squares reproduction of E268's saved K, each stopping the job, with s/item and peak memory logged

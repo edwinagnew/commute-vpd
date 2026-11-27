@@ -1,0 +1,29 @@
+{
+ "experiment": "E330",
+ "cell": "P2.90",
+ "note": "Filed 2026-11-27 by regating-lead (E330, P2.90 run 3). Qwen3-1.7B random references for the one re-gating share, built as the 67M paper's (P2.82, E310): a Gaussian at the side's seed-d fine-tune's per-matrix norms, sign from the odd part of the gain at probe_x, perturb.match to a gain of one log-odds, the share read on it with its KL reported. Script experiments/share_unified/qwen_random.py.",
+ "settings": {
+  "qwen_random": {
+   "arms": ["copy", "cipher", "known", "invented", "gold", "gold_shuf"],
+   "save": "last",
+   "save_source": "E328 / the figure qwen_share: the last save",
+   "seeds": [228001, 228002, 228003],
+   "seeds_source": "E310's draw seeds (experiments/random_logodds_share/results/predictions.json .settings.seeds, E228's); qwen_random.py stops if they differ",
+   "probe_x": 1,
+   "probe_x_source": "E310's (the fine-tune's own size: the odd part of the gain there is well above bf16 noise)",
+   "scale_cap": 100,
+   "scale_cap_source": "E310's (E228's, from E46 Amendment 1)",
+   "target_gain": 1.05,
+   "gain_rel_tol": 0.045,
+   "target_gain_source": "E310's band [1.0028, 1.0973] log-odds, inside the form's floor gain >= 1 (local_faith.MIN_GAIN)",
+   "search_rows": 128,
+   "search_rows_source": "all rows, as E310 matched on its full read rows; a smaller value (e.g. 32) cuts each search gain about 4x, the final share still reads all 128 rows and its gain is the one written",
+   "n16": 16,
+   "n16_source": "E328's W0 control rows (rows holding whole answers on 16 rows)"
+  }
+ },
+ "expected": {
+  "control": "a zero change reads gain (search and full) and numerator exactly 0 per decomposition and row set (E310 control a); the job stops otherwise",
+  "draws": "no bar: per draw the scale, gain (expected inside the band on the search rows when status ok), share, KL and evals are described"
+ }
+}
