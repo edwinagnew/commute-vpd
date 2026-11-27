@@ -33,3 +33,6 @@ The run read the rescale-only control, which trains only one gain per MLP neuron
 ## Not run
 - No recompute from the raw states; this is a transcription and code check. The appendix and readthrough line are not the answer paragraph.
 - I did not read the page's section 4 prose, which was still pending. Re-check it when definition-lead fills it.
+
+## Re-check, 2026-11-27: page section 4 (commit 2d1b809e)
+PASS. Both MUSTs and the NIT are applied, and the table and the random ranges (VPD 0.013-0.015, SAE 0.008-0.017) match the CSVs. Two small fixes went to definition-lead, with no re-check owed. First, the randoms are the full fine-tunes' matched randoms, not the rescale-only states'. Second, the opening paragraph should carry the per-task qualifier at VPD.
