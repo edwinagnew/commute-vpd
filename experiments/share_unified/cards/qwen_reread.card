@@ -1,0 +1,16 @@
+cell: P2.90
+rival_a: the KL form's saturation came from reading every position of the output predicts the answer log-odds share separates App H's fine-tunes from their random reference (fine-tunes' shares well apart from the random draw's)
+rival_b: the Qwen decomposition's re-gating share saturates whatever the unit predicts fine-tunes and random references read the same in the answer log-odds form as well
+rung: strategy
+smallest_gap: 0.1
+spread: 0.05
+n: 18
+design: unpaired
+unit: states (6 sides x seeds 0-2) per decomposition
+spread_source: experiments/qwen_library_share/results/run2
+spread_of: proxy: the KL-form share's seed spread on the same states, same states and rows, a ratio in the same 0-1 range
+floor: |gain| >= 1e-6 in whole-answer log-odds; a side whose gain fails it is reported unreadable; both rivals expect the fine-tunes to pass
+stop: the W0 control (dW = 0) numerator above 1e-6 x |mean L00| stops the job
+sketch: experiments/share_unified/cards/sketch_qwen.png
+rehearsal: short rehearse pod commute-E###-rehearse-qwen on an H100 (cluster compute node down): unit test, --dry answer counts per row set, W0 control and one state at full read sizes (128 rows); measures s/item and peak memory
+descriptive: user 2026-11-27 in whip-lead chat on ask 2 option (a), "yes obviously": re-read App H's Qwen share in the 67M unit; described, no claim at a bar

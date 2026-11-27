@@ -1,0 +1,16 @@
+cell: P2.90
+rival_a: the new whole-answer log-odds function is the 67M answer-token log-odds on one-token answers predicts every one of the 48 saved 67M shares re-read within 0.002 of known3.json
+rival_b: the refactor changed the reading (rows, batch, unit or gain) predicts at least one state off by more than 0.002
+rung: parameter
+smallest_gap: 0.002
+spread: 0.0019
+n: 48
+design: paired
+unit: states (16 tasks x seeds 0-2)
+spread_source: experiments/reading_refactor/results/reproduction.json
+spread_of: this reading
+floor: |gain| >= 1e-6 (E136); both rivals expect every state to pass it as before
+stop: a state off by more than 0.002 that is not explained by card or batch stops the Qwen re-read until it is fixed
+sketch: experiments/share_unified/cards/sketch_67m.png
+rehearsal: short rehearse pod commute-E###-rehearse-67m (cluster compute node down): unit test, lint, --dry, W0 control and 2 states at full read sizes; measures time per state and peak memory
+descriptive: user 2026-11-27 in whip-lead chat on ask 2 option (a), "yes obviously": reproduce the 67M numbers and re-read Qwen; the reproduction is a control, the Qwen re-read is described
