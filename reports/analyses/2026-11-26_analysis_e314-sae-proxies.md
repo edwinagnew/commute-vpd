@@ -6,17 +6,15 @@ departures for the second reading `reports/plans/2026-11-26_spec_kissane-sae-tra
 `experiments/sae_proxies/run.py`; numbers `experiments/sae_proxies/results/results.json`.
 
 We read the 48 fine-tunes behind the paper's known-answer figure through sparse autoencoders trained on the base
-model alone, each beside a random update of the same weight size. On every task most of the trained answer's gain
-passes through what the base dictionary leaves out, and training worsens reconstruction far more than a random update
-does. Tasks built to reuse and tasks built to be new overlap on both readings, so neither can serve as the measure of
+model alone, each beside a random update of the same weight size. The dictionary reconstructs most of how training moved the activations, yet on every task most of the gain on the
+trained answer passes through the part it leaves out. Tasks built to reuse and tasks built to be new overlap on both readings, so neither can serve as the measure of
 reuse that `GOALS.md` asks for.
 
 ## The answer
 
 Neither reading separates the tasks built to reuse from the tasks built to be new. The error share is above one half
 on all 16 tasks, reuse tasks included, and the two sides overlap. The reconstruction gap is small on every task but
-always well above a random update of the same weight size, and again the two sides overlap. Both readings see that
-training changed something the base dictionary does not describe; neither says whether it is reuse. Placement: appendix
+always well above a random update of the same weight size, which barely moves this model's activations, and again the two sides overlap. Neither says whether a fine-tune is reuse. Placement: appendix
 G.
 
 ## What was run
@@ -25,19 +23,24 @@ Each fine-tune's update is read on its own task rows, at the read position and t
 the share of the gain that appears when VPD's original subcomponents are kept and only Γ switches them differently.
 The dictionaries are E234's sparse autoencoders, one per site, trained on Pile activations of the base model only. Each
 fine-tune also gets one random update: Gaussian noise in every matrix it changed, scaled to that matrix's norm in the
-fine-tune's update.
+fine-tune's update. This weight-norm matching is the convention of the crosscoder random updates in the paper's
+Figure 6.
 
 - **Error share, ours, after the error node of Marks et al. 2024.** At each of the 8 attention and MLP outputs the
   error is what the base dictionary leaves out, $e = o - \mathrm{SAE}(o)$. The base model runs with every site's error
   replaced by the fine-tuned model's error on the same rows. The share is $(L - T_0)/(T_1 - T_0)$, with $T_0$ and $T_1$
   the target's log-odds under the base and fine-tuned models and $L$ under the patch. Zero means the gain is all in
-  what the dictionary reconstructs; one means it is all in the error.
+  what the dictionary reconstructs; one means it is all in the error. All 8 sites are patched at once, so per-site shares need not add up to
+  it. The error share is a descriptive proxy, not a counterpart of the re-gating share: the base reconstruction can
+  itself change which latents are active.
 - **Error-energy fraction.** The change in the error over the change in the output, $\sum|e_{FT} - e_0|^2 / \sum|o_{FT} -
   o_0|^2$ over sites and positions. It needs no gain, so it also reads on the random updates.
 - **Reconstruction gap, after Kissane et al. 2024.** Their explained variance per site, base model minus fine-tuned
   model, averaged over E234's 13 sites. Zero means the fine-tune is reconstructed as well as the base.
 
-**Controls, run first and alone, all held.** The zero update read exactly 0 on every reading. The fine-tuned model run
+**Controls, run first and alone, all held.** For the zero update, the change in the error, the numerators of the error
+share and the energy fraction, and both reconstruction gaps were exactly 0; the two shares are 0/0 and came out
+undefined, as the code checks. The fine-tuned model run
 twice gave identical logits, and patching its full outputs into the base model reproduced them exactly, a share of 1.
 E234's base explained variance was reproduced within 4.4e-6 at all 13 sites. All 48 gains matched E136's saved gains
 exactly. No token crossed Kissane's outlier threshold. Random updates move the target by at most 0.043 log-odds, under
@@ -50,13 +53,17 @@ the 1 log-odds floor, so they have no error share.
 **Reading it, error share.** Most of the gain sits in the error on every task. Tasks built to reuse read 0.52 to 0.74
 and tasks built to be new 0.62 to 0.86. Among the new tasks the error share rises as the re-gating share falls, with
 `e53/cipher` highest. But `e54/elicit`, a reuse task at 0.72 to 0.74, sits above `e62/lookup` and `e58/cipher`, two
-new tasks at 0.62 to 0.64. So the base dictionaries miss most of what any of these fine-tunes changed, as the earlier
-latent readings at the same autoencoders found.
+new tasks at 0.62 to 0.64. So most of the effect on the target answer goes through what the base dictionary leaves out, as the
+earlier latent readings at the same autoencoders found. One limit: the full patch checks only that the share can read
+1, and no control checks that it can read low, so a reading above one half everywhere cannot yet be told apart from
+the apparatus reading high on everything.
 
-**Reading it, error-energy fraction.** Trained updates keep most of their output change inside the base dictionary:
-the fraction is 0.21 to 0.44 for trained states. Their random updates read 1.12 to 3.01. A fraction above one
-means the reconstruction moves against or across the output change, as latents switch on and off. Reuse and new tasks occupy the
-same range in panel c.
+**Reading it, error-energy fraction.** On trained states only 0.21 to 0.44 of the energy of the output change lies
+in the error, so the base dictionary reconstructs most of how training moved the activations. Read beside the error
+share, the small part it leaves out carries most of the gain on the target answer. Reuse and new tasks occupy the same
+range in panel c. The random updates read 1.12 to 3.01, above the plan's expected 0.7 to 0.95. A fraction above one
+means the reconstruction moves against or across the output change, as latents switch on and off. Their activation
+changes are small, so a few switching latents weigh heavily; they also move the target by at most 0.043 log-odds.
 
 **Reading it, reconstruction gap.** Every trained state is reconstructed a little worse than the base model: reuse
 tasks lose 0.0041 to 0.0212 explained variance, new tasks 0.0098 to 0.0705. The random updates lose 0.00009 to 0.00236,
@@ -109,6 +116,9 @@ The full table is in the spec, `reports/plans/2026-11-26_spec_kissane-sae-transf
 - An own-dictionary reference: autoencoders trained on each fine-tuned model.
 - Kissane's CE loss recovered; we read the target's log-odds instead.
 - A random reference matched in activation change rather than weight norm.
+- The complement patch: the base model with each site's reconstruction set to the fine-tune's and its error kept.
+  Its share beside the error share would show whether the split adds up, and give the error share a control that can
+  read low.
 - The same readings on Qwen3-1.7B.
 - A per-site breakdown in this page; it is saved in `results.json`.
 

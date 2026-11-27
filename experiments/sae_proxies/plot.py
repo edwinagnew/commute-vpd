@@ -73,5 +73,32 @@ def main() -> None:
          "random error shares shown only where |gain| >= 1 log-odds; solid line in (c): trained = random", data=data)  # fmt: skip
 
 
+def complement() -> None:
+    """E317: error share, reconstruction share and their sum per task against the re-gating share (figures/complement.png)."""
+    path = HERE / "results/results_complement.json"
+    if not path.is_file():
+        return
+    states = json.loads(path.read_text())["states"]
+    x = {}
+    for s in states.values():
+        x.setdefault(s["task"], []).append(s["regating_share"])
+    keys = ("error_share", "recon_share", "sum_share")
+    data = [{"state": n, "task": s["task"], "seed": s["seed"], "side": s["side"], "regating_share": s["regating_share"],
+             "task_regating_mean": fmean(x[s["task"]]), "gain": s["gain"], "random_gain": s["random"]["gain"]}
+            | {k: num(s[k]) for k in keys} | {f"random_{k}": num(s["random"][k]) for k in keys} for n, s in states.items()]  # fmt: skip
+    fig, axes = figure((FULL_WIDTH[0], 3.6), ncols=3)
+    for ax, k, title in zip(axes, keys, ("(a) error share", "(b) reconstruction share", "(c) sum of the two"), strict=True):
+        against_share(ax, data, k, k.replace("_", " "))
+        ax.set_title(title, loc="left")
+    axes[2].axhline(1, color="#555555", linewidth=0.8, label="sum = 1 (the two parts add)")
+    handles = [h for ax in (axes[0], axes[2]) for h in ax.get_legend_handles_labels()[0]]
+    labels = [lab for ax in (axes[0], axes[2]) for lab in ax.get_legend_handles_labels()[1]]
+    keep = dict(zip(labels, handles, strict=True))
+    fig.legend(list(keep.values()), list(keep), loc="outside upper center", ncols=4, fontsize=7, frameon=False)
+    save(fig, HERE / "figures/complement.png", n="16 tasks x 3 seeds; random shares shown only where |gain| >= 1 log-odds; "
+         "error share hat(o_cur) + e_FT, reconstruction share hat(o_FT) + e(o_cur), 8 sites at once", data=data)  # fmt: skip
+
+
 if __name__ == "__main__":
     main()
+    complement()

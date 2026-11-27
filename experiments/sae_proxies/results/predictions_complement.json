@@ -1,0 +1,36 @@
+{
+ "experiment": "E317",
+ "cell": "P2.85",
+ "run": "P2.85 run 2, approved by whip-lead 2026-11-26: the positive control redteam asked for on E314's error share",
+ "plan": "reports/plans/2026-11-26_plan_e314-sae-proxies.md (E314); this file states E317's additions",
+ "descriptive": "a control on E314's error share, reported as a description; no verdict on reuse",
+ "settings": {
+  "gain_floor": 1e-06,
+  "random_gain_min": 1.0,
+  "gain_floor_source": "the error share's floors in E314's predictions.json (trained: E136's two-sided floor, nan under it; random: share only if |gain| >= 1 log-odds, else null with the reason)"
+ },
+ "reader": "E314's run.py Reader built from E314's predictions.json settings (same SAEs, rows, read position, target, fp32); same 48 states; random references with E314's seeds (int(sha256(state name)[:8], 16), finetune.random_direction)",
+ "expected": {
+  "recon_share": {
+   "definition": "(L_recon - T0) / (T1 - T0); L_recon = base model with each of the 8 block-output sites set to hat(o_FT) + e(o_cur), computed o_cur + (hat(o_FT) - hat(o_cur)), all 8 at once, every position",
+   "zero_update": "numerator L_recon - T0 exactly 0; share nan (0/0)",
+   "control": "full patch (o_FT at all 8 sites) reproduces T1: max |logit - FT logit| at the read position within the run-to-run floor measured in stage 0 (share 1)",
+   "random": "share read only where |gain| >= 1 log-odds (E314: no random update reached it); else null with the reason",
+   "trained_if_rival_a_additive": "recon_share ~ 1 - error_share on every task: reuse ~0.26-0.48, new ~0.14-0.38",
+   "trained_if_rival_b_non_additive": "recon_share not ~ 1 - error_share"
+  },
+  "sum_share": {
+   "definition": "error_share + recon_share, read on the same forwards",
+   "trained_if_rival_a_additive": "within 0.1 of 1 on every task",
+   "trained_if_rival_b_non_additive": "beyond 0.1 of 1 on most tasks"
+  },
+  "error_share_reproduction": "the error share read again in this job equals E314's saved error_share per state (trained and random; both null or both nan counts as equal) within the run-to-run floor stage 0 measures (E314 measured 0: deterministic); a miss stops the job naming the state"
+ },
+ "stage0": {
+  "rule": "first and alone; any miss writes results/results_complement.json stage0.stopped, prints STOP and exits 1",
+  "zero_update": "on the first state's rows: gain 0, L_recon - T0 = 0 and L_patch - T0 = 0 exactly, both shares nan",
+  "run_to_run_floor": "the first state's fine-tuned model run twice: max |logit| difference at the read position",
+  "full_patch": "o_FT at all 8 sites in the base model: max |logit - FT logit| <= the floor"
+ },
+ "not_run": "E234 FVE reproduction, the gain reproduction and Kissane's EV / FVU gaps: unchanged from E314 (results/results.json)"
+}
