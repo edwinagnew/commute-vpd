@@ -344,7 +344,7 @@ state but one, Cipher (96 keys) seed 2 at 800M, 0.3292 literal and 0.3288 floore
 ## Not run
 
 - `e54__elicit_s0__seed1`, the second crosscoder seed on the seed-0 Runner-up guess state, at 800M: not run: the
-  user's cap of $800 ("Stay under $800"). Run 3's pods cost $748.26 by the plugin's spend record.
+  user's cap of $800 ("Stay under $800"). Run 3's pods, the figure pod included, cost $748.33 by the plugin's spend record.
 - The content-independent plant at crosscoder seed 1 at 800M.
 - A training length beyond 800M.
 - More than one crosscoder seed per state; a second seed on any state other than Runner-up guess.
