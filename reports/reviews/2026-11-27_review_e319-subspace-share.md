@@ -50,3 +50,8 @@ tasks, e62/copy included, and not on three.
 ## Not run
 - No independent recomputation from the saved updates; this is a transcription check of the JSONs.
 - The figure, which is not drawn yet.
+
+## Re-check of ab8e5b3b
+All six findings are applied, and the added numbers check with jq. One NIT is left: the e53 end gap is 0.1007, so the
+page's "within 0.10" should read "within about 0.10". The page text is cleared. The figure is still to be checked when
+it is drawn.
