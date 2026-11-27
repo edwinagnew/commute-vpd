@@ -15,12 +15,9 @@ lengths, but on the real fine-tunes the fine-tune-specific part stays near zero 
 update still reads as more shared than most of them, and the two built sides still overlap. For `GOALS.md` the
 crosscoder offers no reading of reuse against new on this model, and the reason is not too little training, up to 800M tokens.
 
-*Figure pending (CPU worker down): `experiments/crosscoder_fig4/figures/crosscoder_fig4_lengths.png`, drawn by
-`plot.py`'s `draw_lengths`, puts each state's reading at 200M and 800M side by side in its task's column, with the
-random updates as a column on the same axes and the planted control at both lengths, literal beside floored. Until it
-is drawn, the figure below is the 200M one.*
+![Left: the crosscoder's reading on each of Fig 4's states, three fine-tune seeds a task, at 200M tokens (black) beside 800M tokens (orange), with the random updates as their own column on the same axes. Right: the planted control at both lengths, literal filter (filled) beside floored filter (hollow), against the bar of one half; the every-window plant at 200M has the literal reading only.](../../experiments/crosscoder_fig4/figures/crosscoder_fig4_lengths.png)
 
-![Left: the crosscoder's reading on each of Fig 4's states at 200M tokens, three fine-tune seeds a task, with the random updates as a grey band and a second crosscoder seed as a star. Right: the planted control under both filters, against the bar of one half.](../../experiments/crosscoder_fig4/figures/crosscoder_fig4.png)
+The 200M-only figure of the earlier run, with the second crosscoder seed, is `experiments/crosscoder_fig4/figures/crosscoder_fig4.png`.
 
 ## The answer
 
@@ -348,7 +345,6 @@ state but one, Cipher (96 keys) seed 2 at 800M, 0.3292 literal and 0.3288 floore
 
 - `e54__elicit_s0__seed1`, the second crosscoder seed on the seed-0 Runner-up guess state, at 800M: not run: the
   user's cap of $800 ("Stay under $800"). Run 3's pods cost $748.26 by the plugin's spend record.
-- The two-length figure `crosscoder_fig4_lengths.png`: code written, not yet drawn, because the CPU worker was down.
 - The content-independent plant at crosscoder seed 1 at 800M.
 - A training length beyond 800M.
 - More than one crosscoder seed per state; a second seed on any state other than Runner-up guess.
