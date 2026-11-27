@@ -1,0 +1,27 @@
+{
+  "experiment": "E_TBD_RUN1 (p165_cos2_k)",
+  "cell": "P1.65",
+  "filed": "2026-11-26, definition-lead (writer agent), before any GPU run of this experiment",
+  "plan": "reports/plans/2026-11-26_plan_p1-65-readthrough-fills.md",
+  "settings": {
+    "band": "width",
+    "e277_predictions_sha256": "f593c9f737099a9069b57ce6d9ffcf8240f97f6d4ec838f4c2b6228dae022782",
+    "settings_source": "band: the plan's one change to E277 (Run 1, 'What runs'): topk_upper.feat_of's width (hi = -inf), so every activation is its neuron's value and each remainder writes 0, E208's one variable per neuron. Every other setting (derangements 4, examples 64, seed 268, rows, logit_rows, cache_batch, random_seed, too_small, the trained world's items and control) is E277's filed value, read from experiments/needed_neurons/results/predictions.json, whose sha256 at HEAD (2026-11-26) is pinned here; random_seed is unused (no matched randoms are read)."
+  },
+  "readings": {
+    "K": "E277's K (its predictions.json readings.K) at the width band: variables (6 heads, 3072 neurons, one remainder per layer; 12,316) for which some of the 256 tested pairs changes F's argmax at the last position when the variable's value on x is set to its value in F's own run on x'.",
+    "k_value": "score.py: mean of E208's saved r_main (experiments/rho_saved_items/results/large/parts/<item>.npz) over K and changed, mapped by part name; 1 when K and changed is empty. Blind to parts K does not hold and to how much each part writes (an unweighted mean, as E208's rho).",
+    "k_value_with_1": "the mean over all of K, each unchanged member of K counted at 1",
+    "kstar_value": "E208's rho_main_replace (rho_saved_items/results/summary.json R3), reported beside it, not recomputed"
+  },
+  "rules": {
+    "R0a": "Stage 0 (E277's trained-world stage 0, its R0a): the identity swap (x' = x) on copy24_s0's first 64 windows, every variable, the last position, must change no argmax; else the job stops. Its largest logit deviation is the floor, recorded, not barred.",
+    "R0b": "Stage 0 (E277's R0b): the do-nothing (F = a copy of M) must have no changed variable, dd max exactly 0.0 and E_b over K exactly 1.0; else the job stops. K and changed is then empty for any K, so the K value of the do-nothing is 1 by the same convention.",
+    "read": "descriptive, no bar"
+  },
+  "expected": {
+    "stage0": "identity: 0 argmax changes, largest logit deviation near E277's 4.6e-5 at p97 (run_trained_t0.log); do-nothing: 0 changed, dd max 0.0, E_b over K 1.0, so the K value reads 1",
+    "read": "per item, the K value lies between the item's lowest changed-part r_main (rho_saved_items/results/items/<item>.json r_changed.main.min, 0.88-0.98) and 1, since K and changed lies within the changed parts; it stays at 0.999 or more unless K picks out the lowest parts. n_missing 0 and no remainder in K (it writes 0 at the width band).",
+    "time": "E277: 39-103 s per trained item on the same 12,316 variables x 256 pairs (needed_neurons/results/run_trained_t0.log, run_trained_t12.log); 20 items at most 34 min, two shards of 10 at most 17 min each plus about 3 min of set-up. Peak GPU memory 4.3 GB (E277 copy24_s0 peak_gpu_gb)."
+  }
+}

@@ -1,0 +1,47 @@
+# E_TBD_RUN2 (p165_gain_reads) inputs. Not from a dry run (none was made: it loads the model). This run reads through
+# E298's code path only (fig2_standard/run.py read_item and stage0, feats.Worlds/reader) plus E290's World.make on the
+# saved FFN gains, so its inputs are E298's pod inputs (the stage tars E298's VPD and SAE pods ran from) plus the SAEs
+# and artifacts. Sizes in bytes.
+#
+# 1. results/large files (each results/large is a symlink: it arrives on a pod dangling, and include= of a path under it
+#    sends nothing). Basenames repeat, so they go as tars in a flat root-level stage dir sent by
+#    sync(include=['<dir>']); on the pod replace each results/large symlink with a real dir before untarring.
+#    E298's three tars (2026-11-24) already exist and hold all of it, including the 15 gain states:
+#      e298_stage/inputs.tar   2445946880  whole results/large of claim2_needed, head_edit, ia3_control (incl. the 15
+#                                          gains_ffn_<task>_s{0,1,2}.pt, 199 KB each), induction_cue, kstar_needed,
+#                                          kstar_vpd_wording_a, needed_neurons, open_pair(/amend1), option_b_rescore,
+#                                          rb_states (incl. dl_archive/e257_dl), refit_96key (E147's updates and E237's
+#                                          windows), thin_edit_diagnosis, topk_neurons
+#      e298_stage/inputs2.tar    39710720  open_pair/results/large/amend{1,2,3,6,7}
+#      e298_stage/inputs3.tar    37754880  rule_retention_fixed/results/large
+#    Hard-link them (ln, not cp) into a new flat dir, e.g. p165r2_stage/, or reuse e298_stage/ as it is; check each
+#    tar's sha256 on both sides. List with `tar -tvf`.
+#    The SAEs (E234's base-only SAEs as E245 loads them, sae_r_a load_saes: sites attn0-3, mlp0-3, seed 0), not in those
+#    tars; hard-link these 8 files flat into the same stage dir (distinct basenames) and move them on the pod to
+#    experiments/sae_train/results/large/scored/:
+100735825  experiments/sae_train/results/large/scored/sae_attn0_s0.pt
+100735825  experiments/sae_train/results/large/scored/sae_attn1_s0.pt
+100735825  experiments/sae_train/results/large/scored/sae_attn2_s0.pt
+100735825  experiments/sae_train/results/large/scored/sae_attn3_s0.pt
+100735813  experiments/sae_train/results/large/scored/sae_mlp0_s0.pt
+100735813  experiments/sae_train/results/large/scored/sae_mlp1_s0.pt
+100735813  experiments/sae_train/results/large/scored/sae_mlp2_s0.pt
+100735813  experiments/sae_train/results/large/scored/sae_mlp3_s0.pt
+#    Total: 2,523,412,480 (tars) + 805,886,552 (SAEs) = 3,329,299,032 B: 3.33 GB / 10 MB/s = 333 s, about 5.5 min.
+#    A VPD-only pod needs no SAEs (2.52 GB, about 4.2 min).
+#
+# 2. artifacts/ (gitignored; on a pod fetch artifacts/vpd from W&B as earlier 67M pods did, ~45 MB/s, and stage the rest)
+2908595703 artifacts/vpd/s-55ea3f9b/model_400000.pth
+3087       artifacts/vpd/s-55ea3f9b/final_config.yaml
+267736421  artifacts/vpd/t-9d2b8f02/ckpt/model_step_99999.pt
+1318       artifacts/vpd/t-9d2b8f02/final_config.yaml
+323        artifacts/vpd/t-9d2b8f02/model_config.yaml
+134217856  artifacts/sets/train_0_32768.npy
+33554560   artifacts/sets/train_32768_8192.npy
+8192128    artifacts/sets/val_0_2000.npy
+#          artifacts/hf/hub/models--EleutherAI--gpt-neox-20b/ (the tokenizer; a few MB)
+#
+# 3. Tracked files a plain sync() sends: every experiments/*/results/predictions.json the imports read (fig2_standard,
+#    ia3_control, kstar_needed, needed_neurons, head_edit, sae_r_a, key_grid and their chains), and the repeat
+#    check's sources experiments/ia3_control/results/vpd/ffn__<task>_s0.json (5 files, a few KB).
+#    Move aside any results/stage0/*.json of this folder before the first sync (a stale one skips stage 0 on that card).
