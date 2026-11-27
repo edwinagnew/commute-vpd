@@ -1,0 +1,13 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[09:15:00] E321 (p165_cos2_k) start, stage 0, 20 items ['copy24_s0', 'cipher24_s0', 'ident32_s0', 'rand32_s0', 'case_real_s0', 'case_twin_s0', 'repeat_real_s0', 'repeat_twin_s0', 'twin_s0', 'fact_s0', 'copy24_s1', 'cipher24_s1', 'ident32_s1', 'rand32_s1', 'case_real_s1', 'case_twin_s1', 'repeat_real_s1', 'repeat_twin_s1', 'twin_s1', 'fact_s1']; settings {'band': 'width', 'e277_predictions_sha256': 'f593c9f737099a9069b57ce6d9ffcf8240f97f6d4ec838f4c2b6228dae022782'}; E277's {'built': ('x2', 'x10', 'rebuilt', 'new_few', 'new_thin', 'random_size_241001', 'random_kl_241002'), 'control': 'x2', 'band': 'width', 'derangements': 4, 'examples': 64, 'seed': 268, 'rows': 1024, 'logit_rows': 8192, 'cache_batch': 32, 'random_seed': 277000, 'too_small': 100}
+[09:15:06]     site 0 (block 0, variables from 0): 197056 cases, 0 needed so far; 197056 cases in 4 s (54836/s)
+[09:15:08]     site 1 (block 1, variables from 3079): 197056 cases, 0 needed so far; 394112 cases in 6 s (61492/s)
+[09:15:10]     site 2 (block 2, variables from 6158): 197056 cases, 0 needed so far; 591168 cases in 8 s (69668/s)
+[09:15:12]     site 3 (block 3, variables from 9237): 197056 cases, 0 needed so far; 788224 cases in 10 s (80294/s)
+[09:15:12] stage 0 (trained): {"experiment": "E321 (p165_cos2_k)", "world": "trained", "dn_n_changed": 0, "dn_dd_max": 0.0, "dn_E_b_K": 1.0, "n_vars": 12316, "identity": {"item": "copy24_s0", "flips": 0, "max_dev": 5.054473876953125e-05, "min_margin": 0.001598358154296875, "cases": 788224, "cases_per_s": 80291.25399366923, "n_read_positions": 1, "n_windows": 512, "window_len": 8}, "est_seconds_per_item": 39.26823711395264, "seconds": 11.434584856033325}; checks hold
+[09:15:12] STAGE 0 DONE (trained): est. 39 s per item read like copy24_s0
+peak host RSS 6.4 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/p165_cos2_k/results/stage0_trained_s0.json ===
