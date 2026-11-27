@@ -1,0 +1,309 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+E325 start, feat neurons, 36 items ['e62/copy_s0_rand', 'e62/copy_s1_rand', 'e62/copy_s2_rand', 'e62/lookup_s0_rand', 'e62/lookup_s1_rand', 'e62/lookup_s2_rand', 'e46/ident32_s0_rand', 'e46/ident32_s1_rand', 'e46/ident32_s2_rand', 'e46/rand32_s0_rand', 'e46/rand32_s1_rand', 'e46/rand32_s2_rand', 'e53/lowercase_s0_rand', 'e53/lowercase_s1_rand', 'e53/lowercase_s2_rand', 'e53/cipher_s0_rand', 'e53/cipher_s1_rand', 'e53/cipher_s2_rand', 'e54/elicit_s0_rand', 'e54/elicit_s1_rand', 'e54/elicit_s2_rand', 'e54/cipher_s0_rand', 'e54/cipher_s1_rand', 'e54/cipher_s2_rand', 'e54/cipher_own_s0_rand', 'e54/cipher_own_s1_rand', 'e54/cipher_own_s2_rand', 'c3/rank1_s0_rand', 'c3/rank1_s1_rand', 'c3/rank1_s2_rand', 'c3/cipher_s0_rand', 'c3/cipher_s1_rand', 'c3/cipher_s2_rand', 'c3/copy_s0_rand', 'c3/copy_s1_rand', 'c3/copy_s2_rand']; settings {'control': 'e62/copy_s0', 'tasks': ('e62/copy', 'e62/lookup', 'e46/ident32', 'e46/rand32', 'e53/lowercase', 'e53/cipher', 'e54/elicit', 'e54/cipher', 'e54/cipher_own', 'c3/rank1', 'c3/cipher', 'c3/copy'), 'overlap': {'e58/copy': 'copy', 'e58/rank1': 'rank1', 'e58/cipher': 'cipher', 'e58/prior_cipher': 'prior_cipher'}, 'seeds': (0, 1, 2), 'random_seed': 325000, 'split_tol': 1e-06, 'n_read': 512, 'read_seed': 195200, 'band': 'p97', 'sae_size': 'scored', 'sae_seed': 0, 'derangements': 4, 'examples': 64, 'seed': 268, 'rows': 1024, 'logit_rows': 8192, 'cache_batch': 32, 'ident_vars': 3, 'sae_err_rows': 64, 'sae_chunk': 32, 'repro': {'vpd': {'state': 'e58/cipher_s1', 'json': 'experiments/fig2_standard/results/items/vpd/trained__cipher_s1.json', 'npz': 'experiments/fig2_standard/results/large/vpd/trained__cipher_s1.npz'}, 'neurons': {'state': 'e58/copy_s0', 'json': 'experiments/ia3_control/results/items/full__copy_s0.json', 'npz': 'experiments/ia3_control/results/large/items_full__copy_s0.npz'}, 'sae': {'state': 'e58/cipher_s0', 'json': 'experiments/fig2_standard/results/items/sae/trained__cipher_s0.json', 'npz': 'experiments/fig2_standard/results/large/sae/trained__cipher_s0.npz'}}, 'repro_rel_tol': {'vpd': 0.0005, 'neurons': 5e-05, 'sae': 1e-06}}
+stage 0 neurons do_nothing: {"experiment": "E325", "feat": "neurons", "part": "do_nothing", "on": "e62/copy_s0", "n_changed": 0, "dd_max": 0.0, "E_b": 1.0, "seconds": 10.25104022026062, "card": "NVIDIA H100 80GB HBM3"}; checks hold
+    site 0 (block 0, variables from 0): 197056 cases, 0 needed so far; 197056 cases in 4 s (54581/s)
+    site 1 (block 1, variables from 3079): 197056 cases, 0 needed so far; 394112 cases in 6 s (61367/s)
+    site 2 (block 2, variables from 6158): 197056 cases, 0 needed so far; 591168 cases in 8 s (69653/s)
+    site 3 (block 3, variables from 9237): 197056 cases, 0 needed so far; 788224 cases in 10 s (80431/s)
+stage 0 neurons identity: {"experiment": "E325", "feat": "neurons", "part": "identity", "item": "e62/copy_s0", "flips": 0, "max_dev": 0.027153849601745605, "min_margin": 0.0033941268920898438, "cases": 788224, "cases_per_s": 80428.20903343231, "n_windows": 512, "window_len": 8, "seconds": 10.30959415435791, "card": "NVIDIA H100 80GB HBM3"}; checks hold
+  512 windows of 8 tokens, read at -1, 12316 variables, 12316 changed, 256 pairs
+    site 0 (block 0, variables from 0): 788224 cases, 1752 needed so far; 788224 cases in 14 s (54907/s)
+    site 1 (block 1, variables from 3079): 788224 cases, 2778 needed so far; 1576448 cases in 26 s (61442/s)
+    site 2 (block 2, variables from 6158): 788224 cases, 3564 needed so far; 2364672 cases in 34 s (69647/s)
+    site 3 (block 3, variables from 9237): 788224 cases, 4170 needed so far; 3152896 cases in 39 s (80359/s)
+stage 0 neurons repro: {"experiment": "E325", "feat": "neurons", "part": "repro", "state": "e58/copy_s0", "E_b": 0.011681124193181725, "saved": 0.011681065992999671, "source": "experiments/ia3_control/results/items/full__copy_s0.json", "rel_dev": 4.9824375693794176e-06, "tol": 5e-05, "n_K_differ": 0, "size_K": 4170, "size_K_saved": 4170, "n_windows": 512, "seconds": 40.083908557891846, "card": "NVIDIA H100 80GB HBM3"}; checks hold
+STAGE 0 DONE (neurons, neurons_a)
+neurons e62/copy_s0_rand:
+  512 windows of 8 tokens, read at -1, 12316 variables, 12316 changed, 256 pairs
+    site 0 (block 0, variables from 0): 788224 cases, 2549 needed so far; 788224 cases in 14 s (55115/s)
+    site 1 (block 1, variables from 3079): 788224 cases, 4355 needed so far; 1576448 cases in 26 s (61526/s)
+    site 2 (block 2, variables from 6158): 788224 cases, 5730 needed so far; 2364672 cases in 34 s (69667/s)
+    site 3 (block 3, variables from 9237): 788224 cases, 6479 needed so far; 3152896 cases in 39 s (80359/s)
+neurons e62/copy_s0_rand: E_b over K 0.008309 (leftovers dropped 0.022170); |K| 6479 (6479 changed) of 12316; 42 s
+ITEM 1 of 36 DONE (neurons e62/copy_s0_rand)
+neurons e62/copy_s1_rand:
+  512 windows of 8 tokens, read at -1, 12316 variables, 12316 changed, 256 pairs
+    site 0 (block 0, variables from 0): 788224 cases, 2186 needed so far; 788224 cases in 14 s (55138/s)
+    site 1 (block 1, variables from 3079): 788224 cases, 3459 needed so far; 1576448 cases in 26 s (61563/s)
+    site 2 (block 2, variables from 6158): 788224 cases, 4428 needed so far; 2364672 cases in 34 s (69724/s)
+    site 3 (block 3, variables from 9237): 788224 cases, 5127 needed so far; 3152896 cases in 39 s (80421/s)
+neurons e62/copy_s1_rand: E_b over K 0.004667 (leftovers dropped 0.013193); |K| 5127 (5127 changed) of 12316; 41 s
+ITEM 2 of 36 DONE (neurons e62/copy_s1_rand)
+neurons e62/copy_s2_rand:
+  512 windows of 8 tokens, read at -1, 12316 variables, 12316 changed, 256 pairs
+    site 0 (block 0, variables from 0): 788224 cases, 2243 needed so far; 788224 cases in 14 s (55130/s)
+    site 1 (block 1, variables from 3079): 788224 cases, 3742 needed so far; 1576448 cases in 26 s (61599/s)
+    site 2 (block 2, variables from 6158): 788224 cases, 4747 needed so far; 2364672 cases in 34 s (69785/s)
+    site 3 (block 3, variables from 9237): 788224 cases, 5470 needed so far; 3152896 cases in 39 s (80485/s)
+neurons e62/copy_s2_rand: E_b over K 0.004454 (leftovers dropped 0.012116); |K| 5470 (5470 changed) of 12316; 41 s
+ITEM 3 of 36 DONE (neurons e62/copy_s2_rand)
+neurons e62/lookup_s0_rand:
+  512 windows of 8 tokens, read at -1, 12316 variables, 12316 changed, 256 pairs
+    site 0 (block 0, variables from 0): 788224 cases, 2228 needed so far; 788224 cases in 14 s (55143/s)
+    site 1 (block 1, variables from 3079): 788224 cases, 3557 needed so far; 1576448 cases in 26 s (61607/s)
+    site 2 (block 2, variables from 6158): 788224 cases, 4411 needed so far; 2364672 cases in 34 s (69787/s)
+    site 3 (block 3, variables from 9237): 788224 cases, 5063 needed so far; 3152896 cases in 39 s (80486/s)
+neurons e62/lookup_s0_rand: E_b over K 0.005330 (leftovers dropped 0.014813); |K| 5063 (5063 changed) of 12316; 42 s
+ITEM 4 of 36 DONE (neurons e62/lookup_s0_rand)
+neurons e62/lookup_s1_rand:
+  512 windows of 8 tokens, read at -1, 12316 variables, 12316 changed, 256 pairs
+    site 0 (block 0, variables from 0): 788224 cases, 2843 needed so far; 788224 cases in 14 s (55144/s)
+    site 1 (block 1, variables from 3079): 788224 cases, 4866 needed so far; 1576448 cases in 26 s (61587/s)
+    site 2 (block 2, variables from 6158): 788224 cases, 6361 needed so far; 2364672 cases in 34 s (69763/s)
+    site 3 (block 3, variables from 9237): 788224 cases, 7175 needed so far; 3152896 cases in 39 s (80444/s)
+neurons e62/lookup_s1_rand: E_b over K 0.006486 (leftovers dropped 0.016419); |K| 7175 (7175 changed) of 12316; 41 s
+ITEM 5 of 36 DONE (neurons e62/lookup_s1_rand)
+neurons e62/lookup_s2_rand:
+  512 windows of 8 tokens, read at -1, 12316 variables, 12316 changed, 256 pairs
+    site 0 (block 0, variables from 0): 788224 cases, 2676 needed so far; 788224 cases in 14 s (54944/s)
+    site 1 (block 1, variables from 3079): 788224 cases, 4575 needed so far; 1576448 cases in 26 s (61042/s)
+    site 2 (block 2, variables from 6158): 788224 cases, 5967 needed so far; 2364672 cases in 34 s (69234/s)
+    site 3 (block 3, variables from 9237): 788224 cases, 6816 needed so far; 3152896 cases in 39 s (79909/s)
+neurons e62/lookup_s2_rand: E_b over K 0.006395 (leftovers dropped 0.015725); |K| 6816 (6816 changed) of 12316; 41 s
+ITEM 6 of 36 DONE (neurons e62/lookup_s2_rand)
+neurons e46/ident32_s0_rand:
+  512 windows of 8 tokens, read at -1, 12316 variables, 12316 changed, 256 pairs
+    site 0 (block 0, variables from 0): 788224 cases, 2096 needed so far; 788224 cases in 14 s (55080/s)
+    site 1 (block 1, variables from 3079): 788224 cases, 3342 needed so far; 1576448 cases in 26 s (61545/s)
+    site 2 (block 2, variables from 6158): 788224 cases, 4424 needed so far; 2364672 cases in 34 s (69710/s)
+    site 3 (block 3, variables from 9237): 788224 cases, 5272 needed so far; 3152896 cases in 39 s (80379/s)
+neurons e46/ident32_s0_rand: E_b over K 0.003045 (leftovers dropped 0.008308); |K| 5272 (5272 changed) of 12316; 42 s
+ITEM 7 of 36 DONE (neurons e46/ident32_s0_rand)
+neurons e46/ident32_s1_rand:
+  512 windows of 8 tokens, read at -1, 12316 variables, 12316 changed, 256 pairs
+    site 0 (block 0, variables from 0): 788224 cases, 2605 needed so far; 788224 cases in 14 s (55111/s)
+    site 1 (block 1, variables from 3079): 788224 cases, 4452 needed so far; 1576448 cases in 26 s (61537/s)
+    site 2 (block 2, variables from 6158): 788224 cases, 6036 needed so far; 2364672 cases in 34 s (69691/s)
+    site 3 (block 3, variables from 9237): 788224 cases, 6942 needed so far; 3152896 cases in 39 s (80377/s)
+neurons e46/ident32_s1_rand: E_b over K 0.003914 (leftovers dropped 0.010103); |K| 6942 (6942 changed) of 12316; 41 s
+ITEM 8 of 36 DONE (neurons e46/ident32_s1_rand)
+neurons e46/ident32_s2_rand:
+  512 windows of 8 tokens, read at -1, 12316 variables, 12316 changed, 256 pairs
+    site 0 (block 0, variables from 0): 788224 cases, 2538 needed so far; 788224 cases in 14 s (55009/s)
+    site 1 (block 1, variables from 3079): 788224 cases, 4313 needed so far; 1576448 cases in 26 s (61438/s)
+    site 2 (block 2, variables from 6158): 788224 cases, 5831 needed so far; 2364672 cases in 34 s (69591/s)
+    site 3 (block 3, variables from 9237): 788224 cases, 6696 needed so far; 3152896 cases in 39 s (80271/s)
+neurons e46/ident32_s2_rand: E_b over K 0.003380 (leftovers dropped 0.009071); |K| 6696 (6696 changed) of 12316; 41 s
+ITEM 9 of 36 DONE (neurons e46/ident32_s2_rand)
+neurons e46/rand32_s0_rand:
+  512 windows of 8 tokens, read at -1, 12316 variables, 12316 changed, 256 pairs
+    site 0 (block 0, variables from 0): 788224 cases, 2888 needed so far; 788224 cases in 14 s (55003/s)
+    site 1 (block 1, variables from 3079): 788224 cases, 5200 needed so far; 1576448 cases in 26 s (61498/s)
+    site 2 (block 2, variables from 6158): 788224 cases, 7093 needed so far; 2364672 cases in 34 s (69666/s)
+    site 3 (block 3, variables from 9237): 788224 cases, 8138 needed so far; 3152896 cases in 39 s (80342/s)
+neurons e46/rand32_s0_rand: E_b over K 0.005147 (leftovers dropped 0.012621); |K| 8138 (8138 changed) of 12316; 41 s
+ITEM 10 of 36 DONE (neurons e46/rand32_s0_rand)
+neurons e46/rand32_s1_rand:
+  512 windows of 8 tokens, read at -1, 12316 variables, 12316 changed, 256 pairs
+    site 0 (block 0, variables from 0): 788224 cases, 2731 needed so far; 788224 cases in 14 s (55127/s)
+    site 1 (block 1, variables from 3079): 788224 cases, 4732 needed so far; 1576448 cases in 26 s (61554/s)
+    site 2 (block 2, variables from 6158): 788224 cases, 6294 needed so far; 2364672 cases in 34 s (69707/s)
+    site 3 (block 3, variables from 9237): 788224 cases, 7361 needed so far; 3152896 cases in 39 s (80368/s)
+neurons e46/rand32_s1_rand: E_b over K 0.004343 (leftovers dropped 0.011209); |K| 7361 (7361 changed) of 12316; 41 s
+ITEM 11 of 36 DONE (neurons e46/rand32_s1_rand)
+neurons e46/rand32_s2_rand:
+  512 windows of 8 tokens, read at -1, 12316 variables, 12316 changed, 256 pairs
+    site 0 (block 0, variables from 0): 788224 cases, 2832 needed so far; 788224 cases in 14 s (55059/s)
+    site 1 (block 1, variables from 3079): 788224 cases, 5012 needed so far; 1576448 cases in 26 s (61535/s)
+    site 2 (block 2, variables from 6158): 788224 cases, 6860 needed so far; 2364672 cases in 34 s (69710/s)
+    site 3 (block 3, variables from 9237): 788224 cases, 7913 needed so far; 3152896 cases in 39 s (80373/s)
+neurons e46/rand32_s2_rand: E_b over K 0.006111 (leftovers dropped 0.015091); |K| 7913 (7913 changed) of 12316; 41 s
+ITEM 12 of 36 DONE (neurons e46/rand32_s2_rand)
+neurons e53/lowercase_s0_rand:
+  512 windows of 8 tokens, read at -1, 12316 variables, 12316 changed, 256 pairs
+    site 0 (block 0, variables from 0): 788224 cases, 2218 needed so far; 788224 cases in 14 s (55119/s)
+    site 1 (block 1, variables from 3079): 788224 cases, 3821 needed so far; 1576448 cases in 26 s (61584/s)
+    site 2 (block 2, variables from 6158): 788224 cases, 5064 needed so far; 2364672 cases in 34 s (69732/s)
+    site 3 (block 3, variables from 9237): 788224 cases, 6092 needed so far; 3152896 cases in 39 s (80418/s)
+neurons e53/lowercase_s0_rand: E_b over K 0.010305 (leftovers dropped 0.024420); |K| 6092 (6092 changed) of 12316; 48 s
+ITEM 13 of 36 DONE (neurons e53/lowercase_s0_rand)
+neurons e53/lowercase_s1_rand:
+  512 windows of 8 tokens, read at -1, 12316 variables, 12316 changed, 256 pairs
+    site 0 (block 0, variables from 0): 788224 cases, 1724 needed so far; 788224 cases in 14 s (55138/s)
+    site 1 (block 1, variables from 3079): 788224 cases, 3097 needed so far; 1576448 cases in 26 s (61594/s)
+    site 2 (block 2, variables from 6158): 788224 cases, 4249 needed so far; 2364672 cases in 34 s (69762/s)
+    site 3 (block 3, variables from 9237): 788224 cases, 5140 needed so far; 3152896 cases in 39 s (80436/s)
+neurons e53/lowercase_s1_rand: E_b over K 0.008333 (leftovers dropped 0.019871); |K| 5140 (5140 changed) of 12316; 40 s
+ITEM 14 of 36 DONE (neurons e53/lowercase_s1_rand)
+neurons e53/lowercase_s2_rand:
+  512 windows of 8 tokens, read at -1, 12316 variables, 12316 changed, 256 pairs
+    site 0 (block 0, variables from 0): 788224 cases, 2564 needed so far; 788224 cases in 14 s (55125/s)
+    site 1 (block 1, variables from 3079): 788224 cases, 4416 needed so far; 1576448 cases in 26 s (61573/s)
+    site 2 (block 2, variables from 6158): 788224 cases, 5880 needed so far; 2364672 cases in 34 s (69743/s)
+    site 3 (block 3, variables from 9237): 788224 cases, 7054 needed so far; 3152896 cases in 39 s (80418/s)
+neurons e53/lowercase_s2_rand: E_b over K 0.009285 (leftovers dropped 0.021464); |K| 7054 (7054 changed) of 12316; 41 s
+ITEM 15 of 36 DONE (neurons e53/lowercase_s2_rand)
+neurons e53/cipher_s0_rand:
+  512 windows of 8 tokens, read at -1, 12316 variables, 12316 changed, 256 pairs
+    site 0 (block 0, variables from 0): 788224 cases, 2079 needed so far; 788224 cases in 14 s (55104/s)
+    site 1 (block 1, variables from 3079): 788224 cases, 3611 needed so far; 1576448 cases in 26 s (61535/s)
+    site 2 (block 2, variables from 6158): 788224 cases, 5002 needed so far; 2364672 cases in 34 s (69664/s)
+    site 3 (block 3, variables from 9237): 788224 cases, 6150 needed so far; 3152896 cases in 39 s (80318/s)
+neurons e53/cipher_s0_rand: E_b over K 0.008225 (leftovers dropped 0.018473); |K| 6150 (6150 changed) of 12316; 41 s
+ITEM 16 of 36 DONE (neurons e53/cipher_s0_rand)
+neurons e53/cipher_s1_rand:
+  512 windows of 8 tokens, read at -1, 12316 variables, 12316 changed, 256 pairs
+    site 0 (block 0, variables from 0): 788224 cases, 2069 needed so far; 788224 cases in 14 s (55069/s)
+    site 1 (block 1, variables from 3079): 788224 cases, 3586 needed so far; 1576448 cases in 26 s (61542/s)
+    site 2 (block 2, variables from 6158): 788224 cases, 4953 needed so far; 2364672 cases in 34 s (69690/s)
+    site 3 (block 3, variables from 9237): 788224 cases, 5997 needed so far; 3152896 cases in 39 s (80340/s)
+neurons e53/cipher_s1_rand: E_b over K 0.008523 (leftovers dropped 0.019430); |K| 5997 (5997 changed) of 12316; 41 s
+ITEM 17 of 36 DONE (neurons e53/cipher_s1_rand)
+neurons e53/cipher_s2_rand:
+  512 windows of 8 tokens, read at -1, 12316 variables, 12316 changed, 256 pairs
+    site 0 (block 0, variables from 0): 788224 cases, 2053 needed so far; 788224 cases in 14 s (55088/s)
+    site 1 (block 1, variables from 3079): 788224 cases, 3528 needed so far; 1576448 cases in 26 s (61547/s)
+    site 2 (block 2, variables from 6158): 788224 cases, 4870 needed so far; 2364672 cases in 34 s (69708/s)
+    site 3 (block 3, variables from 9237): 788224 cases, 5980 needed so far; 3152896 cases in 39 s (80375/s)
+neurons e53/cipher_s2_rand: E_b over K 0.007338 (leftovers dropped 0.017846); |K| 5980 (5980 changed) of 12316; 41 s
+ITEM 18 of 36 DONE (neurons e53/cipher_s2_rand)
+neurons e54/elicit_s0_rand:
+  512 windows of 8 tokens, read at -1, 12316 variables, 12316 changed, 256 pairs
+    site 0 (block 0, variables from 0): 788224 cases, 2236 needed so far; 788224 cases in 14 s (55120/s)
+    site 1 (block 1, variables from 3079): 788224 cases, 3559 needed so far; 1576448 cases in 26 s (61563/s)
+    site 2 (block 2, variables from 6158): 788224 cases, 4689 needed so far; 2364672 cases in 34 s (69717/s)
+    site 3 (block 3, variables from 9237): 788224 cases, 5322 needed so far; 3152896 cases in 39 s (80399/s)
+neurons e54/elicit_s0_rand: E_b over K 0.003223 (leftovers dropped 0.009066); |K| 5322 (5322 changed) of 12316; 41 s
+ITEM 19 of 36 DONE (neurons e54/elicit_s0_rand)
+neurons e54/elicit_s1_rand:
+  512 windows of 8 tokens, read at -1, 12316 variables, 12316 changed, 256 pairs
+    site 0 (block 0, variables from 0): 788224 cases, 2364 needed so far; 788224 cases in 14 s (55088/s)
+    site 1 (block 1, variables from 3079): 788224 cases, 3926 needed so far; 1576448 cases in 26 s (61517/s)
+    site 2 (block 2, variables from 6158): 788224 cases, 5202 needed so far; 2364672 cases in 34 s (69679/s)
+    site 3 (block 3, variables from 9237): 788224 cases, 5877 needed so far; 3152896 cases in 39 s (80348/s)
+neurons e54/elicit_s1_rand: E_b over K 0.003988 (leftovers dropped 0.011645); |K| 5877 (5877 changed) of 12316; 41 s
+ITEM 20 of 36 DONE (neurons e54/elicit_s1_rand)
+neurons e54/elicit_s2_rand:
+  512 windows of 8 tokens, read at -1, 12316 variables, 12316 changed, 256 pairs
+    site 0 (block 0, variables from 0): 788224 cases, 2380 needed so far; 788224 cases in 14 s (55054/s)
+    site 1 (block 1, variables from 3079): 788224 cases, 4057 needed so far; 1576448 cases in 26 s (61521/s)
+    site 2 (block 2, variables from 6158): 788224 cases, 5325 needed so far; 2364672 cases in 34 s (69674/s)
+    site 3 (block 3, variables from 9237): 788224 cases, 6005 needed so far; 3152896 cases in 39 s (80347/s)
+neurons e54/elicit_s2_rand: E_b over K 0.003593 (leftovers dropped 0.010125); |K| 6005 (6005 changed) of 12316; 40 s
+ITEM 21 of 36 DONE (neurons e54/elicit_s2_rand)
+neurons e54/cipher_s0_rand:
+  512 windows of 8 tokens, read at -1, 12316 variables, 12316 changed, 256 pairs
+    site 0 (block 0, variables from 0): 788224 cases, 2415 needed so far; 788224 cases in 14 s (55096/s)
+    site 1 (block 1, variables from 3079): 788224 cases, 4171 needed so far; 1576448 cases in 26 s (61545/s)
+    site 2 (block 2, variables from 6158): 788224 cases, 5668 needed so far; 2364672 cases in 34 s (69714/s)
+    site 3 (block 3, variables from 9237): 788224 cases, 6635 needed so far; 3152896 cases in 39 s (80369/s)
+neurons e54/cipher_s0_rand: E_b over K 0.004386 (leftovers dropped 0.011424); |K| 6635 (6635 changed) of 12316; 41 s
+ITEM 22 of 36 DONE (neurons e54/cipher_s0_rand)
+neurons e54/cipher_s1_rand:
+  512 windows of 8 tokens, read at -1, 12316 variables, 12316 changed, 256 pairs
+    site 0 (block 0, variables from 0): 788224 cases, 2298 needed so far; 788224 cases in 14 s (55122/s)
+    site 1 (block 1, variables from 3079): 788224 cases, 3777 needed so far; 1576448 cases in 26 s (61568/s)
+    site 2 (block 2, variables from 6158): 788224 cases, 4989 needed so far; 2364672 cases in 34 s (69725/s)
+    site 3 (block 3, variables from 9237): 788224 cases, 5883 needed so far; 3152896 cases in 39 s (80402/s)
+neurons e54/cipher_s1_rand: E_b over K 0.003408 (leftovers dropped 0.008938); |K| 5883 (5883 changed) of 12316; 41 s
+ITEM 23 of 36 DONE (neurons e54/cipher_s1_rand)
+neurons e54/cipher_s2_rand:
+  512 windows of 8 tokens, read at -1, 12316 variables, 12316 changed, 256 pairs
+    site 0 (block 0, variables from 0): 788224 cases, 2753 needed so far; 788224 cases in 14 s (55057/s)
+    site 1 (block 1, variables from 3079): 788224 cases, 4894 needed so far; 1576448 cases in 26 s (61491/s)
+    site 2 (block 2, variables from 6158): 788224 cases, 6732 needed so far; 2364672 cases in 34 s (69650/s)
+    site 3 (block 3, variables from 9237): 788224 cases, 7759 needed so far; 3152896 cases in 39 s (80318/s)
+neurons e54/cipher_s2_rand: E_b over K 0.004734 (leftovers dropped 0.011911); |K| 7759 (7759 changed) of 12316; 41 s
+ITEM 24 of 36 DONE (neurons e54/cipher_s2_rand)
+neurons e54/cipher_own_s0_rand:
+  512 windows of 8 tokens, read at -1, 12316 variables, 12316 changed, 256 pairs
+    site 0 (block 0, variables from 0): 788224 cases, 2456 needed so far; 788224 cases in 14 s (55107/s)
+    site 1 (block 1, variables from 3079): 788224 cases, 3958 needed so far; 1576448 cases in 26 s (61545/s)
+    site 2 (block 2, variables from 6158): 788224 cases, 5223 needed so far; 2364672 cases in 34 s (69709/s)
+    site 3 (block 3, variables from 9237): 788224 cases, 6157 needed so far; 3152896 cases in 39 s (80379/s)
+neurons e54/cipher_own_s0_rand: E_b over K 0.005326 (leftovers dropped 0.013156); |K| 6157 (6157 changed) of 12316; 41 s
+ITEM 25 of 36 DONE (neurons e54/cipher_own_s0_rand)
+neurons e54/cipher_own_s1_rand:
+  512 windows of 8 tokens, read at -1, 12316 variables, 12316 changed, 256 pairs
+    site 0 (block 0, variables from 0): 788224 cases, 2236 needed so far; 788224 cases in 14 s (55039/s)
+    site 1 (block 1, variables from 3079): 788224 cases, 3556 needed so far; 1576448 cases in 26 s (61515/s)
+    site 2 (block 2, variables from 6158): 788224 cases, 4669 needed so far; 2364672 cases in 34 s (69669/s)
+    site 3 (block 3, variables from 9237): 788224 cases, 5553 needed so far; 3152896 cases in 39 s (80342/s)
+neurons e54/cipher_own_s1_rand: E_b over K 0.005496 (leftovers dropped 0.015008); |K| 5553 (5553 changed) of 12316; 41 s
+ITEM 26 of 36 DONE (neurons e54/cipher_own_s1_rand)
+neurons e54/cipher_own_s2_rand:
+  512 windows of 8 tokens, read at -1, 12316 variables, 12316 changed, 256 pairs
+    site 0 (block 0, variables from 0): 788224 cases, 2133 needed so far; 788224 cases in 14 s (55111/s)
+    site 1 (block 1, variables from 3079): 788224 cases, 3379 needed so far; 1576448 cases in 26 s (61566/s)
+    site 2 (block 2, variables from 6158): 788224 cases, 4518 needed so far; 2364672 cases in 34 s (69730/s)
+    site 3 (block 3, variables from 9237): 788224 cases, 5514 needed so far; 3152896 cases in 39 s (80412/s)
+neurons e54/cipher_own_s2_rand: E_b over K 0.005465 (leftovers dropped 0.014325); |K| 5514 (5514 changed) of 12316; 41 s
+ITEM 27 of 36 DONE (neurons e54/cipher_own_s2_rand)
+neurons c3/rank1_s0_rand:
+  512 windows of 8 tokens, read at -1, 12316 variables, 12316 changed, 256 pairs
+    site 0 (block 0, variables from 0): 788224 cases, 2265 needed so far; 788224 cases in 14 s (55129/s)
+    site 1 (block 1, variables from 3079): 788224 cases, 3570 needed so far; 1576448 cases in 26 s (61586/s)
+    site 2 (block 2, variables from 6158): 788224 cases, 4661 needed so far; 2364672 cases in 34 s (69748/s)
+    site 3 (block 3, variables from 9237): 788224 cases, 5461 needed so far; 3152896 cases in 39 s (80440/s)
+neurons c3/rank1_s0_rand: E_b over K 0.002775 (leftovers dropped 0.008382); |K| 5461 (5461 changed) of 12316; 41 s
+ITEM 28 of 36 DONE (neurons c3/rank1_s0_rand)
+neurons c3/rank1_s1_rand:
+  512 windows of 8 tokens, read at -1, 12316 variables, 12316 changed, 256 pairs
+    site 0 (block 0, variables from 0): 788224 cases, 2082 needed so far; 788224 cases in 14 s (55106/s)
+    site 1 (block 1, variables from 3079): 788224 cases, 3249 needed so far; 1576448 cases in 26 s (61566/s)
+    site 2 (block 2, variables from 6158): 788224 cases, 4212 needed so far; 2364672 cases in 34 s (69743/s)
+    site 3 (block 3, variables from 9237): 788224 cases, 4940 needed so far; 3152896 cases in 39 s (80439/s)
+neurons c3/rank1_s1_rand: E_b over K 0.003346 (leftovers dropped 0.010359); |K| 4940 (4940 changed) of 12316; 41 s
+ITEM 29 of 36 DONE (neurons c3/rank1_s1_rand)
+neurons c3/rank1_s2_rand:
+  512 windows of 8 tokens, read at -1, 12316 variables, 12316 changed, 256 pairs
+    site 0 (block 0, variables from 0): 788224 cases, 2219 needed so far; 788224 cases in 14 s (54956/s)
+    site 1 (block 1, variables from 3079): 788224 cases, 3724 needed so far; 1576448 cases in 26 s (61443/s)
+    site 2 (block 2, variables from 6158): 788224 cases, 4893 needed so far; 2364672 cases in 34 s (69625/s)
+    site 3 (block 3, variables from 9237): 788224 cases, 5647 needed so far; 3152896 cases in 39 s (80320/s)
+neurons c3/rank1_s2_rand: E_b over K 0.004366 (leftovers dropped 0.013080); |K| 5647 (5647 changed) of 12316; 41 s
+ITEM 30 of 36 DONE (neurons c3/rank1_s2_rand)
+neurons c3/cipher_s0_rand:
+  512 windows of 8 tokens, read at -1, 12316 variables, 12316 changed, 256 pairs
+    site 0 (block 0, variables from 0): 788224 cases, 2054 needed so far; 788224 cases in 14 s (55049/s)
+    site 1 (block 1, variables from 3079): 788224 cases, 3376 needed so far; 1576448 cases in 26 s (61531/s)
+    site 2 (block 2, variables from 6158): 788224 cases, 4489 needed so far; 2364672 cases in 34 s (69713/s)
+    site 3 (block 3, variables from 9237): 788224 cases, 5235 needed so far; 3152896 cases in 39 s (80396/s)
+neurons c3/cipher_s0_rand: E_b over K 0.002878 (leftovers dropped 0.008645); |K| 5235 (5235 changed) of 12316; 41 s
+ITEM 31 of 36 DONE (neurons c3/cipher_s0_rand)
+neurons c3/cipher_s1_rand:
+  512 windows of 8 tokens, read at -1, 12316 variables, 12316 changed, 256 pairs
+    site 0 (block 0, variables from 0): 788224 cases, 2742 needed so far; 788224 cases in 14 s (55102/s)
+    site 1 (block 1, variables from 3079): 788224 cases, 4938 needed so far; 1576448 cases in 26 s (61557/s)
+    site 2 (block 2, variables from 6158): 788224 cases, 6857 needed so far; 2364672 cases in 34 s (69725/s)
+    site 3 (block 3, variables from 9237): 788224 cases, 7737 needed so far; 3152896 cases in 39 s (80403/s)
+neurons c3/cipher_s1_rand: E_b over K 0.004469 (leftovers dropped 0.010617); |K| 7737 (7737 changed) of 12316; 41 s
+ITEM 32 of 36 DONE (neurons c3/cipher_s1_rand)
+neurons c3/cipher_s2_rand:
+  512 windows of 8 tokens, read at -1, 12316 variables, 12316 changed, 256 pairs
+    site 0 (block 0, variables from 0): 788224 cases, 2500 needed so far; 788224 cases in 14 s (55110/s)
+    site 1 (block 1, variables from 3079): 788224 cases, 4240 needed so far; 1576448 cases in 26 s (61570/s)
+    site 2 (block 2, variables from 6158): 788224 cases, 5666 needed so far; 2364672 cases in 34 s (69737/s)
+    site 3 (block 3, variables from 9237): 788224 cases, 6469 needed so far; 3152896 cases in 39 s (80408/s)
+neurons c3/cipher_s2_rand: E_b over K 0.003276 (leftovers dropped 0.008932); |K| 6469 (6469 changed) of 12316; 41 s
+ITEM 33 of 36 DONE (neurons c3/cipher_s2_rand)
+neurons c3/copy_s0_rand:
+  512 windows of 8 tokens, read at -1, 12316 variables, 12316 changed, 256 pairs
+    site 0 (block 0, variables from 0): 788224 cases, 2491 needed so far; 788224 cases in 14 s (55129/s)
+    site 1 (block 1, variables from 3079): 788224 cases, 4100 needed so far; 1576448 cases in 26 s (61555/s)
+    site 2 (block 2, variables from 6158): 788224 cases, 5485 needed so far; 2364672 cases in 34 s (69618/s)
+    site 3 (block 3, variables from 9237): 788224 cases, 6354 needed so far; 3152896 cases in 39 s (80261/s)
+neurons c3/copy_s0_rand: E_b over K 0.003359 (leftovers dropped 0.008958); |K| 6354 (6354 changed) of 12316; 41 s
+ITEM 34 of 36 DONE (neurons c3/copy_s0_rand)
+neurons c3/copy_s1_rand:
+  512 windows of 8 tokens, read at -1, 12316 variables, 12316 changed, 256 pairs
+    site 0 (block 0, variables from 0): 788224 cases, 2478 needed so far; 788224 cases in 14 s (55123/s)
+    site 1 (block 1, variables from 3079): 788224 cases, 4058 needed so far; 1576448 cases in 26 s (61538/s)
+    site 2 (block 2, variables from 6158): 788224 cases, 5357 needed so far; 2364672 cases in 34 s (69612/s)
+    site 3 (block 3, variables from 9237): 788224 cases, 6160 needed so far; 3152896 cases in 39 s (80166/s)
+neurons c3/copy_s1_rand: E_b over K 0.003074 (leftovers dropped 0.009116); |K| 6160 (6160 changed) of 12316; 41 s
+ITEM 35 of 36 DONE (neurons c3/copy_s1_rand)
+neurons c3/copy_s2_rand:
+  512 windows of 8 tokens, read at -1, 12316 variables, 12316 changed, 256 pairs
+    site 0 (block 0, variables from 0): 788224 cases, 2626 needed so far; 788224 cases in 14 s (55025/s)
+    site 1 (block 1, variables from 3079): 788224 cases, 4480 needed so far; 1576448 cases in 26 s (61419/s)
+    site 2 (block 2, variables from 6158): 788224 cases, 6016 needed so far; 2364672 cases in 34 s (69576/s)
+    site 3 (block 3, variables from 9237): 788224 cases, 6941 needed so far; 3152896 cases in 39 s (80254/s)
+neurons c3/copy_s2_rand: E_b over K 0.005089 (leftovers dropped 0.013880); |K| 6941 (6941 changed) of 12316; 42 s
+ITEM 36 of 36 DONE (neurons c3/copy_s2_rand)
+STAGE 1 DONE (neurons, neurons_a)
+peak host RSS 6.2 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/fig2_all_tasks/results/ (items/neurons, stage0, state_files, large/neurons) ===
