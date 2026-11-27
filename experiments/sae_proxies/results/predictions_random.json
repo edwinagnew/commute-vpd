@@ -1,0 +1,33 @@
+{
+ "experiment": "E318",
+ "cell": "P2.88",
+ "card": "~/commute-data/agents/sae-lead/card_p288.md",
+ "descriptive": "user 2026-11-26 ~20:18 and ~21:05 in whip-lead's chat (\"if its missing data, run it yourself for anything indivudally under $100 and/or 6 hours\"; \"yes, open all four\"): Fig 3's random updates read through E314's error share, values per task beside the fine-tunes', no verdict on reuse, no claim at the bar",
+ "settings": {
+  "random_gain_min": 1.0,
+  "random_gain_min_source": "E314's random floor (local_faith.MIN_GAIN, 1 log-odds); here it only flags an ok draw whose fp32 gain fell under it",
+  "size_rel_tol": 1e-09,
+  "size_rel_tol_source": "the rebuild runs E302's own code (random_direction on the same fp32 file, times signed_c, fp64 norms); only summation order can differ (~1e-15); a wrong file, seed or scale is off by far more"
+ },
+ "random_reference": "E302's draws (experiments/random_logodds_share/results/states/<state>.json .draws, E228's seeds 228001-228003), rebuilt as random_direction(dW, seed) * signed_c: Gaussian per matrix at the fine-tune's norm, scaled until the trained answer rose 1.00-1.10 log-odds in E302's bf16 reader; KL not matched; 27 of 144 draws reached the band (status ok), the rest capped at 100x",
+ "expected": {
+  "error_share": {
+   "definition": "E314's: (L_patch - T0) / (T1 - T0), L_patch = base model with each of the 8 block-output sites' SAE error set to the update's error, all at once; here over the draw's own fp32 gain",
+   "zero_update": "nan (read in E314 and E317, not again here)",
+   "control": "the first state's fine-tune read again reproduces E314's saved error share exactly (E317 measured 0 difference on all 48)",
+   "fine_tunes": "E314: 0.52-0.74 reuse, 0.62-0.86 new",
+   "random_if_rival_a": "at or above the fine-tunes' values on the tasks where ok draws exist",
+   "random_if_rival_b": "apart from the fine-tunes' values by more than 0.1 on those tasks",
+   "blind_to": "tasks with no ok draw (E302 found them only on cipher or random-target tasks, all built new): no random reference there; the random gain (~1) is about a twelfth of the fine-tunes' (~10-21), and a ratio need not read the same at both"
+  },
+  "recon_share": {
+   "definition": "E317's: each site's reconstruction set to the update's, the base error kept, same ratio",
+   "fine_tunes": "E317: 0.67-0.98 reuse, 0.40-0.73 new",
+   "random": "no filed expectation; read beside, descriptive"
+  },
+  "gain": {
+   "expected": "within a few percent of E302's bf16 gain of 1.00-1.10 for ok draws (fp32 here against bf16 there); recorded, no stop"
+  }
+ },
+ "not_a_verdict": "plotted per task beside the fine-tunes' error shares; writeup-lead decides placement"
+}
