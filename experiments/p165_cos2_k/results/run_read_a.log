@@ -1,0 +1,154 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[09:15:32] E321 (p165_cos2_k) start, stage read, 20 items ['copy24_s0', 'cipher24_s0', 'ident32_s0', 'rand32_s0', 'case_real_s0', 'case_twin_s0', 'repeat_real_s0', 'repeat_twin_s0', 'twin_s0', 'fact_s0', 'copy24_s1', 'cipher24_s1', 'ident32_s1', 'rand32_s1', 'case_real_s1', 'case_twin_s1', 'repeat_real_s1', 'repeat_twin_s1', 'twin_s1', 'fact_s1']; settings {'band': 'width', 'e277_predictions_sha256': 'f593c9f737099a9069b57ce6d9ffcf8240f97f6d4ec838f4c2b6228dae022782'}; E277's {'built': ('x2', 'x10', 'rebuilt', 'new_few', 'new_thin', 'random_size_241001', 'random_kl_241002'), 'control': 'x2', 'band': 'width', 'derangements': 4, 'examples': 64, 'seed': 268, 'rows': 1024, 'logit_rows': 8192, 'cache_batch': 32, 'random_seed': 277000, 'too_small': 100}
+[09:15:36]     site 0 (block 0, variables from 0): 197056 cases, 0 needed so far; 197056 cases in 4 s (54812/s)
+[09:15:39]     site 1 (block 1, variables from 3079): 197056 cases, 0 needed so far; 394112 cases in 6 s (61430/s)
+[09:15:41]     site 2 (block 2, variables from 6158): 197056 cases, 0 needed so far; 591168 cases in 8 s (69664/s)
+[09:15:43]     site 3 (block 3, variables from 9237): 197056 cases, 0 needed so far; 788224 cases in 10 s (80386/s)
+[09:15:43] stage 0 (trained): {"experiment": "E321 (p165_cos2_k)", "world": "trained", "dn_n_changed": 0, "dn_dd_max": 0.0, "dn_E_b_K": 1.0, "n_vars": 12316, "identity": {"item": "copy24_s0", "flips": 0, "max_dev": 5.054473876953125e-05, "min_margin": 0.001598358154296875, "cases": 788224, "cases_per_s": 80381.77192523016, "n_read_positions": 1, "n_windows": 512, "window_len": 8}, "est_seconds_per_item": 39.22401714324951, "seconds": 10.877285718917847}; checks hold
+[09:15:43] STAGE 0 DONE (trained): est. 39 s per item read like copy24_s0
+[09:15:43] copy24_s0: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[09:15:57]     site 0 (block 0, variables from 0): 788224 cases, 2709 needed so far; 788224 cases in 14 s (54882/s)
+[09:16:09]     site 1 (block 1, variables from 3079): 788224 cases, 4994 needed so far; 1576448 cases in 26 s (61313/s)
+[09:16:17]     site 2 (block 2, variables from 6158): 788224 cases, 7184 needed so far; 2364672 cases in 34 s (69449/s)
+[09:16:23]     site 3 (block 3, variables from 9237): 788224 cases, 9380 needed so far; 3152896 cases in 39 s (80032/s)
+[09:16:23] copy24_s0: E_b over K 0.148978, over all changed 0.152825; |K| 9380 (9380 changed) of 12316; margin median 1.82, min 0.0016; 40 s
+[09:16:23] ITEM 1 of 20 DONE (copy24_s0)
+[09:16:24] cipher24_s0: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[09:16:38]     site 0 (block 0, variables from 0): 788224 cases, 3077 needed so far; 788224 cases in 14 s (55047/s)
+[09:16:49]     site 1 (block 1, variables from 3079): 788224 cases, 6130 needed so far; 1576448 cases in 26 s (61445/s)
+[09:16:58]     site 2 (block 2, variables from 6158): 788224 cases, 9175 needed so far; 2364672 cases in 34 s (69594/s)
+[09:17:03]     site 3 (block 3, variables from 9237): 788224 cases, 12193 needed so far; 3152896 cases in 39 s (80250/s)
+[09:17:03] cipher24_s0: E_b over K 0.152037, over all changed 0.152015; |K| 12193 (12193 changed) of 12316; margin median 0.83, min 0.00205; 40 s
+[09:17:03] ITEM 2 of 20 DONE (cipher24_s0)
+[09:17:04] ident32_s0: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[09:17:18]     site 0 (block 0, variables from 0): 788224 cases, 2616 needed so far; 788224 cases in 14 s (55008/s)
+[09:17:30]     site 1 (block 1, variables from 3079): 788224 cases, 4522 needed so far; 1576448 cases in 26 s (61378/s)
+[09:17:38]     site 2 (block 2, variables from 6158): 788224 cases, 6124 needed so far; 2364672 cases in 34 s (69495/s)
+[09:17:43]     site 3 (block 3, variables from 9237): 788224 cases, 7821 needed so far; 3152896 cases in 39 s (80116/s)
+[09:17:43] ident32_s0: E_b over K 0.202623, over all changed 0.204032; |K| 7821 (7821 changed) of 12316; margin median 2.19, min 0.00509; 40 s
+[09:17:43] ITEM 3 of 20 DONE (ident32_s0)
+[09:17:44] rand32_s0: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[09:17:58]     site 0 (block 0, variables from 0): 788224 cases, 3048 needed so far; 788224 cases in 14 s (54886/s)
+[09:18:10]     site 1 (block 1, variables from 3079): 788224 cases, 5884 needed so far; 1576448 cases in 26 s (61232/s)
+[09:18:18]     site 2 (block 2, variables from 6158): 788224 cases, 8676 needed so far; 2364672 cases in 34 s (69328/s)
+[09:18:24]     site 3 (block 3, variables from 9237): 788224 cases, 11324 needed so far; 3152896 cases in 39 s (79919/s)
+[09:18:24] rand32_s0: E_b over K 0.142259, over all changed 0.142310; |K| 11324 (11324 changed) of 12316; margin median 1.25, min 0.00396; 40 s
+[09:18:24] ITEM 4 of 20 DONE (rand32_s0)
+[09:18:24] case_real_s0: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[09:18:39]     site 0 (block 0, variables from 0): 788224 cases, 2311 needed so far; 788224 cases in 14 s (55093/s)
+[09:18:50]     site 1 (block 1, variables from 3079): 788224 cases, 3956 needed so far; 1576448 cases in 26 s (61439/s)
+[09:18:58]     site 2 (block 2, variables from 6158): 788224 cases, 5549 needed so far; 2364672 cases in 34 s (69552/s)
+[09:19:04]     site 3 (block 3, variables from 9237): 788224 cases, 7124 needed so far; 3152896 cases in 39 s (80153/s)
+[09:19:04] case_real_s0: E_b over K 0.122461, over all changed 0.133066; |K| 7124 (7124 changed) of 12316; margin median 6.74, min 0.00736; 40 s
+[09:19:04] ITEM 5 of 20 DONE (case_real_s0)
+[09:19:05] case_twin_s0: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[09:19:19]     site 0 (block 0, variables from 0): 788224 cases, 2429 needed so far; 788224 cases in 14 s (54847/s)
+[09:19:30]     site 1 (block 1, variables from 3079): 788224 cases, 4377 needed so far; 1576448 cases in 26 s (61279/s)
+[09:19:39]     site 2 (block 2, variables from 6158): 788224 cases, 6375 needed so far; 2364672 cases in 34 s (69296/s)
+[09:19:44]     site 3 (block 3, variables from 9237): 788224 cases, 8383 needed so far; 3152896 cases in 39 s (79918/s)
+[09:19:44] case_twin_s0: E_b over K 0.086741, over all changed 0.091862; |K| 8383 (8383 changed) of 12316; margin median 2.19, min 6.96e-05; 40 s
+[09:19:44] ITEM 6 of 20 DONE (case_twin_s0)
+[09:19:45] repeat_real_s0: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[09:20:00]     site 0 (block 0, variables from 0): 788224 cases, 2337 needed so far; 788224 cases in 14 s (55083/s)
+[09:20:11]     site 1 (block 1, variables from 3079): 788224 cases, 3559 needed so far; 1576448 cases in 26 s (61537/s)
+[09:20:19]     site 2 (block 2, variables from 6158): 788224 cases, 4586 needed so far; 2364672 cases in 34 s (69701/s)
+[09:20:25]     site 3 (block 3, variables from 9237): 788224 cases, 5599 needed so far; 3152896 cases in 39 s (80372/s)
+[09:20:25] repeat_real_s0: E_b over K 0.089851, over all changed 0.104072; |K| 5599 (5599 changed) of 12316; margin median 2.83, min 0.0101; 41 s
+[09:20:25] ITEM 7 of 20 DONE (repeat_real_s0)
+[09:20:25] repeat_twin_s0: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[09:20:40]     site 0 (block 0, variables from 0): 788224 cases, 2642 needed so far; 788224 cases in 14 s (54913/s)
+[09:20:51]     site 1 (block 1, variables from 3079): 788224 cases, 4358 needed so far; 1576448 cases in 26 s (61322/s)
+[09:21:00]     site 2 (block 2, variables from 6158): 788224 cases, 5989 needed so far; 2364672 cases in 34 s (69435/s)
+[09:21:05]     site 3 (block 3, variables from 9237): 788224 cases, 7657 needed so far; 3152896 cases in 39 s (80043/s)
+[09:21:05] repeat_twin_s0: E_b over K 0.082191, over all changed 0.092895; |K| 7657 (7657 changed) of 12316; margin median 2.14, min 0.000247; 40 s
+[09:21:05] ITEM 8 of 20 DONE (repeat_twin_s0)
+[09:21:06] twin_s0: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[09:21:20]     site 0 (block 0, variables from 0): 788224 cases, 2706 needed so far; 788224 cases in 14 s (55028/s)
+[09:21:31]     site 1 (block 1, variables from 3079): 788224 cases, 5101 needed so far; 1576448 cases in 26 s (61435/s)
+[09:21:40]     site 2 (block 2, variables from 6158): 788224 cases, 7316 needed so far; 2364672 cases in 34 s (69534/s)
+[09:21:45]     site 3 (block 3, variables from 9237): 788224 cases, 9074 needed so far; 3152896 cases in 39 s (80089/s)
+[09:21:45] twin_s0: E_b over K 0.124891, over all changed 0.125740; |K| 9074 (9074 changed) of 12316; margin median 0.556, min 0.00174; 40 s
+[09:21:45] ITEM 9 of 20 DONE (twin_s0)
+[09:21:46] fact_s0: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[09:22:00]     site 0 (block 0, variables from 0): 788224 cases, 2767 needed so far; 788224 cases in 14 s (55144/s)
+[09:22:12]     site 1 (block 1, variables from 3079): 788224 cases, 5099 needed so far; 1576448 cases in 26 s (61568/s)
+[09:22:20]     site 2 (block 2, variables from 6158): 788224 cases, 7462 needed so far; 2364672 cases in 34 s (69687/s)
+[09:22:25]     site 3 (block 3, variables from 9237): 788224 cases, 9584 needed so far; 3152896 cases in 39 s (80307/s)
+[09:22:26] fact_s0: E_b over K 0.150636, over all changed 0.149096; |K| 9584 (9584 changed) of 12316; margin median 0.525, min 0.00026; 40 s
+[09:22:26] ITEM 10 of 20 DONE (fact_s0)
+[09:22:26] copy24_s1: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[09:22:41]     site 0 (block 0, variables from 0): 788224 cases, 2346 needed so far; 788224 cases in 14 s (55130/s)
+[09:22:52]     site 1 (block 1, variables from 3079): 788224 cases, 4017 needed so far; 1576448 cases in 26 s (61425/s)
+[09:23:00]     site 2 (block 2, variables from 6158): 788224 cases, 5415 needed so far; 2364672 cases in 34 s (69535/s)
+[09:23:06]     site 3 (block 3, variables from 9237): 788224 cases, 6906 needed so far; 3152896 cases in 39 s (80148/s)
+[09:23:06] copy24_s1: E_b over K 0.162728, over all changed 0.166721; |K| 6906 (6906 changed) of 12316; margin median 2.24, min 0.005; 40 s
+[09:23:06] ITEM 11 of 20 DONE (copy24_s1)
+[09:23:06] cipher24_s1: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[09:23:21]     site 0 (block 0, variables from 0): 788224 cases, 3042 needed so far; 788224 cases in 14 s (55143/s)
+[09:23:32]     site 1 (block 1, variables from 3079): 788224 cases, 5674 needed so far; 1576448 cases in 26 s (61576/s)
+[09:23:40]     site 2 (block 2, variables from 6158): 788224 cases, 8258 needed so far; 2364672 cases in 34 s (69744/s)
+[09:23:46]     site 3 (block 3, variables from 9237): 788224 cases, 10813 needed so far; 3152896 cases in 39 s (80391/s)
+[09:23:46] cipher24_s1: E_b over K 0.193575, over all changed 0.193197; |K| 10813 (10813 changed) of 12316; margin median 0.776, min 0.00202; 40 s
+[09:23:46] ITEM 12 of 20 DONE (cipher24_s1)
+[09:23:46] ident32_s1: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[09:24:01]     site 0 (block 0, variables from 0): 788224 cases, 2472 needed so far; 788224 cases in 14 s (55147/s)
+[09:24:12]     site 1 (block 1, variables from 3079): 788224 cases, 4444 needed so far; 1576448 cases in 26 s (61614/s)
+[09:24:20]     site 2 (block 2, variables from 6158): 788224 cases, 6354 needed so far; 2364672 cases in 34 s (69778/s)
+[09:24:26]     site 3 (block 3, variables from 9237): 788224 cases, 8315 needed so far; 3152896 cases in 39 s (80433/s)
+[09:24:26] ident32_s1: E_b over K 0.155367, over all changed 0.159697; |K| 8315 (8315 changed) of 12316; margin median 2.42, min 0.00031; 40 s
+[09:24:26] ITEM 13 of 20 DONE (ident32_s1)
+[09:24:26] rand32_s1: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[09:24:41]     site 0 (block 0, variables from 0): 788224 cases, 3008 needed so far; 788224 cases in 14 s (55125/s)
+[09:24:52]     site 1 (block 1, variables from 3079): 788224 cases, 5635 needed so far; 1576448 cases in 26 s (61517/s)
+[09:25:00]     site 2 (block 2, variables from 6158): 788224 cases, 8289 needed so far; 2364672 cases in 34 s (69607/s)
+[09:25:06]     site 3 (block 3, variables from 9237): 788224 cases, 10887 needed so far; 3152896 cases in 39 s (80193/s)
+[09:25:06] rand32_s1: E_b over K 0.175845, over all changed 0.176144; |K| 10887 (10887 changed) of 12316; margin median 1.25, min 0.000132; 40 s
+[09:25:06] ITEM 14 of 20 DONE (rand32_s1)
+[09:25:07] case_real_s1: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[09:25:21]     site 0 (block 0, variables from 0): 788224 cases, 2930 needed so far; 788224 cases in 14 s (55063/s)
+[09:25:32]     site 1 (block 1, variables from 3079): 788224 cases, 5603 needed so far; 1576448 cases in 26 s (61572/s)
+[09:25:41]     site 2 (block 2, variables from 6158): 788224 cases, 8228 needed so far; 2364672 cases in 34 s (69736/s)
+[09:25:46]     site 3 (block 3, variables from 9237): 788224 cases, 10709 needed so far; 3152896 cases in 39 s (80391/s)
+[09:25:46] case_real_s1: E_b over K 0.102131, over all changed 0.105498; |K| 10709 (10709 changed) of 12316; margin median 5.74, min 0.000508; 40 s
+[09:25:46] ITEM 15 of 20 DONE (case_real_s1)
+[09:25:47] case_twin_s1: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[09:26:01]     site 0 (block 0, variables from 0): 788224 cases, 2871 needed so far; 788224 cases in 14 s (55047/s)
+[09:26:12]     site 1 (block 1, variables from 3079): 788224 cases, 5192 needed so far; 1576448 cases in 26 s (61542/s)
+[09:26:21]     site 2 (block 2, variables from 6158): 788224 cases, 7547 needed so far; 2364672 cases in 34 s (69710/s)
+[09:26:26]     site 3 (block 3, variables from 9237): 788224 cases, 9851 needed so far; 3152896 cases in 39 s (80361/s)
+[09:26:26] case_twin_s1: E_b over K 0.103355, over all changed 0.106463; |K| 9851 (9851 changed) of 12316; margin median 2.29, min 0.00486; 40 s
+[09:26:26] ITEM 16 of 20 DONE (case_twin_s1)
+[09:26:27] repeat_real_s1: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[09:26:41]     site 0 (block 0, variables from 0): 788224 cases, 2846 needed so far; 788224 cases in 14 s (55171/s)
+[09:26:53]     site 1 (block 1, variables from 3079): 788224 cases, 5162 needed so far; 1576448 cases in 26 s (61590/s)
+[09:27:01]     site 2 (block 2, variables from 6158): 788224 cases, 7276 needed so far; 2364672 cases in 34 s (69731/s)
+[09:27:06]     site 3 (block 3, variables from 9237): 788224 cases, 9308 needed so far; 3152896 cases in 39 s (80387/s)
+[09:27:06] repeat_real_s1: E_b over K 0.156412, over all changed 0.157601; |K| 9308 (9308 changed) of 12316; margin median 1.92, min 0.00422; 40 s
+[09:27:06] ITEM 17 of 20 DONE (repeat_real_s1)
+[09:27:07] repeat_twin_s1: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[09:27:21]     site 0 (block 0, variables from 0): 788224 cases, 1608 needed so far; 788224 cases in 14 s (55168/s)
+[09:27:33]     site 1 (block 1, variables from 3079): 788224 cases, 2349 needed so far; 1576448 cases in 26 s (61642/s)
+[09:27:41]     site 2 (block 2, variables from 6158): 788224 cases, 2965 needed so far; 2364672 cases in 34 s (69818/s)
+[09:27:46]     site 3 (block 3, variables from 9237): 788224 cases, 3582 needed so far; 3152896 cases in 39 s (80423/s)
+[09:27:46] repeat_twin_s1: E_b over K 0.081340, over all changed 0.108974; |K| 3582 (3582 changed) of 12316; margin median 2.17, min 0.00737; 40 s
+[09:27:46] ITEM 18 of 20 DONE (repeat_twin_s1)
+[09:27:47] twin_s1: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[09:28:01]     site 0 (block 0, variables from 0): 788224 cases, 2804 needed so far; 788224 cases in 14 s (55151/s)
+[09:28:13]     site 1 (block 1, variables from 3079): 788224 cases, 5117 needed so far; 1576448 cases in 26 s (61622/s)
+[09:28:21]     site 2 (block 2, variables from 6158): 788224 cases, 7326 needed so far; 2364672 cases in 34 s (69790/s)
+[09:28:26]     site 3 (block 3, variables from 9237): 788224 cases, 9376 needed so far; 3152896 cases in 39 s (80448/s)
+[09:28:26] twin_s1: E_b over K 0.129397, over all changed 0.129785; |K| 9376 (9376 changed) of 12316; margin median 0.552, min 0.000995; 40 s
+[09:28:26] ITEM 19 of 20 DONE (twin_s1)
+[09:28:27] fact_s1: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[09:28:41]     site 0 (block 0, variables from 0): 788224 cases, 2272 needed so far; 788224 cases in 14 s (55053/s)
+[09:28:53]     site 1 (block 1, variables from 3079): 788224 cases, 3845 needed so far; 1576448 cases in 26 s (61546/s)
+[09:29:01]     site 2 (block 2, variables from 6158): 788224 cases, 5353 needed so far; 2364672 cases in 34 s (69712/s)
+[09:29:06]     site 3 (block 3, variables from 9237): 788224 cases, 6662 needed so far; 3152896 cases in 39 s (80385/s)
+[09:29:07] fact_s1: E_b over K 0.152164, over all changed 0.148968; |K| 6662 (6662 changed) of 12316; margin median 0.511, min 0.00166; 40 s
+[09:29:07] ITEM 20 of 20 DONE (fact_s1)
+[09:29:07] E321 (p165_cos2_k) DONE
+peak host RSS 6.4 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/p165_cos2_k/results/items/*.json /root/work/experiments/p165_cos2_k/results/large/items_*.npz ===
