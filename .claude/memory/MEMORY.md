@@ -124,3 +124,4 @@
 - [[cite] placeholders are my task](feedback-cite-placeholders-are-tasks.md) — grep for gaps every cleanup pass; index first, then web (user 2026-11-25)
 - [Rename: word swaps plain, rewrites green](feedback-word-swaps-plain-rewrites-green.md) — literal one-word renames uncoloured; reworded sentences \old/\new green; no find-and-replace (user 2026-11-26)
 - [No PDF builds or commits](feedback-no-pdf-builds-or-commits.md) — user builds main.pdf in TeXstudio; gitignored 11-26 (4ddd81f); re-track before the final push 11-29
+- [Audit figure task sets](feedback-audit-figure-task-sets.md) — Fig 2 sat on 5 pair-design tasks while other figs used 16; diff tasks x seeds x feats per figure each full check (user 2026-11-27)
