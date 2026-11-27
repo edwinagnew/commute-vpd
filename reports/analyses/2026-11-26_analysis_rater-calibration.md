@@ -4,7 +4,7 @@ Fresh blind raters (one Claude Opus and one GPT model, of the same families and 
 the realistic panel's raters) rated the sixteen known-answer tasks of Figure 3 twice. In the first run, three
 descriptions named the reuse construction outright. In the second, every key-to-word task was described alike, with
 three real example pairs and nothing about how the targets were chosen. In both runs no task built new was rated reuse
-and no task built to reuse was rated new, and the consensus tier of every task was the same. The raters read the
+and no task built to reuse was rated new, and the consensus tier of every task was unchanged between the two runs. The raters read the
 construction from the data themselves, not only from the wording. The tasks built new are still arbitrary word maps,
 unlike Figure 4's realistic tasks, so this checks the raters' reading of plain cases; it does not test the realistic
 tiers.
