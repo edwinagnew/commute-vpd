@@ -13,7 +13,7 @@ of the 48 fine-tuned states that Fig 4 plots, on three random weight changes, an
 know, first at the standard 200M training tokens and then again at four times that. The planted change is found at both
 lengths, but on the real fine-tunes the fine-tune-specific part stays near zero at four times the training, a random
 update still reads as more shared than most of them, and the two built sides still overlap. For `GOALS.md` the
-crosscoder offers no reading of reuse against new on this model, and the reason is not too little training.
+crosscoder offers no reading of reuse against new on this model, and the reason is not too little training, up to 800M tokens.
 
 *Figure pending (CPU worker down): `experiments/crosscoder_fig4/figures/crosscoder_fig4_lengths.png`, drawn by
 `plot.py`'s `draw_lengths`, puts each state's reading at 200M and 800M side by side in its task's column, with the
@@ -121,7 +121,7 @@ standard error comes from ten folds of whole windows in the same job.
 **Reading it.** Under the authors' published rule, the error-ratio cut-off of 0.2 and our bar of one half on the
 specific part, the two plants at the answer position pass at 800M. The half-window plant also passes at 200M. The
 content-independent plant misses under the literal filter at both lengths and passes under the floored one at both. In
-every crosscoder a single latent took that plant, with a decoder-norm ratio of 0.85 and 0.93 toward the fine-tuned
+every crosscoder at 200M a single latent took that plant (two latents at 800M under the floored filter), with a decoder-norm ratio of 0.85 and 0.93 toward the fine-tuned
 side at 200M. Its error ratio was 0.088 and 0.023 at 200M and 0.040 at 800M, well under the authors' cut-off. The
 literal filter drops it only because its original-model reconstruction coefficient came out negative. That
 coefficient was −3.1e-4 at crosscoder seed 0, against a floored bar of −0.0070, and −2.1e-4 at seed 1, against a bar of
@@ -258,7 +258,7 @@ on some cipher tasks built new and on Copy key, and exactly 0 on the rest. So th
 the change, and four times the training leaves it where it was: higher for a random update than for most trained ones,
 with one task's seeds spreading as widely as tasks differ and the two built sides overlapping. For `GOALS.md` the
 crosscoder joins the other model-diffing tools as a baseline whose values on Fig 4's states overlap between the two
-built sides; it gives no reading of reuse against new on this model, and longer training does not change that.
+built sides; it gives no reading of reuse against new on this model, and longer training, up to 800M tokens, does not change that.
 
 ## How compelling is the evidence
 
@@ -337,7 +337,7 @@ every side passed them at both lengths. No rerun is needed.
 
 Crosscoder of Minder et al. 2025, their code and recipe, at block 2: $d$, the shared minus the fine-tune-specific part
 of the change, one point per fine-tune seed, at 200M and at 800M training tokens. The fine-tune-specific part is near 0
-on every state at both lengths: at most 0.101 at 200M, on one seed of Copy key (96 keys), and at most 0.020 at 800M, so
+at both lengths: at most 0.005 on every state but one at 200M (0.101, Copy key (96 keys) seed 0) and at most 0.020 at 800M, so
 $d$ is the shared part. Random updates read 0.532 to 0.611 at 200M and 0.540 to 0.665 at 800M, above most states. The
 three fine-tune seeds of one task spread by up to 0.41; the two built sides overlap at both lengths. The planted
 control passes under the published rule at the answer position: on half the windows from 200M tokens, on every window
