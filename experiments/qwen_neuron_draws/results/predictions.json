@@ -1,0 +1,51 @@
+{
+ "experiment": "E???",
+ "cell": "P3.15",
+ "descriptive": true,
+ "descriptive_source": "user 2026-11-26 ~20:18, via whip-lead: \"if its missing data, run it yourself for anything indivudally under $100 and/or 6 hours\". No reading is called reuse or new; no claim at a bar",
+ "card": "~/commute-data/cards/P3.15-run1.md",
+ "filed": "2026-11-26, before any run; never edited after the run (a dated report instead)",
+ "question": "On the frozen-neuron decomposition p-015e0710, does the size-matched share comparison (E187) read the same with three Gaussian draws of the random reference per side as with one?",
+ "recipe": {
+  "reference": "P3.9 run 1's random change, KL-matched form only (experiments/qwen_library_share/run.py random_state, its _kl read; the _norm read is not made): iid Gaussian matrices, per matrix seed null_seed(draw_seed, site) = 1000 draw_seed + site index, scaled to the state's per-matrix Frobenius norms on the 84 MLP matrices (attention set to zero, own_sites), split, times the one factor b that brings its KL on 16 rows to the state's (qwen_reading.scale_search, kl_match as the Lab), read on the arm's 128 rows of 256 tokens. Each read is size_matched/qwen.py floor(), called unchanged",
+  "draws": "draw seeds 1 and 2 in this run; draw 0 is P3.9 run 1 (side reads) and E187 (floors)",
+  "side_reads": "per pair, save (last, 5x) and side: the random change at that side's seed-0 state, unscaled: results/<pair>/d<d>/side/<arm>_s0_<save>_kl.json (in these records 'larger' names the arm read and 'c' is 1)",
+  "floor_reads": "per pair and save: E187's floor, the random change at the larger side's seed-0 state times E187's c (size_matched/qwen.py cells): results/<pair>/d<d>/floor/<save>.json",
+  "pods": "one pod per pair (copy_cipher, facts, gold), both draws: 12 reads plus stage 0"
+ },
+ "controls_stop_on_miss": {
+  "W0": "W0 as the fine-tune on 16 rows of each of the pair's row sets: K00 = K01 = K0, and under the all-zero split K10 = K11 = K0, within the Lab's id_tol (P3.9's control, unchanged)",
+  "do_nothing": "the do-nothing state through the split path on side A's seed-0 last state: share 1 within id_tol",
+  "reproduce_d0": "draw 0's KL-matched random change at side A's seed-0 last state reproduces P3.9's saved results/p-015e0710/run1/<A>_s0_last_kl.json regating within E187's share_tol (0.0002, experiments/size_matched/results/predictions.json qwen.thresholds.share_tol): this proves the per-draw seeding path and the call into floor()",
+  "scored": "every random read 'scored' (floor()'s check, as P3.9 run 1 and E187)",
+  "K0": "every read's K0 over its 128 rows equals P3.9's floor for its row set within k0_tol (QS.read, unchanged)"
+ },
+ "expected": {
+  "W0": "K00 = K01 = K0, K10 = K11 = K0 (P3.9: exact to id_tol)",
+  "do_nothing": "share 1 exactly",
+  "reproduce_d0": "difference within 0.0002; same card class expected near 1e-6",
+  "random_scale": "b between about 30 and 500: P3.9 run 1 and E187's floors used 34.0 to 434.6 (the records' random.scale)",
+  "random_share_lean": "a lean, not a rule: each random share within the range P3.9 run 1 and E187's floors read, 0.81 to 1.06"
+ },
+ "description": {
+  "spread": "0.0019556570733518797, P3.9's (experiments/qwen_library_share/results/p-015e0710/predictions.json description.spread), unchanged",
+  "seed_gaps": "per pair and save, E187's matched gaps: side A's share minus side B's per seed 0-2, the larger side's states scaled by c (size_matched/results/qwen/<pair>/share/<save>/), the smaller side's P3.9 run 2 reads; recomputed by plot.py and asserted equal to E187's summary.json matched_gaps",
+  "random_gap_per_draw": "side A's random share minus side B's at draw d, the larger side's from its floor read and the smaller side's from its side read, as E187 signed it; None unless both reads are 'scored'",
+  "per_draw_call": "P3.9's and E187's rule, unchanged (qwen_library_share run.cell): band = |random gap of draw d| + spread; 'beyond band' if every |seed gap| > band with one sign, 'inside band' if |mean seed gap| <= band, 'mixed' else, 'unreadable' if under 3 seed gaps, any None, or the band None. Reported for each of draws 0, 1, 2",
+  "three_draw": "per comparison: the range (min, max) of the scored random gaps over draws 0-2, and 'all above' if every seed gap > max, 'all below' if every seed gap < min (strict, values rounded to 9 places), else 'not all outside'; 'unreadable' if no draw is scored. An unscored draw is reported with value None and left out of the range, which is then taken over the remaining draws (n_draws says how many)",
+  "unmatched_last": "per side, the last-save share of seeds 0-2 (P3.9 run 2) and the random share per draw at that side's seed-0 state (draw 0 P3.9 run 1, draws 1-2 this run's side reads), drawn as the paper's qwen_share frozen-neuron panel; no rule",
+  "edge_cases": {
+   "checked": "by hand against plot.py draw_range and run.cell on 2026-11-26 (cpu-run down: the compute node is completing); to be run on CPU as the pod's first step",
+   "seeds [0.005, 0.004, 0.0047], randoms [-0.0014, 0.001, 0.002]": "all above",
+   "seeds all below the smallest random gap": "all below",
+   "one draw unscored, randoms [None, 0.001, 0.002]": "range [0.001, 0.002], n_draws 2",
+   "no draw scored": "unreadable",
+   "a seed gap equal to the range's max": "not all outside (strict)",
+   "seeds on both sides of the range, [-0.01, 0.01, 0.02] against [-0.005, 0.005]": "not all outside",
+   "do-nothing: seeds and randoms all 0": "not all outside; per draw 'inside band'",
+   "all three draws equal": "range of zero width; the call reduces to the one-draw comparison of each seed gap against that gap"
+  }
+ },
+ "blind_to": "the share's own seed spread beyond seeds 0-2 and the random change's spread over states (every draw sits at the seed-0 state); it reads the random reference's draw-to-draw spread only",
+ "not_read": "the _norm form of the random change; draws at seeds 1-2's states; the VPD decomposition p-9707d6ff"
+}
