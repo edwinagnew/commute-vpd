@@ -1,0 +1,42 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+E325 start, feat sae, 1 items ['e62/copy_s0']; settings {'control': 'e62/copy_s0', 'tasks': ('e62/copy', 'e62/lookup', 'e46/ident32', 'e46/rand32', 'e53/lowercase', 'e53/cipher', 'e54/elicit', 'e54/cipher', 'e54/cipher_own', 'c3/rank1', 'c3/cipher', 'c3/copy'), 'overlap': {'e58/copy': 'copy', 'e58/rank1': 'rank1', 'e58/cipher': 'cipher', 'e58/prior_cipher': 'prior_cipher'}, 'seeds': (0, 1, 2), 'random_seed': 325000, 'split_tol': 1e-06, 'n_read': 512, 'read_seed': 195200, 'band': 'p97', 'sae_size': 'scored', 'sae_seed': 0, 'derangements': 4, 'examples': 64, 'seed': 268, 'rows': 1024, 'logit_rows': 8192, 'cache_batch': 32, 'ident_vars': 3, 'sae_err_rows': 64, 'sae_chunk': 32, 'repro': {'vpd': {'state': 'e58/cipher_s1', 'json': 'experiments/fig2_standard/results/items/vpd/trained__cipher_s1.json', 'npz': 'experiments/fig2_standard/results/large/vpd/trained__cipher_s1.npz'}, 'neurons': {'state': 'e58/copy_s0', 'json': 'experiments/ia3_control/results/items/full__copy_s0.json', 'npz': 'experiments/ia3_control/results/large/items_full__copy_s0.npz'}, 'sae': {'state': 'e58/cipher_s0', 'json': 'experiments/fig2_standard/results/items/sae/trained__cipher_s0.json', 'npz': 'experiments/fig2_standard/results/large/sae/trained__cipher_s0.npz'}}, 'repro_rel_tol': {'vpd': 0.0005, 'neurons': 5e-05, 'sae': 1e-06}}
+stage 0 sae do_nothing: {"experiment": "E325", "feat": "sae", "part": "do_nothing", "on": "e62/copy_s0", "n_changed": 0, "dd_max": 0.0, "E_b": 1.0, "seconds": 7.155065536499023, "card": "NVIDIA H100 80GB HBM3"}; checks hold
+    site 0 (block 0, variables from 0): 256 cases, 0 needed so far; 256 cases in 0 s (5406/s)
+    site 1 (block 0, variables from 16385): 256 cases, 0 needed so far; 512 cases in 0 s (8991/s)
+    site 2 (block 1, variables from 32770): 256 cases, 0 needed so far; 768 cases in 0 s (11830/s)
+    site 3 (block 1, variables from 49155): 256 cases, 0 needed so far; 1024 cases in 0 s (14018/s)
+    site 4 (block 2, variables from 65540): 256 cases, 0 needed so far; 1280 cases in 0 s (16057/s)
+    site 5 (block 2, variables from 81925): 256 cases, 0 needed so far; 1536 cases in 0 s (17757/s)
+    site 6 (block 3, variables from 98310): 256 cases, 0 needed so far; 1792 cases in 0 s (19513/s)
+    site 7 (block 3, variables from 114695): 256 cases, 0 needed so far; 2048 cases in 0 s (21060/s)
+stage 0 sae identity: {"experiment": "E325", "feat": "sae", "part": "identity", "item": "e62/copy_s0", "flips": 0, "max_dev": 3.719329833984375e-05, "min_margin": 0.0033941268920898438, "cases": 2048, "cases_per_s": 20799.829997021654, "n_windows": 512, "window_len": 8, "seconds": 0.3753330707550049, "card": "NVIDIA H100 80GB HBM3"}; checks hold
+stage 0 sae must_flip: {"experiment": "E325", "feat": "sae", "part": "must_flip", "item": "e62/copy_s0", "cases": 256, "n_differ": 256, "n_flipped": 256, "n_off_x_prime": 0, "max_dev": 1.239776611328125e-05, "seconds": 0.28021955490112305, "card": "NVIDIA H100 80GB HBM3"}; checks hold
+  512 windows of 8 tokens, read at -1, 131080 variables, 131080 changed, 256 pairs
+    site 0 (block 0, variables from 0): 307898 cases, 562 needed so far; 307898 cases in 6 s (54584/s)
+    site 1 (block 0, variables from 16385): 316841 cases, 1954 needed so far; 624739 cases in 11 s (54600/s)
+    site 2 (block 1, variables from 32770): 134289 cases, 2286 needed so far; 759028 cases in 13 s (56661/s)
+    site 3 (block 1, variables from 49155): 284433 cases, 3025 needed so far; 1043461 cases in 18 s (59575/s)
+    site 4 (block 2, variables from 65540): 94878 cases, 3364 needed so far; 1138339 cases in 19 s (61415/s)
+    site 5 (block 2, variables from 81925): 233248 cases, 4041 needed so far; 1371587 cases in 21 s (65249/s)
+    site 6 (block 3, variables from 98310): 147534 cases, 4476 needed so far; 1519121 cases in 22 s (68944/s)
+    site 7 (block 3, variables from 114695): 159300 cases, 5072 needed so far; 1678421 cases in 23 s (72544/s)
+stage 0 sae repro: {"experiment": "E325", "feat": "sae", "part": "repro", "state": "e58/cipher_s0", "E_b": 0.03583138042789829, "saved": 0.03583138042789829, "source": "experiments/fig2_standard/results/items/sae/trained__cipher_s0.json", "rel_dev": 0.0, "tol": 1e-06, "n_K_differ": 0, "size_K": 5072, "size_K_saved": 5072, "n_windows": 512, "seconds": 23.73456335067749, "card": "NVIDIA H100 80GB HBM3"}; checks hold
+STAGE 0 DONE (sae, rehearse)
+sae e62/copy_s0:
+  512 windows of 8 tokens, read at -1, 131080 variables, 131080 changed, 256 pairs
+    site 0 (block 0, variables from 0): 251493 cases, 580 needed so far; 251493 cases in 5 s (54586/s)
+    site 1 (block 0, variables from 16385): 243167 cases, 1816 needed so far; 494660 cases in 9 s (54589/s)
+    site 2 (block 1, variables from 32770): 118262 cases, 2136 needed so far; 612922 cases in 11 s (56842/s)
+    site 3 (block 1, variables from 49155): 253964 cases, 2775 needed so far; 866886 cases in 14 s (59940/s)
+    site 4 (block 2, variables from 65540): 130275 cases, 3148 needed so far; 997161 cases in 16 s (62891/s)
+    site 5 (block 2, variables from 81925): 190696 cases, 3553 needed so far; 1187857 cases in 18 s (66396/s)
+    site 6 (block 3, variables from 98310): 115166 cases, 3825 needed so far; 1303023 cases in 19 s (69741/s)
+    site 7 (block 3, variables from 114695): 133262 cases, 4226 needed so far; 1436285 cases in 20 s (73252/s)
+sae e62/copy_s0: E_b over K 0.033258 (leftovers dropped 0.143878); |K| 4226 (4226 changed) of 131080; 21 s
+ITEM 1 of 1 DONE (sae e62/copy_s0)
+STAGE 1 DONE (sae, rehearse)
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) rehearse sae in experiments/fig2_all_tasks/results ===
