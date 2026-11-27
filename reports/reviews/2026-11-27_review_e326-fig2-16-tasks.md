@@ -29,7 +29,7 @@ run_ident_diag.log}` at a44acab8; paper `figures/data/definition.csv` at origin/
 |---|---|---|---|
 | VPD | 0.015-0.062 | 0.012-0.017 | 0.003 to 0.045 (c3/cipher) |
 | top neurons (provisional) | 0.010-0.037 | 0.003-0.011 | 0.007 to 0.025 (e46/ident32) |
-| SAE | 0.025-0.063 | 0.006-0.020 | 0.015 to 0.049 (c3/cipher) |
+| SAE | 0.025-0.063 | 0.006-0.020 | 0.014 (e53/cipher, 0.01446) to 0.049 (c3/cipher) |
 
 Every task's trained mean is above its random mean at every featurization, but no gap passes 0.05. The SAE maximum,
 0.049, is close to 0.05, so the text should not say "well under". The mean trained share of the reuse tasks is below
@@ -54,3 +54,13 @@ that of the new tasks at all three featurizations (VPD 0.032 vs 0.041, neurons 0
 - Identity on all 12 new tasks' states (only 4 states were diagnosed), and the cause of the e62/e46 deviation.
 - Any re-read of the neuron rows after a fix.
 - The new caption and sec5 text, which are not written yet: checks 6-7 get re-run on writeup-lead's commit.
+
+## Re-check of the paper text (writeup-lead local c5a4d75 + 9028d99, 11-27 ~16:00)
+
+- c5a4d75: definition.csv's 288 trained rows equal E326's definition_rows.csv exactly, and the built rows are unchanged.
+  KEY_SIDE's reuse/new label matches known_states for all 16 tasks. Every single seed reads above its own random.
+- 9028d99 ranges and gaps (sec5:17, appI:39-43) match the table above; the SAE minimum gap is 0.014 (my table first said 0.015).
+- MUST: the caption's provisional note says "on two tasks' fine-tunes"; only four fine-tunes were checked, and two of them are off.
+- SHOULD: the caption cites tab:built for the built edits' windows, but that table covers only the copy edits, while Fig 2
+  also plots the induction, bigram and extra-draw edits. SHOULD: in appI, the 94-state read's random (0.011) sits next to
+  Fig 2's VPD randoms (0.012-0.017); name each one's run.
