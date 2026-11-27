@@ -38,6 +38,9 @@
     "band": "p97",
     "split_tol": 1e-06,
     "split_tol_source": "E226's filed split_tol (experiments/kstar_vpd/results/predictions.json), which E298 used (feats.py KV.bases(..., E226 split_tol)); load_config checks it",
+    "n_read": 512,
+    "read_seed": 195200,
+    "D_source": "the definition's D as E298 read it: old_tasks.task_windows(known_states.definition_task(state)) read half, then E221's subset (n_read 512, read_seed 195200: experiments/kstar_pairs/results/predictions.json, checked by load_config), read at the last of 8 positions. definition_task is the old_tasks.TASKS entry where E205 mapped the task (OT_NAMES), else E205's kv rule on the task's training windows file (E298's own path for e58; for e54/elicit keydependent_elicit windows_elicit.pt, for e54/cipher and e54/cipher_own windows_cipher.pt, approved by whip-lead 2026-11-27); check_states.py shows it gives E298's e58 D bit for bit",
     "sae_size": "scored",
     "sae_seed": 0,
     "sae_source": "E245's filed SAEs (experiments/sae_r_a/results/predictions.json: E234 scored, seed 0), as E298 loaded them; load_config checks it",
@@ -73,8 +76,7 @@
       "vpd": 0.0005,
       "neurons": 5e-05,
       "sae": 1e-06
-    },
-    "rows_source": "each state's rows (commute.known_states.rows) cut to end at the read position, toks[:, :pos + 1], as E298's windows ended at the read: later positions cannot affect the read (causal attention), so in the write pass they would only add write change the read never sees"
+    }
   },
   "readings": "E298's (eb.readings): E_b_K headline with the leftovers counted, E_b_K_no_leftover, leftover_share, size_K and counts, per item",
   "expected": {

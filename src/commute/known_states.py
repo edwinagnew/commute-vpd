@@ -9,6 +9,8 @@ reuse or new, from its pair) and E314's loader (experiments/sae_proxies/run.py `
              sibling's task (E314); e58 states read E147's held-out windows of the map (`windows`, its file: read_rows
              has no e58/prior_cipher, whose windows are open_pair amend6's)
   trained_by the experiment folder that saved the update file
+  old_task   the name of the definition's D task (`definition_task`): the `old_tasks.TASKS` entry E205 mapped the task
+             onto (held_model_size_matched OT_NAMES), else <rows> with '/' as '_', the kv entry E205 builds
 """
 
 from __future__ import annotations
@@ -19,6 +21,7 @@ from functools import cache
 from pathlib import Path
 from typing import Any
 
+from commute import old_tasks as OT
 from commute import windows as W
 from commute.jobs import EXPERIMENTS
 
@@ -26,6 +29,8 @@ KNOWN3 = EXPERIMENTS / "known_3seeds" / "results" / "known3.json"
 E299_S2 = EXPERIMENTS / "known_3seeds" / "results" / "stage2.json"
 E136_INV = EXPERIMENTS / "share_untrained" / "results" / "inventory.json"
 E147_INV = EXPERIMENTS / "refit_96key" / "results" / "inventory.json"
+OLD_TASK = {"c3/copy": "copy24", "c3/cipher": "cipher24", "c3/rank1": "rank1", "e46/ident32": "ident32", "e46/rand32": "rand32",
+            "e62/copy": "e62_copy", "e62/lookup": "e62_lookup", "e53/lowercase": "lowercase", "e53/cipher": "cipher50"}  # E205 OT_NAMES
 
 
 @dataclass(frozen=True)
@@ -39,6 +44,7 @@ class State:
     trained_by: str  # experiment folder that saved it
     rows: str  # the read task (windows.read_rows(rows, "held"); for e58, E147's windows below)
     windows: str | None  # e58 only: E147's windows file for the map (kv format, held-out part)
+    old_task: str  # the definition D task's name (`definition_task`)
 
 
 def _read(p: Path) -> dict[str, Any]:
@@ -71,7 +77,7 @@ def states() -> tuple[State, ...]:
                     assert out[name].side == side, name
                     continue
                 file, sha, rows, win = _locate(name)
-                out[name] = State(name, task, int(seed), side, file, sha, file.split("/")[1], rows, win)
+                out[name] = State(name, task, int(seed), side, file, sha, file.split("/")[1], rows, win, OLD_TASK.get(task, rows.replace("/", "_")))
     assert len(out) == 48 and len({s.task for s in out.values()}) == 16, (len(out), len({s.task for s in out.values()}))
     return tuple(out.values())
 
@@ -85,3 +91,17 @@ def rows(st: State) -> W.Rows:
     if st.windows is not None:
         return W._kv(st.rows, "held", W.REPO / st.windows)
     return W.read_rows(st.rows, "held")
+
+
+def definition_task(st: State) -> OT.OldTask:
+    """The task whose `old_tasks.task_windows` is the definition's D (E298's, through E221's World): the
+    `old_tasks.TASKS` entry where E205 mapped the task onto one (OT_NAMES); otherwise E205's rule for a key table
+    (held_model_size_matched `old_task`, with E221 `e187_task` keeping only the first file): a kv entry named and
+    grouped <rows> with '/' as '_', built from the windows file the task was trained on. That file is E147's map
+    windows for e58 (E298's own path) and E136's inventory file for e54 (keydependent_elicit windows_<elicit|cipher>.pt;
+    e54/cipher_own was trained on windows_cipher.pt, keydependent_elicit `finetunes`, so it reads e54/cipher's D)."""
+    if st.task in OLD_TASK:
+        return OT.TASKS[OLD_TASK[st.task]]
+    spec = {"format": "kv", "path": st.windows} if st.windows is not None else W.e136_tasks()[st.rows]
+    assert spec["format"] == "kv", (st.name, spec)
+    return OT.OldTask(st.old_task, "kv", st.old_task, {}, (W.REPO / spec["path"],))
