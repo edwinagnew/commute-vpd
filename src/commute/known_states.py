@@ -9,6 +9,9 @@ reuse or new, from its pair) and E314's loader (experiments/sae_proxies/run.py `
              sibling's task (E314); e58 states read E147's held-out windows of the map (`windows`, its file: read_rows
              has no e58/prior_cipher, whose windows are open_pair amend6's)
   trained_by the experiment folder that saved the update file
+  old_task   the definition's D (`old_tasks.TASKS` entry, `old_tasks.task_windows`), as E205 mapped known-answer tasks onto
+             them (held_model_size_matched OT_NAMES); None where no entry exists: the e58 tasks (E205 built their D from
+             E147's windows file) and e54/elicit, e54/cipher, e54/cipher_own (none)
 """
 
 from __future__ import annotations
@@ -26,6 +29,8 @@ KNOWN3 = EXPERIMENTS / "known_3seeds" / "results" / "known3.json"
 E299_S2 = EXPERIMENTS / "known_3seeds" / "results" / "stage2.json"
 E136_INV = EXPERIMENTS / "share_untrained" / "results" / "inventory.json"
 E147_INV = EXPERIMENTS / "refit_96key" / "results" / "inventory.json"
+OLD_TASK = {"c3/copy": "copy24", "c3/cipher": "cipher24", "c3/rank1": "rank1", "e46/ident32": "ident32", "e46/rand32": "rand32",
+            "e62/copy": "e62_copy", "e62/lookup": "e62_lookup", "e53/lowercase": "lowercase", "e53/cipher": "cipher50"}  # E205 OT_NAMES
 
 
 @dataclass(frozen=True)
@@ -39,6 +44,7 @@ class State:
     trained_by: str  # experiment folder that saved it
     rows: str  # the read task (windows.read_rows(rows, "held"); for e58, E147's windows below)
     windows: str | None  # e58 only: E147's windows file for the map (kv format, held-out part)
+    old_task: str | None  # the old_tasks.TASKS entry whose task_windows is the definition's D; None where none exists
 
 
 def _read(p: Path) -> dict[str, Any]:
@@ -71,7 +77,7 @@ def states() -> tuple[State, ...]:
                     assert out[name].side == side, name
                     continue
                 file, sha, rows, win = _locate(name)
-                out[name] = State(name, task, int(seed), side, file, sha, file.split("/")[1], rows, win)
+                out[name] = State(name, task, int(seed), side, file, sha, file.split("/")[1], rows, win, OLD_TASK.get(task))
     assert len(out) == 48 and len({s.task for s in out.values()}) == 16, (len(out), len({s.task for s in out.values()}))
     return tuple(out.values())
 

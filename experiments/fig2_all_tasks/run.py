@@ -4,12 +4,14 @@
 the featurization's swap test on 4 seeded derangements x 64 windows (`needed.derangements`, seed 268), every variable
 including the leftovers (VPD's per-matrix remainders, the pooled MLP remainders, the SAE error terms), E_b with the
 leftovers counted (`eb.eb`). Every reading is the library's (src/commute: eb, needed, needed_neurons, needed_sae,
-kstar_vpd, sae_feat, world, windows, items); README.md lists how the states' D differ from E298's.
+kstar_vpd, sae_feat, world, items, old_tasks, variable_read). D is the definition's, as E298 read it: the task's
+`old_tasks.task_windows` read half (shows, as many does-not and 2/3 as many far rows, 8-token windows), E221's
+seeded 512-window subset, read at the last position; README.md lists the per-task entries.
 
 States E298 read already are not read again: e58/{copy, rank1, cipher, prior_cipher}_s<0-2> are E298's trained
 states (the same E147 files); score.py takes their rows from E298. The 12 other tasks x 3 seeds are read here, each
 with one matched random by E290's recipe (`finetune.matched_random`: a Gaussian per tensor F changed, at the Frobenius
-norm of F - M on that tensor), seed random_seed + the state's index in `new_states`; rows cut at the read position.
+norm of F - M on that tensor), seed random_seed + the state's index in `new_states`.
 
 Every job runs stage 0 on its own card first (results/stage0/<feat>_<part>_<tag>.json, skipped once done; a miss
 stops the job): do-nothing (F = M on the control's D: 0 changed, dd max 0, E_b 1), identity (x' = x: 0 argmax
@@ -27,6 +29,7 @@ import argparse
 import json
 import time
 from dataclasses import asdict, dataclass
+from functools import cache
 from pathlib import Path
 from typing import Any
 
@@ -43,10 +46,11 @@ from commute import needed as IX
 from commute import needed_neurons as NN
 from commute import needed_sae as NS
 from commute import old_tasks as OT
-from commute import rho
+from commute import rho, vpd
 from commute import rule_retention as R
 from commute import sae_feat as SF
 from commute import stand_in as SI
+from commute import variable_read as VR
 from commute.finetune import matched_random
 from commute.jobs import (
     EXPERIMENTS,
@@ -67,7 +71,7 @@ PRED = RESULTS / "predictions.json"
 EXPERIMENT = json.loads(PRED.read_text())["experiment"]
 FEATS = ("vpd", "neurons", "sae")
 SAME_AS_E298 = ("band", "derangements", "examples", "seed", "rows", "logit_rows", "cache_batch", "ident_vars", "sae_err_rows", "sae_chunk", "repro_rel_tol")
-E298_AT = slice(-1, None)  # E237's read position (kstar_pairs LAST)
+DEF_AT = slice(-1, None)  # the definition D's read position, the last of 8 (E221 LAST), as E298 read it
 
 
 def log(msg: str) -> None:
@@ -86,6 +90,8 @@ class Config:  # filed in predictions.json "settings"
     seeds: tuple[int, ...]
     random_seed: int  # the random of new_states()[k] has seed random_seed + k
     split_tol: float  # VPD's split bases (E226)
+    n_read: int  # E221's subset of the task_windows read half (E298's D)
+    read_seed: int
     band: str  # E229's neuron band
     sae_size: str  # E234's SAEs as E245 (and E298) load them
     sae_seed: int
@@ -120,8 +126,12 @@ def load_config() -> Config:
     miss = [f"{k} {getattr(cfg, k)!r} != E298's {e298[k]!r}" for k in SAME_AS_E298 if getattr(cfg, k) != e298[k]]
     miss += [f"{k} {getattr(cfg, k)!r} != E245's {e245[k]!r}" for k in ("sae_size", "sae_seed") if getattr(cfg, k) != e245[k]]
     miss += [f"split_tol {cfg.split_tol} != E226's {e226['split_tol']}"] if cfg.split_tol != e226["split_tol"] else []
+    e221 = settings_of("kstar_pairs")
+    miss += [f"{k} {getattr(cfg, k)} != E221's {e221[k]}" for k in ("n_read", "read_seed") if getattr(cfg, k) != e221[k]]
     assert not miss, "not the sources' settings: " + "; ".join(miss)
     assert {s.task for s in KS.states()} == set(cfg.tasks) | set(cfg.overlap), "known_states' tasks are not this run's"
+    if none := sorted({s.task for s in KS.states() if s.task in cfg.tasks and s.old_task is None}):
+        raise SystemExit(f"STOP: no old_tasks entry (the definition's D) for {none}; not built here")
     return cfg
 
 
@@ -211,8 +221,21 @@ class SAE:
 # ---- states ------------------------------------------------------------------------------------------------------------
 
 
+@cache
+def _sets() -> Any:
+    return VR.make_sets(OT.DSizes(), vpd.tokenizer(), log)  # E221 World's sets and sizes (OT.DSizes defaults)
+
+
+def definition_D(old_task: str, cfg: Config) -> Tensor:
+    """E298's D of a task: the read half of `old_tasks.task_windows` (shows windows, as many does-not windows and 2/3
+    as many far rows, 8 tokens each, shuffled and halved), then E221's seeded subset (rule_retention_pairs `subset`:
+    the first n_read of a randperm seeded read_seed), on CPU."""
+    read = OT.task_windows(OT.TASKS[old_task], _sets(), OT.DSizes())[1]
+    return read[torch.randperm(read.shape[0], generator=torch.Generator().manual_seed(cfg.read_seed))[: cfg.n_read]]
+
+
 class States:
-    """F, M, D and the read position of a known-answer state (M the world's net; D its rows, read at .pos) or of its
+    """F, M, D and the read position of a known-answer state (M the world's net; D the definition's) or of its
     random; every update file read is listed with its sha256 (checked where known_states records one)."""
 
     def __init__(self, cfg: Config, w: World, files_path: Path) -> None:
@@ -232,13 +255,11 @@ class States:
         return IT.load_dw(IT.Item(name, st.file, st.sha256))
 
     def D(self, name: str) -> tuple[Tensor, slice]:
-        """The state's rows cut to end at the read position, as E298's windows did: later positions cannot affect the
-        read (causal attention), so in the write pass they would only add write change the read never sees."""
+        """The definition's D of the state's task, read at the last position (`definition_D`); one held at a time."""
         st = self.by[name]
-        if self._D is None or self._D[0] != st.rows:
-            r = KS.rows(st)
-            assert 0 <= r.pos < r.toks.shape[1], (st.rows, r.pos, tuple(r.toks.shape))
-            self._D = (st.rows, r.toks[:, : r.pos + 1].cuda(), slice(r.pos, r.pos + 1))
+        assert st.old_task is not None, name
+        if self._D is None or self._D[0] != st.old_task:
+            self._D = (st.old_task, definition_D(st.old_task, self.cfg).cuda(), DEF_AT)
         return self._D[1], self._D[2]
 
     def F(self, dw: dict[str, Tensor]) -> R.Model:
@@ -247,7 +268,7 @@ class States:
     def make(self, item: str) -> tuple[R.Model, Tensor, slice, dict[str, Any]]:
         name = item.removesuffix("_rand")
         st, (toks, at) = self.by[name], self.D(name)
-        rec: dict[str, Any] = {"state": name, "file": st.file, "rows": st.rows, "read_pos": at.start, "trained_by": st.trained_by}
+        rec: dict[str, Any] = {"state": name, "file": st.file, "old_task": st.old_task, "trained_by": st.trained_by}
         F = self.F(self.dw(name))
         if item.endswith("_rand"):  # E290's recipe (finetune.matched_random), this run's seed base
             dr, rnd = matched_random(F.net, self.M.net, self.cfg.random_seed + self.cfg.new_states().index(name))
@@ -370,7 +391,7 @@ def repro(feat: str, rd: Any, sts: States, cfg: Config) -> tuple[dict[str, Any],
     r, repo = cfg.repro[feat], EXPERIMENTS.parent
     saved = json.loads((repo / r["json"]).read_text())["E_b_K"]
     toks = e298_D(r["state"]).cuda()
-    got, arrays = read(rd, sts.F(sts.dw(r["state"])), sts.M, toks, E298_AT, cfg)
+    got, arrays = read(rd, sts.F(sts.dw(r["state"])), sts.M, toks, DEF_AT, cfg)
     mask = np.load(repo / r["npz"])["in_K"].astype(bool)
     tol, rel = cfg.repro_rel_tol[feat], abs(got["E_b_K"] - saved) / abs(saved)
     out = {"state": r["state"], "E_b": got["E_b_K"], "saved": saved, "source": r["json"], "rel_dev": rel, "tol": tol,

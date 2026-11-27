@@ -1,33 +1,30 @@
-"""E325 CPU check, no model, first on the pod (or `fleet/cpu-run --mem 8G python3 experiments/fig2_all_tasks/check_states.py`):
-the filed config loads, commute.known_states gives E314's 48 states (same file and rows), every new state's update
-file loads as 24 module-keyed matrices, and each read task's rows equal E314's (E136 load_read, target column cut)."""
+"""E325 CPU check, no model, first on the pod (or `fleet/cpu-run --mem 8G python3 experiments/fig2_all_tasks/check_states.py`).
+It checks the windows Fig 2 reads, the definition's D (`old_tasks.task_windows`), not E314's held-out rows: which new
+tasks have an old_tasks entry; that entry's saved states (seeds 0-1) are known_states' files; each entry's D is 512
+windows of 8 tokens (E298's n_windows and window_len); every new state's update file loads as 24 module-keyed
+matrices; then the filed config loads (it stops while any new task has no entry)."""
 
-import torch
+import json
+from types import SimpleNamespace
 
 from commute import items as IT
 from commute import known_states as KS
-from commute.jobs import load_experiment
+from commute import old_tasks as OT
+from commute.jobs import EXPERIMENTS, load_experiment
 
 M = load_experiment("fig2_all_tasks", "run")
-cfg = M.load_config()
-print("ITEMS", len(cfg.items()), cfg.items()[:3], flush=True)
-E314 = load_experiment("sae_proxies", "run")
-old = {s.name: s for s in E314.states()}
-for s in KS.states():
-    o = old[s.name]
-    assert (o.file, o.rows) == (s.file, s.rows), s.name
-print("known_states == E314's states (file, rows) on all 48", flush=True)
-for t, e in cfg.overlap.items():
-    for sd in cfg.seeds:
-        assert KS.by_name()[f"{t}_s{sd}"].file == f"experiments/refit_96key/results/large/dW_{e}_s{sd}.pt"
-seen = set()
-for n in cfg.new_states():
-    s = KS.by_name()[n]
-    dw = IT.load_dw(IT.Item(n, s.file, s.sha256))
-    print("STATE", n, s.rows, s.trained_by, len(dw), flush=True)
-    if s.rows not in seen:
-        seen.add(s.rows)
-        r = KS.rows(s)
-        o = E314.W.load_read(old[n].rows, old[n].spec)
-        ot = o.toks[:, : o.ci_len] if o.ci_len is not None else o.toks
-        print("ROWS", s.rows, tuple(r.toks.shape), "pos", r.pos, "same as E314:", torch.equal(ot, r.toks) and o.half == r.pos, flush=True)
+S = json.loads(M.PRED.read_text())["settings"]
+new = [s for s in KS.states() if s.task in S["tasks"]]
+print("NO OLD_TASKS ENTRY", sorted({s.task for s in new if s.old_task is None}), flush=True)
+for s in new:
+    if s.old_task is None:
+        continue
+    saved = OT.TASKS[s.old_task].states.get(s.seed)
+    assert saved is None or saved.resolve() == (EXPERIMENTS.parent / s.file).resolve(), (s.name, saved, s.file)
+    print("STATE", s.name, s.old_task, s.file, len(IT.load_dw(IT.Item(s.name, s.file, s.sha256))), flush=True)
+for ot in sorted({s.old_task for s in new if s.old_task}):
+    D = M.definition_D(ot, SimpleNamespace(n_read=S["n_read"], read_seed=S["read_seed"]))
+    print("D", ot, tuple(D.shape), flush=True)
+    assert tuple(D.shape) == (512, 8), (ot, D.shape)
+M.load_config()
+print("CONFIG OK", flush=True)
