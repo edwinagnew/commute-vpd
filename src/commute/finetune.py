@@ -58,6 +58,20 @@ def random_direction(dW: dict[str, Tensor], seed: int) -> dict[str, Tensor]:
     return out
 
 
+def matched_random(Fnet: Any, Mnet: Any, seed: int) -> tuple[dict[str, Tensor], dict[str, Any]]:
+    """E290's random (E277 needed_neurons.matched_random, moved here unchanged; the run.py keeps its copy as it ran): a
+    Gaussian per parameter tensor F changed, each at the Frobenius norm of F - M on that tensor (fp64), one generator
+    over F's named_parameters in order; keyed by parameter name."""
+    gen, out, mp = torch.Generator().manual_seed(seed), {}, dict(Mnet.named_parameters())
+    for k, p in Fnet.named_parameters():
+        d = (p.detach().double() - mp[k].detach().double()).norm()
+        if d > 0:
+            r = torch.randn(p.shape, generator=gen, dtype=torch.float32).double()
+            out[k] = (r * (d.cpu() / r.norm())).float().to(p.device)
+    size2 = sum(float((p.detach().double() - mp[k].detach().double()).pow(2).sum()) for k, p in Fnet.named_parameters())
+    return out, {"random_seed": seed, "n_tensors": len(out), "size2_F": size2, "size2_rand": sum(float(v.double().pow(2).sum()) for v in out.values())}
+
+
 def logits_of(net: nn.Module, tokens: Tensor) -> Tensor:
     with torch.autocast("cuda", dtype=torch.bfloat16, enabled=tokens.is_cuda):
         out = net(tokens)

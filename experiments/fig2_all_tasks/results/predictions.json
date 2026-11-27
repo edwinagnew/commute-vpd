@@ -34,7 +34,7 @@
       2
     ],
     "random_seed": 325000,
-    "random_seed_source": "the E-number times 1000 (E298's convention for its new randoms); the random of new_states()[k] has seed 325000 + k; recipe finetune.random_direction (a Gaussian per matrix at that matrix's Frobenius norm in the update, fp64 norms): E290's recipe (needed_neurons.matched_random) by the library's function",
+    "random_seed_source": "the E-number times 1000 (E298's convention for its new randoms); the random of new_states()[k] has seed 325000 + k; recipe E290's, unchanged (finetune.matched_random, moved from experiments/needed_neurons/run.py: a Gaussian per tensor F changed at the fp64 Frobenius norm of F - M, one generator over F's named_parameters), so one recipe across the figure. finetune.random_direction differs from it (norm of the saved dW, not of F - M after fp32 rounding; tensor order of the file, not of named_parameters; zero-norm tensors draw from the generator), so it is not used",
     "band": "p97",
     "split_tol": 1e-06,
     "split_tol_source": "E226's filed split_tol (experiments/kstar_vpd/results/predictions.json), which E298 used (feats.py KV.bases(..., E226 split_tol)); load_config checks it",
@@ -73,7 +73,8 @@
       "vpd": 0.0005,
       "neurons": 5e-05,
       "sae": 1e-06
-    }
+    },
+    "rows_source": "each state's rows (commute.known_states.rows) cut to end at the read position, toks[:, :pos + 1], as E298's windows ended at the read: later positions cannot affect the read (causal attention), so in the write pass they would only add write change the read never sees"
   },
   "readings": "E298's (eb.readings): E_b_K headline with the leftovers counted, E_b_K_no_leftover, leftover_share, size_K and counts, per item",
   "expected": {

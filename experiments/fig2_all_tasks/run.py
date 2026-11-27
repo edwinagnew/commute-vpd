@@ -8,8 +8,8 @@ kstar_vpd, sae_feat, world, windows, items); README.md lists how the states' D d
 
 States E298 read already are not read again: e58/{copy, rank1, cipher, prior_cipher}_s<0-2> are E298's trained
 states (the same E147 files); score.py takes their rows from E298. The 12 other tasks x 3 seeds are read here, each
-with one matched random (`finetune.random_direction`: a Gaussian per matrix at that matrix's Frobenius norm in the
-update, E290's recipe), seed random_seed + the state's index in `new_states`.
+with one matched random by E290's recipe (`finetune.matched_random`: a Gaussian per tensor F changed, at the Frobenius
+norm of F - M on that tensor), seed random_seed + the state's index in `new_states`; rows cut at the read position.
 
 Every job runs stage 0 on its own card first (results/stage0/<feat>_<part>_<tag>.json, skipped once done; a miss
 stops the job): do-nothing (F = M on the control's D: 0 changed, dd max 0, E_b 1), identity (x' = x: 0 argmax
@@ -47,7 +47,7 @@ from commute import rho
 from commute import rule_retention as R
 from commute import sae_feat as SF
 from commute import stand_in as SI
-from commute.finetune import random_direction
+from commute.finetune import matched_random
 from commute.jobs import (
     EXPERIMENTS,
     config_from_settings,
@@ -232,10 +232,13 @@ class States:
         return IT.load_dw(IT.Item(name, st.file, st.sha256))
 
     def D(self, name: str) -> tuple[Tensor, slice]:
+        """The state's rows cut to end at the read position, as E298's windows did: later positions cannot affect the
+        read (causal attention), so in the write pass they would only add write change the read never sees."""
         st = self.by[name]
         if self._D is None or self._D[0] != st.rows:
             r = KS.rows(st)
-            self._D = (st.rows, r.toks.cuda(), slice(r.pos, r.pos + 1))
+            assert 0 <= r.pos < r.toks.shape[1], (st.rows, r.pos, tuple(r.toks.shape))
+            self._D = (st.rows, r.toks[:, : r.pos + 1].cuda(), slice(r.pos, r.pos + 1))
         return self._D[1], self._D[2]
 
     def F(self, dw: dict[str, Tensor]) -> R.Model:
@@ -245,11 +248,12 @@ class States:
         name = item.removesuffix("_rand")
         st, (toks, at) = self.by[name], self.D(name)
         rec: dict[str, Any] = {"state": name, "file": st.file, "rows": st.rows, "read_pos": at.start, "trained_by": st.trained_by}
-        dw = self.dw(name)
-        if item.endswith("_rand"):
-            seed = self.cfg.random_seed + self.cfg.new_states().index(name)
-            dw, rec = random_direction(dw, seed), rec | {"random_of": name, "random_seed": seed}
-        return self.F(dw), toks, at, rec
+        F = self.F(self.dw(name))
+        if item.endswith("_rand"):  # E290's recipe (finetune.matched_random), this run's seed base
+            dr, rnd = matched_random(F.net, self.M.net, self.cfg.random_seed + self.cfg.new_states().index(name))
+            del F
+            F, rec = R.Model(OT.with_delta(self.w.net, dr).net), rec | rnd | {"random_of": name}
+        return F, toks, at, rec
 
 
 # ---- one read -----------------------------------------------------------------------------------------------------------
