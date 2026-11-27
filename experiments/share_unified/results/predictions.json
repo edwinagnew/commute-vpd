@@ -1,0 +1,41 @@
+{
+ "experiment": "E???",
+ "cell": "P2.90",
+ "note": "DRAFT by the code writer, to be filed by the lead. One re-gating share for the 67M and Qwen3-1.7B: r = mean over answers of (L01 - L00) / mean over answers of (T1 - T0) in the whole-answer log-odds log P(ans) - log(1 - P(ans)) (`commute.share.answer_logodds`; unit confirmed by whip-lead 2026-11-27). Two scripts: repro_67m.py and qwen_reread.py, each reading its own settings block.",
+ "settings": {
+  "repro_67m": {
+   "floor_abs": 0.002,
+   "floor_abs_source": "experiments/reading_refactor/results/reproduction.json: the same bf16 share re-read at batch 32 against 64 (e53/lowercase_s0, 0.75188 vs 0.75376, 0.0019) and a saved share against its re-read (lower_s0_step128, 0.0019); the same card and batch re-read bit for bit (c3/cipher_s0, e53/lowercase_s0@b32, |diff| <= 1e-16)",
+   "gain_floor": 1e-06,
+   "gain_floor_source": "E136 `.trained` (local_faith.route_split): |gain| >= 1e-6, two-sided",
+   "e58_batch": 64,
+   "e58_batch_source": "experiments/refit_96key/run.py inventory(): batch 64 for every e58 map",
+   "w0_task": "c3/cipher",
+   "zero_numerator": 0.0,
+   "zero_numerator_source": "experiments/share_untrained/results/predictions.json thresholds.zero_numerator (E136 stage 0 c)"
+  },
+  "qwen_reread": {
+   "arms": ["copy", "cipher", "known", "invented", "gold", "gold_shuf"],
+   "seeds": [0, 1, 2],
+   "save": "last",
+   "save_source": "P/figures/src/make_qwen_share.py: run2/<side>_s<seed>_last.json and run1/<side>_s0_last_kl.json",
+   "draw": 0,
+   "n16": 16,
+   "zero_rel_tol": 1e-06,
+   "zero_rel_tol_source": "experiments/qwen_reading/lab.py Config.id_tol (E57's W0 control, relative)",
+   "gain_floor": 1e-06,
+   "gain_floor_source": "the 67M's E136 floor, |gain| >= 1e-6 two-sided; no Qwen floor in this unit is recorded"
+  }
+ },
+ "expected": {
+  "repro_67m": {
+   "W0": "the zero update's numerator exactly 0 (stops the job otherwise)",
+   "per_state": "|new - old| <= floor_abs for each of the 48 states, old = known3.json's saved share (Fig known / tools_known 'Re-gating share' rows); on the card and batch E136 used, expected bit for bit",
+   "ans_vs_lo": "max |ans - lo| = 0 on every state: on one-token answers the whole-answer log-odds is steering.logodds_at exactly"
+  },
+  "qwen_reread": {
+   "W0": "per decomposition and row set, |numerator| <= zero_rel_tol x |mean L00| on 16 rows (stops the job otherwise)",
+   "other": "no bar: the fine-tunes' and random changes' shares in the new unit are described, not tested"
+  }
+ }
+}

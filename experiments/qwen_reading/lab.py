@@ -300,13 +300,29 @@ class Lab:
 
     # ------------------------------------------------------------------------- the cells
 
+    def passes(self, t: Tensor, c0: Counts | None = None, c1: Counts | None = None, row: int = 0) -> dict[str, Tensor]:
+        """The four forwards of one row t (1, L) on weight sets W0 and "FT": T0, T1 the target's logits, L00, L01 the
+        masked forward (Δ off) under the gates of W0's (g0) and FT's (g1) own forward; c0, c1 count g0, g1. The order
+        alternates with the weights loaded (one weight copy per row). Shared by `cells` (the KL cells) and
+        `commute.share_reading.lab_passes` (the re-gating share, P2.90)."""
+        model, comps, gamma, out = self.model, self.comps, self.gamma, {}
+        for key in (("FT", "W0") if self.weights.now == "FT" else ("W0", "FT")):
+            self.use(key)
+            logits, g = importances(model, t, gamma, comps)
+            if (c := c0 if key == "W0" else c1) is not None:
+                c.add_row(g, row=row)
+            T, L = ("T0", "L00") if key == "W0" else ("T1", "L01")
+            out[L], out[T] = masked_logits(model, t, comps, g), logits
+            del g
+        return out
+
     def cells(self, rows: Tensor, change: Any = None, c0: Counts | None = None, c1: Counts | None = None,
               tag: str = "") -> dict[str, list[float]]:
         """Per-row KL sums of one pass over rows, weights W0 and "FT". Original subcomponents (change None): K0, K00
         (g0, masks from W0's forward), K01 (g1, FT's forward); c0, c1 count g0, g1. A split `change` applied to the
         live columns: K10 (g0), K11 (g1). Masked forwards are Δ off, so the weights do not enter them; FT's own
         logits are its clean forward's. One weight copy per row (the order alternates)."""
-        model, comps, gamma, alive = self.model, self.comps, self.gamma, self.alive
+        model, comps, alive = self.model, self.comps, self.alive
         keys = ("K10", "K11") if change is not None else ("K00", "K01")
         out: dict[str, list[float]] = {k: [] for k in (keys if change is not None else ("K0", *keys))}
         keep = {s: lin.weight.data for s, lin in linears(model).items()}
@@ -315,22 +331,12 @@ class Lab:
         ctx = qwen_maps.applied(model, comps, alive, change, keep) if change is not None else nullcontext()
         with ctx:
             for i, r in enumerate(rows):
-                t, ci = r[None].to(DEV), {}
-                for key in (("FT", "W0") if self.weights.now == "FT" else ("W0", "FT")):
-                    self.use(key)
-                    logits, g = importances(model, t, gamma, comps)
-                    if (c := c0 if key == "W0" else c1) is not None:
-                        c.add_row(g, row=i)
-                    ci[key] = masked_logits(model, t, comps, g)
-                    del g
-                    if key == "W0" and change is None:
-                        out["K0"].append(kl(logits, ci["W0"]))
-                    if key == "FT":
-                        ci["ref"] = logits
-                    del logits
-                out[keys[0]].append(kl(ci["ref"], ci["W0"]))
-                out[keys[1]].append(kl(ci["ref"], ci["FT"]))
-                del ci
+                f = self.passes(r[None].to(DEV), c0, c1, i)
+                if change is None:
+                    out["K0"].append(kl(f["T0"], f["L00"]))
+                out[keys[0]].append(kl(f["T1"], f["L00"]))
+                out[keys[1]].append(kl(f["T1"], f["L01"]))
+                del f
                 if i == 0:
                     self.gpu_rule(f"cells {tag}")
         self.use("W0")
