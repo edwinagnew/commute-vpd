@@ -122,3 +122,4 @@
 - [Commits ready for "push once"](feedback-commits-ready-for-push-once.md) — keep held batches committed and built (worktree under an edit HOLD) so a push is immediate (user 2026-11-24)
 - [Push once = named batch only](feedback-push-once-covers-named-batch-only.md) — check git log origin/v2..HEAD; unasked commits must not ride along (abcb6b2, user 2026-11-24)
 - [[cite] placeholders are my task](feedback-cite-placeholders-are-tasks.md) — grep for gaps every cleanup pass; index first, then web (user 2026-11-25)
+- [Rename: word swaps plain, rewrites green](feedback-word-swaps-plain-rewrites-green.md) — literal one-word renames uncoloured; reworded sentences \old/\new green; no find-and-replace (user 2026-11-26)
