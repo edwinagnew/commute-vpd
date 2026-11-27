@@ -16,7 +16,7 @@ norm of F - M on that tensor), seed random_seed + the state's index in `new_stat
 Every job runs stage 0 on its own card first (results/stage0/<feat>_<part>_<tag>.json, skipped once done; a miss
 stops the job): do-nothing (F = M on the control's D: 0 changed, dd max 0, E_b 1), identity (x' = x: 0 argmax
 changes), SAE must_flip (every variable swapped at once gives F's argmax on x'), and the reproduction of one saved
-E298 read (its F from known_states' e58 file, its D E237's windows from key_grid's World, inputs only) within E298's
+E298 read (its F from known_states' e58 file, its D by `known_states.definition_task`, E298's rule) within E298's
 tolerance. Then its shard: each item to results/items/<feat>/ and results/large/<feat>/ as it lands, skipped when its
 JSON is there. Every state file read is listed with its sha256 in results/state_files/<feat>_<tag>.json.
 
@@ -130,8 +130,6 @@ def load_config() -> Config:
     miss += [f"{k} {getattr(cfg, k)} != E221's {e221[k]}" for k in ("n_read", "read_seed") if getattr(cfg, k) != e221[k]]
     assert not miss, "not the sources' settings: " + "; ".join(miss)
     assert {s.task for s in KS.states()} == set(cfg.tasks) | set(cfg.overlap), "known_states' tasks are not this run's"
-    if none := sorted({s.task for s in KS.states() if s.task in cfg.tasks and s.old_task is None}):
-        raise SystemExit(f"STOP: no old_tasks entry (the definition's D) for {none}; not built here")
     return cfg
 
 
@@ -226,11 +224,11 @@ def _sets() -> Any:
     return VR.make_sets(OT.DSizes(), vpd.tokenizer(), log)  # E221 World's sets and sizes (OT.DSizes defaults)
 
 
-def definition_D(old_task: str, cfg: Config) -> Tensor:
+def definition_D(st: KS.State, cfg: Any) -> Tensor:
     """E298's D of a task: the read half of `old_tasks.task_windows` (shows windows, as many does-not windows and 2/3
     as many far rows, 8 tokens each, shuffled and halved), then E221's seeded subset (rule_retention_pairs `subset`:
     the first n_read of a randperm seeded read_seed), on CPU."""
-    read = OT.task_windows(OT.TASKS[old_task], _sets(), OT.DSizes())[1]
+    read = OT.task_windows(KS.definition_task(st), _sets(), OT.DSizes())[1]
     return read[torch.randperm(read.shape[0], generator=torch.Generator().manual_seed(cfg.read_seed))[: cfg.n_read]]
 
 
@@ -257,9 +255,8 @@ class States:
     def D(self, name: str) -> tuple[Tensor, slice]:
         """The definition's D of the state's task, read at the last position (`definition_D`); one held at a time."""
         st = self.by[name]
-        assert st.old_task is not None, name
         if self._D is None or self._D[0] != st.old_task:
-            self._D = (st.old_task, definition_D(st.old_task, self.cfg).cuda(), DEF_AT)
+            self._D = (st.old_task, definition_D(st, self.cfg).cuda(), DEF_AT)
         return self._D[1], self._D[2]
 
     def F(self, dw: dict[str, Tensor]) -> R.Model:
@@ -374,23 +371,12 @@ def must_flip(rd: SAE, sts: States, cfg: Config) -> tuple[dict[str, Any], list[s
     return out, miss + ([f"{out['n_off_x_prime']} read cases off F's argmax on x'"] if out["n_off_x_prime"] else [])
 
 
-def e298_D(name: str) -> Tensor:
-    """E298's D of an e58 state: E237's windows (key_grid World `read`, E196's 512-window subset of E187's read half),
-    built by that World (inputs only); its model is dropped at once."""
-    KG: Any = load_experiment("key_grid", "run")
-    kg = KG.World(KG.load_config()[0])
-    toks = kg.read(kg.read_half187(kg.full["states"][name]["task"])).clone()
-    del kg
-    torch.cuda.empty_cache()
-    return toks
-
-
 def repro(feat: str, rd: Any, sts: States, cfg: Config) -> tuple[dict[str, Any], list[str]]:
     """E298's saved read of r["state"] read again here: E_b over K within E298's relative tolerance; K's members that
     differ from the saved K reported beside."""
     r, repo = cfg.repro[feat], EXPERIMENTS.parent
     saved = json.loads((repo / r["json"]).read_text())["E_b_K"]
-    toks = e298_D(r["state"]).cuda()
+    toks, _ = sts.D(r["state"])  # the e58 D through definition_task, as E298 read it (check_states shows it bit for bit)
     got, arrays = read(rd, sts.F(sts.dw(r["state"])), sts.M, toks, DEF_AT, cfg)
     mask = np.load(repo / r["npz"])["in_K"].astype(bool)
     tol, rel = cfg.repro_rel_tol[feat], abs(got["E_b_K"] - saved) / abs(saved)
@@ -421,9 +407,8 @@ def main(feat: str, shard: tuple[int, int], items: list[str] | None, tag: str) -
     sts = States(cfg, w, RESULTS / "state_files" / f"{feat}_{tag}.json")
     log(f"{EXPERIMENT} start, feat {feat}, {len(todo)} items {todo}; settings {asdict(cfg)}")
     if manifest_only():  # INPUT_MANIFEST_ONLY dry run: every load, no compute, no writes
-        for item in dict.fromkeys([cfg.control, *todo]):
+        for item in dict.fromkeys([cfg.control, cfg.repro[feat]["state"], *todo]):
             log(f"manifest {item}: {tuple(sts.make(item)[1].shape)}")
-        e298_D(cfg.repro[feat]["state"])
         return 0
     stage0(feat, rd, sts, cfg, tag)
     for k, item in enumerate(todo):
