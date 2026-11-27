@@ -9,7 +9,8 @@ variable per appended neuron (E195's "moved", c_fc row and down_proj column toge
 the unembedding (ln_f with it, last index). In param-decomp's layout U is (C, d_out), V (d_in, C), u_c = U[c],
 v_c = V[:, c], and W0 = sum_c u_c v_c^T + Delta. The fine-tune's delta-W is split by the least-squares split over all
 C subcomponents (fp64): dU, dV with delta-W_c = du_c v_c^T + u_c dv_c^T, and delta-W_out = delta-W - sum_c delta-W_c,
-so the split is exact by construction. Mechanisms on the input y of W: M's subcomponent u_c (v_c . y), F's
+so the split is exact by construction. `featurize(..., split="adjoint")` uses the unscaled adjoint split instead
+(P1.67, 2026-11-27; `_pieces`), with the same remainder rule. Mechanisms on the input y of W: M's subcomponent u_c (v_c . y), F's
 (u_c + du_c)(v_c . y) + u_c (dv_c . y); M's remainder Delta y, F's (Delta + delta-W_out) y.
 
 F_K (`Hybrid`): F's native forward minus, for every ablated variable, its mechanism applied to (x - x_bar), x_bar the
@@ -97,9 +98,22 @@ def _rel(a: Tensor, b: Tensor) -> float:
     return float((a - b).norm() / b.norm()) if b.any() else float((a - b).norm())
 
 
-def _site(name: str, off: int, WM: Tensor, WF: Tensor, U: Tensor, V: Tensor, delta: Tensor, b: SP.Basis) -> tuple[Site, dict[str, float]]:
+SPLITS = ("least_squares", "adjoint")
+
+
+def _pieces(dW: Tensor, b: SP.Basis, Ua: Tensor, Va: Tensor, split: str) -> tuple[Tensor, Tensor]:
+    """(dU, dV) in the theory layout. "adjoint" (P1.67, 2026-11-27) is `split.adjoint_split` unscaled (c = 1): its
+    first-order change K(dW) is not dW, and the remainder takes dW - K(dW), so the pieces still sum to dW."""
+    assert split in SPLITS, split
+    if not dW.any():
+        return torch.zeros_like(Ua), torch.zeros_like(Va)
+    return SP.adjoint_split(dW, Ua, Va) if split == "adjoint" else SP.least_squares_split(dW, b, Ua, Va)
+
+
+def _site(name: str, off: int, WM: Tensor, WF: Tensor, U: Tensor, V: Tensor, delta: Tensor, b: SP.Basis,
+          split: str = "least_squares") -> tuple[Site, dict[str, float]]:  # fmt: skip
     Ua, Va, dW = U.T.double(), V.double(), WF.double() - WM.double()
-    dUa, dVa = SP.least_squares_split(dW, b, Ua, Va) if dW.any() else (torch.zeros_like(Ua), torch.zeros_like(Va))
+    dUa, dVa = _pieces(dW, b, Ua, Va, split)
     wr, rd = dUa @ Va.T, Ua @ dVa.T  # write side sum_c du_c v_c^T, read side sum_c u_c dv_c^T
     out = dW - (wr + rd)
     C = U.shape[0]
@@ -127,12 +141,15 @@ def norm_shares(feat: Feat) -> dict[str, Any]:
     return {"per_matrix": per, "total": {n: sum(c[n] for c in feat.checks.values()) / tot for n in NORMS} if tot > 0 else None}
 
 
-def featurize(M: R.Model, F: R.Model, uv: dict[str, tuple[Tensor, Tensor]], delta: dict[str, Tensor], b: dict[str, SP.Basis]) -> Feat:
+def featurize(M: R.Model, F: R.Model, uv: dict[str, tuple[Tensor, Tensor]], delta: dict[str, Tensor], b: dict[str, SP.Basis],
+              split: str = "least_squares") -> Feat:  # fmt: skip
     """The variables of the pair (F, M) and their mechanisms. `uv`, `delta`: the decomposition's (U, V) and Delta per
-    matrix (`vpd.component_weights`, `vpd.weight_deltas`), keyed by module name."""
+    matrix (`vpd.component_weights`, `vpd.weight_deltas`), keyed by module name. `split`: how delta-W is split over the
+    subcomponents (`SPLITS`, `_pieces`); `b` is read by the least-squares split only."""
     sites, checks, changed, off = [], {}, set(), 1
     for k in sorted(uv):
-        s, checks[k] = _site(k, off, M.net.get_submodule(k).weight, F.net.get_submodule(k).weight, uv[k][0], uv[k][1], delta[k], b[k])
+        WM, WF = M.net.get_submodule(k).weight, F.net.get_submodule(k).weight
+        s, checks[k] = _site(k, off, WM, WF, uv[k][0], uv[k][1], delta[k], b[k], split)
         moved = (s.dU != 0).any(1) | (s.dV != 0).any(0)
         changed |= {off + int(c) for c in moved.nonzero().squeeze(1).tolist()} | ({s.rem} if bool((s.rf != s.rm).any()) else set())
         sites.append(s)
