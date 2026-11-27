@@ -1,0 +1,60 @@
+# E_TBD_RUN1 (p165_cos2_k) inputs. Not from a dry run (none was made: it loads the model); traced from the code
+# (run.py -> needed_neurons/run.py Trained -> topk_upper / topk_neurons setup -> rule_retention_pairs fine_tune) and
+# checked against E277's trained-world pod list (~/commute-data/scratch/definition-lead/e277-runner/man_trained.txt,
+# tar_list.txt), the run whose code path this one repeats. Sizes in bytes.
+#
+# 1. results/large files (each results/large is a symlink: it arrives on a pod dangling, and include= of a path under it
+#    sends nothing). Basenames repeat (task.pt, dW_real_s0.pt), so stage them as ONE tar in a flat root-level dir, e.g.
+#    p165r1_stage/inputs.tar, built with `tar -chf` from experiments/ (h follows the symlinks), and send it with
+#    sync(include=['p165r1_stage']); on the pod replace each results/large symlink with a real dir before untarring.
+#    e277t_stage/trained_inputs.tar (2,445,045,760 B, 2026-11-23) holds exactly these 29 paths; check it with
+#    `tar -dhf` from experiments/ or rebuild it. Total 2,445,015,991 B: 2.45 GB / 10 MB/s = 245 s, about 4 min.
+296773     experiments/topk_neurons/results/large/percentiles.pt
+536908     experiments/open_pair/results/large/amend1/windows_copy_trained.pt
+448124     experiments/open_pair/results/large/amend1/windows_copy_new.pt
+113253467  experiments/open_pair/results/large/amend1/copy_s0.pt
+113253467  experiments/open_pair/results/large/amend1/copy_s1.pt
+113254103  experiments/open_pair/results/large/cipher_s0.pt
+113254103  experiments/open_pair/results/large/cipher_s1.pt
+448146     experiments/open_pair/results/large/windows_cipher_new.pt
+537066     experiments/open_pair/results/large/windows_cipher_trained.pt
+113254133  experiments/regating_table/results/large/ident32_s0.pt
+113254133  experiments/regating_table/results/large/ident32_s1.pt
+113254103  experiments/regating_table/results/large/rand32_s0.pt
+113254103  experiments/regating_table/results/large/rand32_s1.pt
+580097     experiments/regating_table/results/large/windows_ident32.pt
+580146     experiments/regating_table/results/large/windows_rand32.pt
+56631029   experiments/case_label/results/large/dW_real_s0.pt
+56631029   experiments/case_label/results/large/dW_real_s1.pt
+56631029   experiments/case_label/results/large/dW_twin_s0.pt
+56631029   experiments/case_label/results/large/dW_twin_s1.pt
+4023686    experiments/case_label/results/large/task.pt
+56631029   experiments/fresh_reuse_pair/results/large/dW_real_s0.pt
+56631029   experiments/fresh_reuse_pair/results/large/dW_real_s1.pt
+56631029   experiments/fresh_reuse_pair/results/large/dW_twin_s0.pt
+56631029   experiments/fresh_reuse_pair/results/large/dW_twin_s1.pt
+7533629    experiments/fresh_reuse_pair/results/large/task.pt
+267737405  experiments/memorised_fact/results/large/fact_s0.pt
+267737405  experiments/memorised_fact/results/large/fact_s1.pt
+267738381  experiments/built_control_sum/results/large/amend1_control_s0.pt
+267738381  experiments/built_control_sum/results/large/amend1_control_s1.pt
+#
+# 2. artifacts/ (gitignored; on a pod fetch artifacts/vpd from W&B as earlier 67M pods did, ~45 MB/s, and stage the rest)
+2908595703 artifacts/vpd/s-55ea3f9b/model_400000.pth
+3087       artifacts/vpd/s-55ea3f9b/final_config.yaml
+267736421  artifacts/vpd/t-9d2b8f02/ckpt/model_step_99999.pt
+1318       artifacts/vpd/t-9d2b8f02/final_config.yaml
+323        artifacts/vpd/t-9d2b8f02/model_config.yaml
+134217856  artifacts/sets/train_0_32768.npy
+33554560   artifacts/sets/train_32768_8192.npy
+8192128    artifacts/sets/val_0_2000.npy
+#          artifacts/hf/hub/models--EleutherAI--gpt-neox-20b/ (the tokenizer: refs/main, special_tokens_map.json,
+#          tokenizer.json, tokenizer_config.json; a few MB)
+#
+# 3. Tracked files a plain sync() sends: every experiments/*/results/predictions.json the imports read (needed_neurons,
+#    topk_upper, topk_neurons, rule_retention_pairs, convergence_panel and their chains), and
+#    experiments/built_control_sum/results/amend1_stage0.json (2,179), experiments/topk_neurons/results/stage0.json (7,606).
+#    Move aside any results/stage0_trained_*.json of this folder before the first sync (a stale one skips stage 0).
+#
+# 4. CPU only, not on the pod (score.py, after the download): experiments/rho_saved_items/results/large/parts/<item>.npz
+#    (20 x ~0.4 MB) and the tracked rho_saved_items/results/{summary.json,items/*.json}.

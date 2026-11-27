@@ -1,0 +1,31 @@
+{
+  "experiment": "E_TBD_RUN2 (p165_gain_reads)",
+  "cell": "P1.65",
+  "filed": "2026-11-26, definition-lead (writer agent), before any GPU run of this experiment",
+  "plan": "reports/plans/2026-11-26_plan_p1-65-readthrough-fills.md",
+  "settings": {
+    "arm": "ffn",
+    "repeat_seed": 0,
+    "vpd_seeds": [1, 2],
+    "sae_seeds": [0, 1, 2],
+    "e298_predictions_sha256": "c204a7a61483020e3e12e0784e17b044aed6d9ef9fdffd14919a1269833d30fe",
+    "settings_source": "arm: E290's control arm (experiments/ia3_control/results/predictions.json control_arm, gains on down_proj's input only), whose 15 trained states are saved (ia3_control/results/large/gains_ffn_<task>_s{0,1,2}.pt). repeat_seed, vpd_seeds, sae_seeds: the plan's Run 2 ('VPD on 10 items (seeds 1, 2) plus seed 0 again (5 items) as the repeatability check ... and SAE on all 15'). Every read setting (derangements 4, examples 64, seed 268, rows, logit_rows, cache_batch, ident_vars, sae_err_rows, sae_chunk, control built/x2, tasks, seeds, band, repro_rel_tol) is E298's filed value, read from experiments/fig2_standard/results/predictions.json, whose sha256 at HEAD (2026-11-26) is pinned here; eb.check_sources checks E268's, E277's and E290's against it at start."
+  },
+  "readings": {
+    "E_b_K": "E298's (fig2_standard/eb.py readings): commute.stand_in.explained_share over K and changed, the featurization's leftovers counted (VPD's per-matrix remainders, the SAE's 8 error terms). K is E298's swap test at that featurization, 256 pairs. Blind to how much each variable matters for the behaviour (weighted by write change).",
+    "E_b_K_no_leftover": "the same with the leftovers dropped",
+    "leftover_share": "the leftovers' share of the write change dd over K and changed",
+    "repeat": "VPD seed 0 only: |E_b_K - E290's vpd/ffn__<task>_s0.json E_b_K| / E290's, against E298's repro_rel_tol['vpd'] (5e-4, from E298's measured 1.02e-4 on trained/elicit_s0)"
+  },
+  "rules": {
+    "R0": "E298's stage 0 on each job's card, at each featurization read (fig2_standard/run.py stage0 without E298's own reproductions): do_nothing (built/do_nothing: 0 changed, dd max exactly 0.0, E_b exactly 1.0), identity (x' = x on built/x2's first 64 windows: 0 argmax changes; the largest logit deviation is the floor, recorded), and at the SAE must_flip (0 read cases off F's argmax on x', some case differing). Any miss stops the job.",
+    "R_repeat": "Each VPD seed-0 item, as it lands: relative deviation from E290's saved E_b_K at most repro_rel_tol['vpd']; a miss stops the job before any later item. Seed-0 items are read first in each VPD shard.",
+    "read": "descriptive, no bar"
+  },
+  "expected": {
+    "stage0": "do_nothing: E_b 1, dd max 0, 0 changed. identity: 0 argmax changes, floor near E298's 5.15e-5 (VPD) and 2.16e-4 (SAE) on H100 (fig2_standard/results/run_vpd_s1_v0.log, run_sae_s1_s0.log). must_flip: every differing case flipped (E298: 10,248 of 10,248).",
+    "vpd": "seed 0 repeats E290's 0.0195-0.0719 (ia3_control/results/vpd/ffn__*_s0.json) within 5e-4 relative; seeds 1 and 2 near 0.02-0.07, since the reading follows the read step and the gains, which match across seeds (read step: copy 100 on every seed, the rest 300).",
+    "sae": "no value yet; prior near the full fine-tunes' 0.031-0.047 (fig2_standard/results/definition_rows.csv, block trained, side trained, feat SAE), with the error terms carrying a large share (leftover_share, reported beside the value).",
+    "time": "E298 on H100: about 130-154 s per VPD trained item (peak 13.4 GB) and 23-64 s per SAE item (peak 11.8 GB; copy the slowest) (fig2_standard/results/items/{vpd,sae}/trained__*_s1.json seconds, peak_gpu_gb); E290 197 s per VPD item on L40S (ia3_control/results/run_vpd_vD.log). VPD 15 items: 15 x 197 s = 49 min on L40S (two shards of about 25 min) or 15 x 154 s = 39 min on one H100; SAE 15 items: 15 x 30 s = 8 min on H100, about 12 min on L40S. Stage 0 about 1 min per featurization plus the model and world set-up."
+  }
+}
