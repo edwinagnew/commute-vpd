@@ -53,7 +53,8 @@ def shares(k: dict[str, float], n_pos: int) -> dict[str, Any]:
     """Re-gating and direct shares from the cells' per-row sums K00, K01, K10, K11, K0 over n_pos positions, with
     E45's status rule: 'nan' (a value missing or not finite), 'unscored' (K00 - K0 <= 0, K11 - K0 > 0.5 (K00 - K0),
     or a denominator under FLOOR in mean nats per position, den / n_pos) or 'scored'. The shares are given in every
-    case. (Amended 2026-10-30 before any run, per code review: the floor had been compared with sums.)"""
+    case. (Amended 2026-10-30 before any run, per code review: the floor had been compared with sums.) This KL ratio
+    is kept for the runs that read it; since P2.90 the re-gating share on Qwen is `commute.share`'s, as on the 67M."""
     K00, K01, K10, K11, K0 = (float(k.get(n, NAN)) for n in ("K00", "K01", "K10", "K11", "K0"))
     den = K00 - K11
     out = {"regating": div(K00 - K01, den), "direct": div(K00 - K10, den), "K11_minus_K0": K11 - K0,
@@ -64,8 +65,6 @@ def shares(k: dict[str, float], n_pos: int) -> dict[str, Any]:
     unscored = r9(gap) <= 0 or r9(K11 - K0) > r9(0.5 * gap) or n_pos <= 0 or r9(den / n_pos) < r9(FLOOR)
     return out | {"status": "unscored" if unscored else "scored"}
 
-
-kl_share = shares  # Qwen's re-gating share is this KL ratio, a different quantity from the 67M r (`commute.share`)
 
 
 def resample(n: int, boot: int, seed: int = 0) -> list[list[int]]:

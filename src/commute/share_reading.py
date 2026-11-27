@@ -1,11 +1,16 @@
-"""Shared steps for reading E57's re-gating share on Qwen3-1.7B through the Lab in experiments/qwen_reading/lab.py,
+"""Shared steps for reading the re-gating share on Qwen3-1.7B through the Lab in experiments/qwen_reading/lab.py,
 and for placing a reading against a random-change curve at its own output size (cell P3.10). The reading steps were
 first written in experiments/qwen_library_share/run.py (P3.8, P3.9), which stays as it ran.
 
-The cells are E57's, per row: K0 (W0 against its own masked forward), K00 and K01 (the changed model against the
-original subcomponents under W0's masks g0, and under the masks g1 of its own forward), K10 and K11 (the same with the
-change's least-squares split applied to the live subcomponents). Share = (K00 - K01) / (K00 - K11) over the rows, with
-`qwen_reading.shares`' status. A change's size is its K00 in mean nats per position over its rows.
+The share (P2.90, one share for the 67M and Qwen): `answer_cells` gives `commute.share`'s four cells T0, T1, L00, L01
+on a row set's whole trained answers (`answer_spans`), from the Lab's four forwards per row (`lab_passes`); the share
+is `commute.share.share` of them, in the whole-answer log-odds.
+
+The KL cells below are E57's, kept for the runs that read them (qwen_held_readings, qwen_share_reference and its
+repair; no paper figure reads them since P2.90): per row K0 (W0 against its own masked forward), K00 and K01 (the
+changed model against the original subcomponents under W0's masks g0, and under the masks g1 of its own forward), K10
+and K11 (the same with the change's least-squares split applied to the live subcomponents); their ratio (K00 - K01) /
+(K00 - K11) is `qwen_reading.shares`. A change's size is its K00 in mean nats per position over its rows.
 Tests: tests/test_share_reading.py (the search and the placement rule; no model).
 """
 
@@ -13,7 +18,7 @@ from __future__ import annotations
 
 import json
 import math
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
 from typing import Any
 
 import torch
@@ -21,8 +26,10 @@ from torch import Tensor
 from transformers import AutoTokenizer
 
 from commute import library_states as LS
+from commute import qwen_comparators as qc
 from commute import qwen_pairs as P
 from commute import qwen_reading as qr
+from commute import share as SH
 from commute.qwen_d3 import null_seed, pinned
 from commute.qwen_eval import MODEL, MODEL_REV
 from commute.qwen_vpd import SITES
@@ -33,20 +40,70 @@ ROWSETS = ("copy", "cipher", "known", "invented", "gold")  # the pair library's 
 def rows_of(rowset: str) -> Tensor:
     """A row set as the library built it (128 x 256): a built side's packed trained cue sequences, or gold's rows (E40's
     held-out problems with gold solutions)."""
-    if rowset == "gold":
-        return P.gold_rows(AutoTokenizer.from_pretrained(MODEL, revision=MODEL_REV)).tokens
-    return repacked(rowset, P.SEED)
+    return marked_rows(rowset, P.SEED).tokens
 
 
 def repacked(rowset: str, seed: int) -> Tensor:
     """A built side's trained cue sequences packed with `seed` (128 x 256); at qwen_pairs.SEED, the library's own rows
     (`qwen_pairs.own_rows`), at another seed the same sequences in other passes, neighbours and offsets."""
+    assert rowset != "gold", "gold's rows have one packing"
+    return marked_rows(rowset, seed).tokens
+
+
+def end_id() -> int:
+    return int(AutoTokenizer.from_pretrained(MODEL, revision=MODEL_REV).convert_tokens_to_ids("<|im_end|>"))
+
+
+def marked_rows(rowset: str, seed: int = P.SEED) -> qc.Rows:
+    """`rows_of` with its answer marks: per position, whether it predicts a token of a trained response (the
+    response's text and its end token, the tokens the library's training loss was taken over) and whether it predicts
+    a response's first token."""
     tok = AutoTokenizer.from_pretrained(MODEL, revision=MODEL_REV)
-    end_id = int(tok.convert_tokens_to_ids("<|im_end|>"))
-    return P.packed(rowset, P.cue_seqs(tok, end_id, P.tasks(LS.LIBRARY / "words.json")[rowset]["train"]), seed).tokens
+    if rowset == "gold":
+        return P.gold_rows(tok).rows
+    end = int(tok.convert_tokens_to_ids("<|im_end|>"))
+    return P.packed(rowset, P.cue_seqs(tok, end, P.tasks(LS.LIBRARY / "words.json")[rowset]["train"]), seed)
 
 
-# ----------------------------------------------------------------------------- the reading (GPU, through the Lab)
+def answer_spans(rows: qc.Rows, end: int) -> SH.Spans:
+    """The row set's whole answers: each trained response (text and end token) whose every token is predicted inside
+    one row (`share.spans_from_marks`); a response cut by a row's start or end is left out."""
+    return SH.spans_from_marks(rows.tokens, rows.answer, rows.first, end)
+
+
+# ----------------------------------------------------------------------------- the share (GPU, through the Lab)
+
+
+def lab_passes(lab: Any, rows: Tensor, on_row: Callable[[dict[str, Tensor]], None] | None = None) -> SH.Pass:
+    """`commute.share.Pass` of the Lab's four forwards, one row at a time (`Lab.passes`; weight sets "W0" and "FT"
+    as the caller set them); on_row sees each row's four logits first (e.g. for the KL cells beside)."""
+
+    def passes(s: int, e: int) -> Iterator[tuple[str, Tensor]]:
+        assert e == s + 1, "the Lab reads one row at a time"
+        f = lab.passes(rows[s:e].to(lab_dev(lab)))
+        if on_row is not None:
+            on_row(f)
+        yield from f.items()
+
+    return passes
+
+
+def lab_dev(lab: Any) -> Any:
+    return next(lab.model.parameters()).device
+
+
+def answer_cells(lab: Any, rows: Tensor, spans: SH.Spans,
+                 on_row: Callable[[dict[str, Tensor]], None] | None = None) -> SH.Cells:
+    """T0, T1, L00, L01 per whole answer of `spans` on `rows`, unit "ans" (`share.answer_logodds`); the weights are
+    back at W0 after."""
+    reads: dict[str, SH.Read] = {"ans": lambda lg, s, e: SH.answer_logodds(lg, spans.take(s, e))}
+    try:
+        return SH.cells(lab_passes(lab, rows, on_row), len(rows), 1, reads)
+    finally:
+        lab.use("W0")
+
+
+# ----------------------------------------------------------------------------- the KL reading (GPU, through the Lab)
 
 
 def total(rows: dict[str, list[float]]) -> dict[str, float]:

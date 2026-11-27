@@ -12,7 +12,7 @@ Tasks and kinds:
     case_label/*, fresh/*, e53/*, class/*)   held: the rows E136 read the share on (its windows.load_read)
   e53/<task> (lowercase, cipher, broad_cipher)  also train: E53's 2,000 hand-write windows (E143's steering fit rows)
   the kv tasks among them (e46, e54, c3, class)  also train: the file's training windows (E143's steering fit rows)
-  e58/<map> (open_pair amend3, 96 keys)       held: trained keys' held-out windows; held_new, held_full: new / all keys
+  e58/<map> (open_pair amend3, prior_cipher amend6; 96 keys)  held: trained keys' held-out windows; held_new, held_full: new / all keys
   panel/<task> (E272's wide set)              D: its 200 E_b windows (eb windows_manifest.json, tensor sha256)
   p256/<task> (addition, brackets, sequence)  D: E256's 256 held-out prompts (rb_states p256_windows_<task>.pt)
   rl/<behaviour> (repeat)                     D: E222's read rows (rb_states rl_windows_<behaviour>.pt)
@@ -216,9 +216,10 @@ def read_rows(task: str, kind: Kind) -> Rows:
         return _saved_d(task, RB_LARGE / f"{prefix}_{task.split('/', 1)[1]}.pt")
     if task.startswith("e58/") and kind in AMEND3_PART:
         name, part = task.removeprefix("e58/"), AMEND3_PART[kind]
-        sha = json.loads((AMEND3 / "amend3.json").read_text())["maps"][name]["sha256"][part]
+        amend = "amend6" if name == "prior_cipher" else "amend3"  # E147's inventory: prior_cipher's windows are amendment 6's
+        sha = json.loads((AMEND3 / f"{amend}.json").read_text())["maps"][name]["sha256"][part]
         file = f"windows_{name}.pt" if part == "full" else f"windows_{name}_{part}.pt"  # full: the uncut source file (heldout_keys.split_task)
-        return _kv(task, kind, AMEND3 / "large" / "amend3" / file, sha)
+        return _kv(task, kind, AMEND3 / "large" / amend / file, sha)
     spec = e136_tasks().get(task)
     fmt = None if spec is None else spec["format"]
     if spec is None or not (kind == "held" or (kind == "train" and fmt == "kv")):
