@@ -10,7 +10,7 @@ d sigma(dU, dV) = dU V_A^T + U_A dV^T has Gram operator K(X) = U_A U_A^T X + X V
 tol * max is treated as zero, so `tol` sets which directions count as expressible.
 - Obstruction O(M) = P_U^perp M P_V^perp: the entries (i, j) with s_i = t_j = 0 (Corollary 1).
 - Least-squares (minimum-norm) split of M: X = K^+ M, dU = X V_A, dV = X^T U_A (section 5.1, instance 1). The adjoint
-  split, dU = M V_A, dV = M^T U_A (K applied to M, no solve), is not implemented yet.
+  split, dU = M V_A, dV = M^T U_A (K applied to M, no solve), is `adjoint_split`.
 """
 
 from __future__ import annotations

@@ -1,0 +1,38 @@
+{
+  "experiment": "E###",
+  "cell": "P1.67",
+  "filed": "2026-11-27, regating-lead (writer agent), before any GPU run of this experiment",
+  "settings": {
+    "items": ["x2", "x10", "rebuilt", "random_size_241001", "new_few", "new_thin", "random_kl_241002"],
+    "control": "x2",
+    "rescan": "new_thin",
+    "derangements": 4,
+    "examples": 64,
+    "seed": 268,
+    "rows": 1024,
+    "logit_rows": 8192,
+    "cache_batch": 32,
+    "ident_vars": 3,
+    "gain_batch": 8,
+    "repro_rel_tol": 1e-4,
+    "settings_source": "items: E268's seven built items (experiments/kstar_needed/results/predictions.json settings.built; tab:built's five copy24 edits and its two shared randoms), ordered so that --shard I 4 gives each of four pods one 41-position item (x2, x10, rebuilt, random_size_241001, ~1,445 s each in E268) and the 512-window items (~510 s) fill in; the do-nothing is read in stage 0. control: E268's. rescan: new_thin, the thin new edit the cell is about and the cheapest scan (505 s in E268). derangements, examples, seed, rows, logit_rows, cache_batch, ident_vars: E268's filed values, unchanged, so the adjoint K is found by the same scan as the least-squares K. gain_batch: E247's write pass batch (experiments/thin_edit_diagnosis/run.py, E242's gain_batch 8), whose num, den, dd E268 scored. repro_rel_tol: E298's largest measured VPD reproduction deviation of E_b_K on an H100, 1.0e-4 relative (experiments/fig2_standard/results/stage0/vpd_repro_trained__elicit_s0_r0.json, 10 K members differing; on built items 5.9e-10 for x2 with K identical, 4.0e-10 for head_v2 with 7 differing). A write pass over a fixed K should sit far below it; the bar is only there to stop the job if the least-squares path changed."
+  },
+  "readings": {
+    "E_b_K": "rho at VPD: commute.stand_in.explained_share(num, den, dd, K and changed), num, den, dd from stand_in.write_change over every position of D in F's own run, K by commute.needed.needed_set on the same featurization. 1 when K has no changed member. Blind to how much each variable matters for the behaviour (it weighs by write change). Positive control: the do-nothing (1 exactly) and the gain edits x2 and x10, which are built by scaling existing copy neurons and so should be explained by gains",
+    "E_b_over_E268_K": "adjoint arm only: the same share over E268's least-squares K: the split's effect on the write share with the variable set held fixed",
+    "size_K, size_K_E268, size_both, n_changed, n_changed_K": "|K| under the arm's split, |K| of E268, their overlap, the changed variables, and K's changed members",
+    "shares_of_dW2": "kstar_vpd.norm_shares total: the summed write side, read side, outside part (the remainder's dW_out) and the two cross terms as shares of |delta-W|^2 over the 24 matrices. Under the unscaled adjoint split K(dW) need not equal dW in size, so the outside share says how much of the update the remainders carry"
+  },
+  "split_choice": "The adjoint split is used unscaled (c = 1). split.adjoint_scale's c = argmin ||(c K(M) - M) Sigma^1/2||_F needs each matrix's input second moments Sigma on some data, and the docstring notes K depends on the gauge of (U_A, V_A), which the release fixes. Scaling would add a fitted, data-dependent number per matrix to the featurization; the cell asks for the adjoint split itself, with the remainder taking the rest so the weights sum to F (kstar_vpd._pieces). Since every piece sums to delta-W exactly either way, c only moves change between the subcomponents and the remainders, which shares_of_dW2 reports.",
+  "rules": {
+    "R0a": "Stage 0 stops the job unless the do-nothing (F = M) has, under each split, no changed variable, every dd exactly 0.0 and E_b exactly 1.0",
+    "R0b": "Stage 0 stops the job on any argmax change under the identity interchange (x' = x) on x2's first 64 windows under the adjoint featurization (three subcomponents and the remainder of every matrix, all 41 read positions); its largest logit deviation is recorded, not barred",
+    "R0c": "Stage 0 stops the job unless, for every item, a fresh least-squares write pass scored over E268's saved K gives E268's E_b_K within repro_rel_tol relative. Stage 1 stops the job the same way unless new_thin's rescanned least-squares E_b_K is within repro_rel_tol of E268's",
+    "items": "descriptive, no rule: no verdict under either wording until the user adopts one (CLAUDE.md, P1.1); rivals in the card"
+  },
+  "expected": {
+    "stage0": "do-nothing under both splits: 0 changed, dd 0.0, E_b 1.0. Identity under the adjoint split: 0 argmax changes, largest logit deviation about 5e-5 (E268's least-squares value on x2, 5.15e-5). Least squares over E268's K, within 1e-4 relative of: x2 0.761391, x10 0.761313, rebuilt 0.623324, random_size_241001 0.010998, new_few 0.012698, new_thin 0.018783, random_kl_241002 0.010562 (experiments/kstar_needed/results/items/<item>.json E_b_K)",
+    "stage1": "new_thin least squares rescanned: E_b_K 0.018783 within 1e-4 relative, |K| equal to E268's or within a few members",
+    "stage2": "adjoint, descriptive. do-nothing 1 (stage 0). Rival a (the adjoint split separates more cleanly): new_thin and new_few at or below their least-squares 0.019 and 0.013, x2 and x10 nearer 1 than their least-squares 0.76, the two randoms at or below 0.011. Rival b (no different): every item within the scan's measured noise of its least-squares value, 0.003 (the sd of E_b_K between two scan seeds on one built edit, induction x2 seeds 268 and 269, 0.7134 and 0.7098, figures/data/definition.csv rows E301). Anything else (for example the gain edits lower, or the new edits higher) is reported as read"
+  }
+}
