@@ -95,7 +95,10 @@ def spans_from_marks(toks: Tensor, answer: Tensor, first: Tensor, end_id: int) -
             while q + 1 < len(a) and a[q + 1] and not f[q + 1]:
                 q += 1
             if f[p] and q + 1 < len(t) and t[q + 1] == end_id:
-                row.append(i), start.append(p), n.append(q - p + 1), ids.append(t[p + 1 : q + 2])
+                row.append(i)
+                start.append(p)
+                n.append(q - p + 1)
+                ids.append(t[p + 1 : q + 2])
             p = q + 1
     J = max(n, default=1)
     pad = torch.zeros(len(ids), J, dtype=torch.long)
@@ -180,7 +183,7 @@ def share_cells(model: Any, W0: Mapping[str, Tensor], dW: ST.DW, rows: Rows, uni
     """T0, T1, L00, L01 per row of rows.toks and unit, read at rows.pos (see the module docstring)."""
     tgt = rows.tgt
     assert tgt is not None, f"{rows.task} {rows.kind}: no target per row"
-    reads = {u: (lambda lg, s, e, f=f: f(lg, rows.pos, tgt[s:e])) for u, f in units.items()}
+    reads = {u: (lambda lg, s, e, f=f, tgt=tgt: f(lg, rows.pos, tgt[s:e])) for u, f in units.items()}
     return cells(model_passes(model, W0, dW, rows.toks), len(rows.toks), batch, reads)
 
 
