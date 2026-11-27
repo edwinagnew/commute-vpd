@@ -60,8 +60,8 @@ E136's saved gains exactly. No token crossed Kissane's outlier threshold. Random
 **Reading it, the two shares.** Each part alone restores most of the gain, so neither share locates it. The error
 share reads 0.52 to 0.74 on tasks built to reuse and 0.62 to 0.86 on tasks built to be new. The reconstruction share
 reads 0.67 to 0.98 on reuse tasks and 0.40 to 0.73 on new ones; only `e53/cipher` is under one half. The sum is 1.26
-to 1.64 on every task, nowhere near one, so the two parts are not additive: the gain is carried redundantly, and either
-part alone brings back much of it. The reconstruction share rises with the re-gating share more cleanly than the error
+to 1.64 on every task, nowhere near one, so the two parts are not additive, and either part alone brings back much of the
+gain; redundancy and a non-linear interaction would both give such a sum. The reconstruction share rises with the re-gating share more cleanly than the error
 share falls. Still, `e62/lookup`, a new task at 0.72 to 0.73, sits beside the reuse tasks `c3/rank1`, `e58/rank1` and
 `e54/elicit` at 0.67 to 0.73.
 
