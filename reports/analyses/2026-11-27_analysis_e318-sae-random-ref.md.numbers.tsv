@@ -1,0 +1,74 @@
+12.5	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "c3/cipher") | .gain] | min	earlier
+12.9	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "c3/cipher") | .gain] | max	earlier
+1.02	experiments/sae_proxies/results/results_random.json	[.draws[] | select(.status == "ok" and .task == "c3/cipher") | .gain] | min	this
+1.08	experiments/sae_proxies/results/results_random.json	[.draws[] | select(.status == "ok" and .task == "c3/cipher") | .gain] | max	this
+0.77	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "c3/cipher") | .error_share] | min	earlier
+0.77	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "c3/cipher") | .error_share] | max	earlier
+1.08	experiments/sae_proxies/results/results_random.json	[.draws[] | select(.status == "ok" and .task == "c3/cipher") | .error_share] | min	this
+1.34	experiments/sae_proxies/results/results_random.json	[.draws[] | select(.status == "ok" and .task == "c3/cipher") | .error_share] | max	this
+0.56	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "c3/cipher") | .recon_share] | min	earlier
+0.61	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "c3/cipher") | .recon_share] | max	earlier
+0.70	experiments/sae_proxies/results/results_random.json	[.draws[] | select(.status == "ok" and .task == "c3/cipher") | .recon_share] | min	this
+0.97	experiments/sae_proxies/results/results_random.json	[.draws[] | select(.status == "ok" and .task == "c3/cipher") | .recon_share] | max	this
+13.2	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e46/rand32") | .gain] | min	earlier
+13.7	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e46/rand32") | .gain] | max	earlier
+1.01	experiments/sae_proxies/results/results_random.json	[.draws[] | select(.status == "ok" and .task == "e46/rand32") | .gain] | min	this
+1.05	experiments/sae_proxies/results/results_random.json	[.draws[] | select(.status == "ok" and .task == "e46/rand32") | .gain] | max	this
+0.74	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e46/rand32") | .error_share] | min	earlier
+0.74	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e46/rand32") | .error_share] | max	earlier
+1.21	experiments/sae_proxies/results/results_random.json	[.draws[] | select(.status == "ok" and .task == "e46/rand32") | .error_share] | min	this
+1.34	experiments/sae_proxies/results/results_random.json	[.draws[] | select(.status == "ok" and .task == "e46/rand32") | .error_share] | max	this
+0.60	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e46/rand32") | .recon_share] | min	earlier
+0.65	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e46/rand32") | .recon_share] | max	earlier
+0.66	experiments/sae_proxies/results/results_random.json	[.draws[] | select(.status == "ok" and .task == "e46/rand32") | .recon_share] | min	this
+0.83	experiments/sae_proxies/results/results_random.json	[.draws[] | select(.status == "ok" and .task == "e46/rand32") | .recon_share] | max	this
+10.9	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e54/cipher") | .gain] | min	earlier
+11.1	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e54/cipher") | .gain] | max	earlier
+1.03	experiments/sae_proxies/results/results_random.json	[.draws[] | select(.status == "ok" and .task == "e54/cipher") | .gain] | min	this
+1.09	experiments/sae_proxies/results/results_random.json	[.draws[] | select(.status == "ok" and .task == "e54/cipher") | .gain] | max	this
+0.76	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e54/cipher") | .error_share] | min	earlier
+0.79	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e54/cipher") | .error_share] | max	earlier
+1.01	experiments/sae_proxies/results/results_random.json	[.draws[] | select(.status == "ok" and .task == "e54/cipher") | .error_share] | min	this
+1.46	experiments/sae_proxies/results/results_random.json	[.draws[] | select(.status == "ok" and .task == "e54/cipher") | .error_share] | max	this
+0.56	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e54/cipher") | .recon_share] | min	earlier
+0.61	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e54/cipher") | .recon_share] | max	earlier
+0.75	experiments/sae_proxies/results/results_random.json	[.draws[] | select(.status == "ok" and .task == "e54/cipher") | .recon_share] | min	this
+0.99	experiments/sae_proxies/results/results_random.json	[.draws[] | select(.status == "ok" and .task == "e54/cipher") | .recon_share] | max	this
+20.2	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e54/cipher_own") | .gain] | min	earlier
+20.8	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e54/cipher_own") | .gain] | max	earlier
+1.01	experiments/sae_proxies/results/results_random.json	[.draws[] | select(.status == "ok" and .task == "e54/cipher_own") | .gain] | min	this
+1.06	experiments/sae_proxies/results/results_random.json	[.draws[] | select(.status == "ok" and .task == "e54/cipher_own") | .gain] | max	this
+0.69	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e54/cipher_own") | .error_share] | min	earlier
+0.73	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e54/cipher_own") | .error_share] | max	earlier
+0.97	experiments/sae_proxies/results/results_random.json	[.draws[] | select(.status == "ok" and .task == "e54/cipher_own") | .error_share] | min	this
+0.99	experiments/sae_proxies/results/results_random.json	[.draws[] | select(.status == "ok" and .task == "e54/cipher_own") | .error_share] | max	this
+0.65	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e54/cipher_own") | .recon_share] | min	earlier
+0.66	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e54/cipher_own") | .recon_share] | max	earlier
+0.51	experiments/sae_proxies/results/results_random.json	[.draws[] | select(.status == "ok" and .task == "e54/cipher_own") | .recon_share] | min	this
+0.99	experiments/sae_proxies/results/results_random.json	[.draws[] | select(.status == "ok" and .task == "e54/cipher_own") | .recon_share] | max	this
+0.69	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "c3/cipher" or .task == "e46/rand32" or .task == "e54/cipher" or .task == "e54/cipher_own") | .error_share] | min	earlier
+0.79	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "c3/cipher" or .task == "e46/rand32" or .task == "e54/cipher" or .task == "e54/cipher_own") | .error_share] | max	earlier
+0.56	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "c3/cipher" or .task == "e46/rand32" or .task == "e54/cipher" or .task == "e54/cipher_own") | .recon_share] | min	earlier
+0.66	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "c3/cipher" or .task == "e46/rand32" or .task == "e54/cipher" or .task == "e54/cipher_own") | .recon_share] | max	earlier
+1.32	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "c3/cipher" or .task == "e46/rand32" or .task == "e54/cipher" or .task == "e54/cipher_own") | .sum_share] | min	earlier
+1.40	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "c3/cipher" or .task == "e46/rand32" or .task == "e54/cipher" or .task == "e54/cipher_own") | .sum_share] | max	earlier
+0.04	experiments/sae_proxies/results/results_complement.json	[.states[] | select(.task == "e54/cipher_own") | .error_share] | max - min	earlier
+0.97	experiments/sae_proxies/results/results_random.json	[.draws[] | select(.status == "ok") | .error_share] | min	this
+1.46	experiments/sae_proxies/results/results_random.json	[.draws[] | select(.status == "ok") | .error_share] | max	this
+0.51	experiments/sae_proxies/results/results_random.json	[.draws[] | select(.status == "ok") | .recon_share] | min	this
+0.99	experiments/sae_proxies/results/results_random.json	[.draws[] | select(.status == "ok") | .recon_share] | max	this
+1.48	experiments/sae_proxies/results/results_random.json	[.draws[] | select(.status == "ok") | .sum_share] | min	this
+2.31	experiments/sae_proxies/results/results_random.json	[.draws[] | select(.status == "ok") | .sum_share] | max	this
+1.01	experiments/sae_proxies/results/results_random.json	[.draws[] | select(.status == "ok") | .gain] | min	this
+1.09	experiments/sae_proxies/results/results_random.json	[.draws[] | select(.status == "ok") | .gain] | max	this
+0.53	experiments/sae_proxies/results/results_random.json	[.draws[] | select(.status == "ok" and .task == "e54/cipher_own" and .draw_seed == 228002) | .recon_share] | max	this
+0.94	experiments/sae_proxies/results/results_random.json	[.draws[] | select(.status == "ok" and .task == "e54/cipher_own" and .draw_seed == 228003) | .recon_share] | min	this
+0.0079	experiments/sae_proxies/results/results_random.json	[.draws[] | select(.status == "ok") | (.gain - .gain_e302) | fabs] | max	this
+1.6	experiments/sae_proxies/results/results_complement.json	[.states[] | .gain] | min	earlier
+20.8	experiments/sae_proxies/results/results_complement.json	[.states[] | .gain] | max	earlier
+0	experiments/sae_proxies/results/results_random.json	.stage0.checks["error share of e62/copy_s0 read again minus E314's"].value	this
+0.043	experiments/sae_proxies/results/results.json	[.states[] | .random.gain | fabs] | max	earlier
+1.00	given	E302's band, predictions_random.json .random_reference: 1.00-1.10 log-odds	
+1.10	given	E302's band, predictions_random.json .random_reference: 1.00-1.10 log-odds	
+-2.4e-5	experiments/sae_proxies/results/run_random_h100_stop.log	[scan("minus E314.s. (-?[0-9.e-]+) .tol")] | first[0] | tonumber	this
+5.3	experiments/sae_proxies/results/run_random.log	[scan("GB, ([0-9.]+) min")] | last[0] | tonumber	this
