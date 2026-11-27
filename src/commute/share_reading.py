@@ -92,6 +92,20 @@ def lab_dev(lab: Any) -> Any:
     return next(lab.model.parameters()).device
 
 
+def answer_target(lab: Any, key: str, rows: Tensor, spans: SH.Spans) -> Tensor:
+    """The target's whole-answer log-odds per answer of `spans` on `rows` under weight set `key`, one plain forward
+    per row (no Γ, no masked forward: the T cells alone, for a gain search); the weights are back at W0 after."""
+    out = []
+    try:
+        lab.use(key)
+        for i in range(len(rows)):
+            logits = lab.model(rows[i : i + 1].to(lab_dev(lab)), use_cache=False).logits
+            out.append(SH.answer_logodds(logits, spans.take(i, i + 1)))
+    finally:
+        lab.use("W0")
+    return torch.cat(out)
+
+
 def answer_cells(lab: Any, rows: Tensor, spans: SH.Spans,
                  on_row: Callable[[dict[str, Tensor]], None] | None = None) -> SH.Cells:
     """T0, T1, L00, L01 per whole answer of `spans` on `rows`, unit "ans" (`share.answer_logodds`); the weights are
