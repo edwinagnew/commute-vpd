@@ -103,10 +103,9 @@ The random reference moved far more between draws than the seed spread used in t
 
 ## What next
 
-- For the appendix sentence, writeup-lead may say that, at matched size, the neuron control separates at most one or
-  two of six comparisons depending on the random draw, and that real against shuffled maths at the last save is the
-  only comparison whose seed gaps lie above all three random gaps, and the only one that clears the band on more
-  than one draw (draws 0 and 1). Changing the paper is writeup-lead's call.
+- For the appendix sentence, writeup-lead may describe it per pair and per draw, with no counts: at matched size,
+  real against shuffled maths at the last save clears the band on draws 0 and 1 but not on draw 2; both
+  copy-against-cipher saves clear it on draw 2 only; known against invented facts clears it on no draw. Changing the paper is writeup-lead's call.
 - A band built from the draw-to-draw spread would need more draws, perhaps ten per side, at about five minutes per
   read. That would need a new cell.
 
