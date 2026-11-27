@@ -16,7 +16,7 @@ The run drew the random reference behind the Qwen frozen-neuron comparison two m
 
 **NIT.** Copy against cipher at the last save "separates" on draw 2 by a thin margin. Its lowest seed gap is 0.0031 against a band of 0.0022, a margin smaller than half the seed spread. Worth one clause if the copy-cipher result is named.
 
-The unclipped figure title is cosmetic and not a blocker.
+The clipped figure title is cosmetic and not a blocker.
 
 ## Not run
 - No recompute from the raw states (this is a transcription and wording check). The appendix line is not in the answer paragraph, so no independent check is owed.
