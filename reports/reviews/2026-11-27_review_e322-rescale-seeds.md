@@ -33,3 +33,13 @@ The run read the rescale-only control, which trains only one gain per MLP neuron
 ## Not run
 - No recompute from the raw states; this is a transcription and code check. The appendix and readthrough line are not the answer paragraph.
 - I did not read the page's section 4 prose, which was still pending. Re-check it when definition-lead fills it.
+
+## Re-check, 2026-11-27: page section 4 (commit 2d1b809e)
+PASS. Both MUSTs and the NIT are applied, and the table and the random ranges (VPD 0.013-0.015, SAE 0.008-0.017) match the CSVs. Two small fixes went to definition-lead, with no re-check owed. First, the randoms are the full fine-tunes' matched randoms, not the rescale-only states'. Second, the opening paragraph should carry the per-task qualifier at VPD.
+
+## Paper wording, 2026-11-27 (writeup-lead commit 43cfdb3, local, branch sec12: sec5:17, sec7:18, appI:45-58)
+PASS; no MUST. SHOULDs sent to writeup-lead:
+- The randoms are the full fine-tunes' matched randoms, not the control's.
+- Call the leftover "the SAE's error term", as main.tex:438 does.
+- sec7:18 should carry the absolute level (0.02-0.07 at VPD), since with three seeds the control is no longer "as low as" the full fine-tunes everywhere.
+NIT: the SAE task-mean ratios on the other four tasks are 1.8-2.8 (rank1 2.83), not 2.9.
