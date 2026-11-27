@@ -1,0 +1,89 @@
+{
+  "experiment": "E325",
+  "cell": "P1.66",
+  "card": "experiments/fig2_all_tasks/card.md",
+  "filed": "2026-11-27, writer agent for whip-lead, before any GPU run of this experiment; descriptive (card: user 2026-11-27, \"yes, full rerun, waive the gates\")",
+  "settings": {
+    "control": "e62/copy_s0",
+    "control_source": "the first new state of known3's first pair (e62_copy_lookup): stage 0's do-nothing, identity and SAE must_flip run on the known-answer path, its D and read position (E298's control built/x2 is on E268's built world, which this run never loads)",
+    "tasks": [
+      "e62/copy",
+      "e62/lookup",
+      "e46/ident32",
+      "e46/rand32",
+      "e53/lowercase",
+      "e53/cipher",
+      "e54/elicit",
+      "e54/cipher",
+      "e54/cipher_own",
+      "c3/rank1",
+      "c3/cipher",
+      "c3/copy"
+    ],
+    "tasks_source": "commute.known_states (known_3seeds/results/known3.json share cells, E314's 48 states), in known3's pair order, less the four tasks E298 read",
+    "overlap": {
+      "e58/copy": "copy",
+      "e58/rank1": "rank1",
+      "e58/cipher": "cipher",
+      "e58/prior_cipher": "prior_cipher"
+    },
+    "overlap_source": "known3's e58/<m>_s<s> are E147's refit_96key/results/large/dW_<m>_s<s>.pt (known_states, from E314's locate), the files E298's trained/<m>_s<s> load (E290's World via E147's inventory, refit_96key state_file). E298's fifth task, e58/elicit, is not a known-answer task (known3's elicit is e54/elicit, keydependent_elicit's fine-tunes), so it is not among the 16",
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "random_seed": 325000,
+    "random_seed_source": "the E-number times 1000 (E298's convention for its new randoms); the random of new_states()[k] has seed 325000 + k; recipe finetune.random_direction (a Gaussian per matrix at that matrix's Frobenius norm in the update, fp64 norms): E290's recipe (needed_neurons.matched_random) by the library's function",
+    "band": "p97",
+    "split_tol": 1e-06,
+    "split_tol_source": "E226's filed split_tol (experiments/kstar_vpd/results/predictions.json), which E298 used (feats.py KV.bases(..., E226 split_tol)); load_config checks it",
+    "sae_size": "scored",
+    "sae_seed": 0,
+    "sae_source": "E245's filed SAEs (experiments/sae_r_a/results/predictions.json: E234 scored, seed 0), as E298 loaded them; load_config checks it",
+    "derangements": 4,
+    "examples": 64,
+    "seed": 268,
+    "rows": 1024,
+    "logit_rows": 8192,
+    "cache_batch": 32,
+    "ident_vars": 3,
+    "sae_err_rows": 64,
+    "sae_chunk": 32,
+    "scan_source": "band, derangements .. sae_chunk and repro_rel_tol: E298's filed values (experiments/fig2_standard/results/predictions.json settings); load_config stops if any differs",
+    "repro": {
+      "vpd": {
+        "state": "e58/cipher_s1",
+        "json": "experiments/fig2_standard/results/items/vpd/trained__cipher_s1.json",
+        "npz": "experiments/fig2_standard/results/large/vpd/trained__cipher_s1.npz"
+      },
+      "neurons": {
+        "state": "e58/copy_s0",
+        "json": "experiments/ia3_control/results/items/full__copy_s0.json",
+        "npz": "experiments/ia3_control/results/large/items_full__copy_s0.npz"
+      },
+      "sae": {
+        "state": "e58/cipher_s0",
+        "json": "experiments/fig2_standard/results/items/sae/trained__cipher_s0.json",
+        "npz": "experiments/fig2_standard/results/large/sae/trained__cipher_s0.npz"
+      }
+    },
+    "repro_source": "one saved trained read per featurization (E298 trained/<task>_s<seed> = known e58/<task>_s<seed>), read again here with F from known_states' file and D E237's windows (key_grid World, inputs only), read at the last position: VPD and SAE E298's own items (126 s and 26 s on an H100); neurons E298's filed neuron reproduction (E290's copy_s0, reproduced by E298 at 4.98e-6 relative; its value is the one E298's Fig 2 rows carry; E298 read no trained state at neurons)",
+    "repro_rel_tol": {
+      "vpd": 0.0005,
+      "neurons": 5e-05,
+      "sae": 1e-06
+    }
+  },
+  "readings": "E298's (eb.readings): E_b_K headline with the leftovers counted, E_b_K_no_leftover, leftover_share, size_K and counts, per item",
+  "expected": {
+    "stage0": "do-nothing on the control's D: 0 changed, dd max 0.0, E_b 1.0; identity: 0 argmax changes, max logit deviation of the order of E298's (VPD 5e-5, neurons 8e-5, SAE 2.2e-4); SAE must_flip: 0 read cases off F's argmax on x', some case differing; reproductions: VPD e58/cipher_s1 0.03879778 within 5e-4 relative, neurons e58/copy_s0 0.01168107 within 5e-5, SAE e58/cipher_s0 0.03583138 within 1e-6",
+    "items": "every trained state between 0 and 1, near E298's trained range (0.01-0.05) and within about 0.05 of its matched random, which reads at or under about 0.02 (E298's trained randoms 0.010-0.017); the card's rivals say which",
+    "time": "per item on an H100 from E298's measured trained items (512 windows of 8 tokens): VPD 126-158 s, neurons 59-79 s (E290), SAE 20-64 s; a known-answer D with more windows or longer windows takes proportionally longer in the write pass and cache"
+  },
+  "predictions": {
+    "rival_a": "card rival_a: every added task's trained retained share (mean of 3 seeds) within 0.05 of its matched random's or below 0.1, at every featurization, with no reuse/new order among trained tasks",
+    "rival_b": "card rival_b: at least one added task's mean retained share sits more than 0.05 above its matched random at one featurization, or reuse tasks read above new tasks there",
+    "rule": "descriptive, no bar (card): score.py prints per featurization and task the mean over seeds of the trained and random E_b_K and their gap, the tasks with gap > smallest_gap 0.05, and the mean over known3's reuse tasks against its new tasks"
+  }
+}

@@ -7,6 +7,7 @@ Layouts: param-decomp `(U (C, d_out), V (d_in, C))`; theory `(U_A (d_out, n), V_
 A new experiment reads through these, never through another experiment's run.py (`jobs.load_experiment` is not for readings). The settings that tell a reading's variants apart (unit, batch, rows, floor) are required arguments.
 - world (net, W0 checked against the checkpoint, uv, delta, split bases) -> `world.World.load(device)`, `.bases(tol)`; CPU W0 and uv -> `world.weights()`
 - windows (a task's read rows) -> `windows.read_rows(task, kind)` -> `Rows(task, kind, toks, pos, tgt, source, ab)`
+- the 16 known-answer tasks x seeds 0-2 (Figs 2, 3, 7, tools table) -> `known_states.states()` (file, sha256, trained_by, side, read task), their rows `known_states.rows(st)`
 - items (saved delta-W) -> `items.resolve(name)`, `items.load_dw(item)`, `items.inventory(family)`; items with F built -> `items.rescaled` (E214 x<f>), `items.e229_f` (E229), their D `items.copy24_held`, `items.e229_read`; E217's neuron bounds `items.neuron_bounds`
 - re-gating share r -> `share.share_cells(model, W0, dW, rows, units, batch)` + `share.share(cells, unit, gain, floor)` (`share.cells_gain`, `share.numerator`, `share.Floor`); four-cell form `local_faith.route_split`; Qwen's KL ratio (another quantity) `qwen_reading.kl_share`
 - untrained share -> `share.untrained_share(model, W0, dW, rows, decomps, k_m, unit, batch, floor)`

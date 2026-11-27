@@ -80,3 +80,17 @@ def resolve(name: str) -> Item:
         raise KeyError(f"no item {name!r}")
     return resolve(full)
 
+
+
+E217_PCT = EXPERIMENTS / "topk_neurons" / "results" / "large" / "percentiles.pt"
+
+
+def neuron_bounds(q: float, qs: tuple[float, ...], sha256: str) -> Tensor:
+    """E217's per-neuron q-quantile of M's MLP activations over Pile rows, (layers, n) CPU: the top-neuron featurization's
+    upper bounds (E229, E277; moved from experiments/reading_refactor/new_b.py, which keeps its copy as it ran). The file
+    is checked against sha256 and its quantiles against qs."""
+    if (got := file_sha256(E217_PCT)) != sha256:
+        raise SystemExit(f"STOP: {E217_PCT}: sha256 {got}, the filed {sha256}")
+    z = torch.load(E217_PCT, weights_only=True)
+    assert torch.equal(z["q"], torch.tensor(list(qs))), "the saved quantiles are not the filed ones"
+    return z["values"][list(qs).index(q)]
