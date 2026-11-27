@@ -83,8 +83,12 @@ Sources: `experiments/claim2_needed/results/summary.json`, `.B_pairs.K` and `.B_
 
 ## 3. main.tex:432, the graded retained clause over the necessary set
 
-> **PENDING: run 1 of this cell, not yet made.** The value over $K$ is not on disk. No number is given here until the
-> run's summary is written and checked.
+Run 1 (E321, 2026-11-27) read the same score over the necessary set $K$ on the same 20 fine-tunes. It still reads 0.999
+or more on every one: the smallest is 0.99936 (case_twin_s0), against 0.99938 over the old set. The set barely matters
+here, because $K$ holds 29 to 99% of the variables, so this does not show that $K$ picks out anything. Stage 0 passed
+(do-nothing reads 1.0; the identity swap flips nothing), and redteam-lead passed the run
+(`reports/reviews/2026-11-27_review_e321-cos2-over-k.md`). Source: `experiments/p165_cos2_k/results/summary.json`,
+`min_k_value`, and `run_score.log` per item.
 
 The paper's graded wording scores each changed variable by how closely the fine-tune's mechanism points the same way as
 the base model's. The score is the mean $\cos^2$ between the two mechanisms' outputs, with one variable per neuron. It
@@ -120,7 +124,6 @@ None: this page re-reads saved results and changes no definition or procedure.
 
 ## Not run
 
-- Run 1, the graded retained clause over the necessary set, which section 3 waits on.
 - Run 2, the rescale-only control reads at VPD seeds 1 and 2, the repeat of seed 0, and SAE seeds 0 to 2.
 - The fifteen per-fine-tune random updates over the necessary set at SAE latents, which would complete the random
   group of section 1.
