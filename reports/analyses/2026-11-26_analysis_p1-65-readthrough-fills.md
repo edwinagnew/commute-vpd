@@ -2,7 +2,7 @@
 
 Three of the paper's numbers were read over the mean-ablation circuit or a nearby set, and are re-read here over the
 necessary set the definition uses; the rescale-only control was also read at two more seeds and at SAE latents. All
-three numbers keep their sense, and the control reads near the full fine-tunes at VPD but two to six times above them
+three numbers keep their sense, and the control reads near the full fine-tunes at VPD (higher on copy, about half on cipher) but two to six times above them
 at SAE latents. Nothing here changes a claim of `GOALS.md`; the paper's lines change only in their stated values.
 
 Two sets of variables appear throughout:
@@ -125,7 +125,7 @@ Each cell gives seeds 0, 1 and 2 in order.
 | cipher | 0.023, 0.020, 0.022 | 0.037, 0.039, 0.042 | 0.087, 0.074, 0.083 | 0.036, 0.040, 0.038 |
 | prior_cipher | 0.019, 0.023, 0.026 | 0.030, 0.029, 0.029 | 0.072, 0.082, 0.085 | 0.046, 0.047, 0.043 |
 
-Every value is above its task's matched random updates, which read 0.013 to 0.015 at VPD and 0.008 to 0.017 at SAE.
+Every value is above the matched random updates of that task's full fine-tunes, which read 0.013 to 0.015 at VPD and 0.008 to 0.017 at SAE.
 
 **The SAE error term.** At SAE latents part of each change falls in the SAE's reconstruction error, which the reading
 counts. That share is 0.51 to 0.69 for the rescale-only control and higher, 0.68 to 0.76, for the full fine-tunes,

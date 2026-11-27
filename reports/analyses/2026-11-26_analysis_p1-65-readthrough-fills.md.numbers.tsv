@@ -39,3 +39,56 @@
 0.999	experiments/rho_saved_items/results/summary.json	[.R3|to_entries[]|select(.key|test("_s[01]$"))|.value.rho_main_replace]|min	earlier
 0.061	experiments/fig2_standard/results/items/sae/built__rand_head_v2.json	.E_b_K	earlier
 0.067	experiments/fig2_standard/results/items/sae/built__rebuilt.json + experiments/fig2_standard/results/items/sae/built__rand_head_v2.json	.[0].E_b_K - .[1].E_b_K	earlier
+0.008	experiments/fig2_standard/results/summary.json	[.rows[]|select(.feat=="SAE" and .block=="trained" and .side=="random")|.value]|min	earlier
+0.013	experiments/fig2_standard/results/summary.json	[.rows[]|select(.feat=="VPD" and .block=="trained" and .side=="random")|.value]|min	earlier
+0.015	experiments/fig2_standard/results/summary.json	[.rows[]|select(.feat=="VPD" and .block=="trained" and .side=="random")|.value]|max	earlier
+0.017	experiments/fig2_standard/results/summary.json	[.rows[]|select(.feat=="SAE" and .block=="trained" and .side=="random")|.value]|max	earlier
+0.019	experiments/p165_gain_reads/results/summary.json	.rows[]|select(.feat=="VPD" and .block=="gain" and .item=="prior_cipher_s0")|.value	this
+0.022	experiments/p165_gain_reads/results/summary.json	.rows[]|select(.feat=="VPD" and .block=="gain" and .item=="cipher_s2")|.value	this
+0.024	experiments/p165_gain_reads/results/summary.json	.rows[]|select(.feat=="VPD" and .block=="gain" and .item=="elicit_s2")|.value	this
+0.025	experiments/p165_gain_reads/results/summary.json	.rows[]|select(.feat=="VPD" and .block=="gain" and .item=="elicit_s1")|.value	this
+0.026	experiments/p165_gain_reads/results/summary.json	.rows[]|select(.feat=="VPD" and .block=="gain" and .item=="prior_cipher_s2")|.value	this
+0.027	experiments/fig2_standard/results/summary.json	.rows[]|select(.feat=="VPD" and .block=="trained" and .side=="trained" and .item=="elicit_s0")|.value	earlier
+0.028	experiments/p165_gain_reads/results/summary.json	.rows[]|select(.feat=="VPD" and .block=="gain" and .item=="rank1_s1")|.value	this
+0.029	experiments/p165_gain_reads/results/summary.json	.rows[]|select(.feat=="VPD" and .block=="gain" and .item=="rank1_s0")|.value	this
+0.030	experiments/fig2_standard/results/summary.json	.rows[]|select(.feat=="VPD" and .block=="trained" and .side=="trained" and .item=="rank1_s0")|.value	earlier
+0.031	experiments/fig2_standard/results/summary.json	.rows[]|select(.feat=="SAE" and .block=="trained" and .side=="trained" and .item=="elicit_s2")|.value	earlier
+0.032	experiments/fig2_standard/results/summary.json	.rows[]|select(.feat=="VPD" and .block=="trained" and .side=="trained" and .item=="copy_s1")|.value	earlier
+0.034	experiments/fig2_standard/results/summary.json	.rows[]|select(.feat=="VPD" and .block=="trained" and .side=="trained" and .item=="copy_s0")|.value	earlier
+0.035	experiments/fig2_standard/results/summary.json	.rows[]|select(.feat=="SAE" and .block=="trained" and .side=="trained" and .item=="rank1_s1")|.value	earlier
+0.036	experiments/fig2_standard/results/summary.json	.rows[]|select(.feat=="SAE" and .block=="trained" and .side=="trained" and .item=="elicit_s0")|.value	earlier
+0.037	experiments/fig2_standard/results/summary.json	.rows[]|select(.feat=="VPD" and .block=="trained" and .side=="trained" and .item=="cipher_s0")|.value	earlier
+0.038	experiments/fig2_standard/results/summary.json	.rows[]|select(.feat=="SAE" and .block=="trained" and .side=="trained" and .item=="rank1_s0")|.value	earlier
+0.039	experiments/fig2_standard/results/summary.json	.rows[]|select(.feat=="VPD" and .block=="trained" and .side=="trained" and .item=="cipher_s1")|.value	earlier
+0.040	experiments/fig2_standard/results/summary.json	.rows[]|select(.feat=="SAE" and .block=="trained" and .side=="trained" and .item=="cipher_s1")|.value	earlier
+0.042	experiments/fig2_standard/results/summary.json	.rows[]|select(.feat=="VPD" and .block=="trained" and .side=="trained" and .item=="cipher_s2")|.value	earlier
+0.043	experiments/fig2_standard/results/summary.json	.rows[]|select(.feat=="SAE" and .block=="trained" and .side=="trained" and .item=="prior_cipher_s2")|.value	earlier
+0.045	experiments/fig2_standard/results/summary.json	.rows[]|select(.feat=="SAE" and .block=="trained" and .side=="trained" and .item=="copy_s0")|.value	earlier
+0.046	experiments/fig2_standard/results/summary.json	.rows[]|select(.feat=="SAE" and .block=="trained" and .side=="trained" and .item=="copy_s1")|.value	earlier
+0.047	experiments/fig2_standard/results/summary.json	.rows[]|select(.feat=="SAE" and .block=="trained" and .side=="trained" and .item=="prior_cipher_s1")|.value	earlier
+0.049	experiments/p165_gain_reads/results/summary.json	.rows[]|select(.feat=="VPD" and .block=="gain" and .item=="copy_s1")|.value	this
+0.063	experiments/p165_gain_reads/results/summary.json	.rows[]|select(.feat=="VPD" and .block=="gain" and .item=="copy_s2")|.value	this
+0.072	experiments/p165_gain_reads/results/summary.json	.rows[]|select(.feat=="VPD" and .block=="gain" and .item=="copy_s0")|.value	this
+0.074	experiments/p165_gain_reads/results/summary.json	.rows[]|select(.feat=="SAE" and .block=="gain" and .item=="cipher_s1")|.value	this
+0.082	experiments/p165_gain_reads/results/summary.json	.rows[]|select(.feat=="SAE" and .block=="gain" and .item=="prior_cipher_s1")|.value	this
+0.083	experiments/p165_gain_reads/results/summary.json	.rows[]|select(.feat=="SAE" and .block=="gain" and .item=="cipher_s2")|.value	this
+0.084	experiments/p165_gain_reads/results/summary.json	.rows[]|select(.feat=="SAE" and .block=="gain" and .item=="elicit_s2")|.value	this
+0.085	experiments/p165_gain_reads/results/summary.json	.rows[]|select(.feat=="SAE" and .block=="gain" and .item=="prior_cipher_s2")|.value	this
+0.087	experiments/p165_gain_reads/results/summary.json	.rows[]|select(.feat=="SAE" and .block=="gain" and .item=="cipher_s0")|.value	this
+0.090	experiments/p165_gain_reads/results/summary.json	.rows[]|select(.feat=="SAE" and .block=="gain" and .item=="elicit_s1")|.value	this
+0.093	experiments/p165_gain_reads/results/summary.json	.rows[]|select(.feat=="SAE" and .block=="gain" and .item=="elicit_s0")|.value	this
+0.098	experiments/p165_gain_reads/results/summary.json	.rows[]|select(.feat=="SAE" and .block=="gain" and .item=="rank1_s2")|.value	this
+0.101	experiments/p165_gain_reads/results/summary.json	.rows[]|select(.feat=="SAE" and .block=="gain" and .item=="rank1_s0")|.value	this
+0.102	experiments/p165_gain_reads/results/summary.json	.rows[]|select(.feat=="SAE" and .block=="gain" and .item=="rank1_s1")|.value	this
+0.262	experiments/p165_gain_reads/results/summary.json	.rows[]|select(.feat=="SAE" and .block=="gain" and .item=="copy_s1")|.value	this
+0.275	experiments/p165_gain_reads/results/summary.json	.rows[]|select(.feat=="SAE" and .block=="gain" and .item=="copy_s2")|.value	this
+0.286	experiments/p165_gain_reads/results/summary.json	.rows[]|select(.feat=="SAE" and .block=="gain" and .item=="copy_s0")|.value	this
+0.51	experiments/p165_gain_reads/results/summary.json	[.rows[]|select(.feat=="SAE")|.leftover_share]|min	this
+0.68	experiments/fig2_standard/results/summary.json	[.rows[]|select(.feat=="SAE" and .block=="trained" and .side=="trained")|.leftover_share]|min	earlier
+0.69	experiments/p165_gain_reads/results/summary.json	[.rows[]|select(.feat=="SAE")|.leftover_share]|max	this
+0.76	experiments/fig2_standard/results/summary.json	[.rows[]|select(.feat=="SAE" and .block=="trained" and .side=="trained")|.leftover_share]|max	earlier
+0.99936	experiments/p165_cos2_k/results/summary.json	.min_k_value	this
+1.0	experiments/p165_cos2_k/results/stage0_trained_s0.json	.dn_E_b_K	this
+3.9e-5	experiments/p165_gain_reads/results/summary.json	.repeat_max_rel_dev	this
+3e-3	experiments/ia3_control/results/predictions.json	.settings.lr	earlier
+5e-4	experiments/p165_gain_reads/results/summary.json	.repeat[0].tol	this
