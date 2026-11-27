@@ -61,7 +61,8 @@ the copy side, from 0.81 to 0.96, so one draw alone said little about where the 
 draw's random gap as a cross with its band. On draws 0 and 1, only maths at the last save has all three seed gaps
 beyond the band. On draw 2, maths at the last save falls inside its band, because that draw's random gap is −0.006
 against seed gaps of 0.004 to 0.006. On the same draw, both copy-cipher comparisons separate, because its random gaps
-are near zero, at −0.0003 and 0.013. Facts at either save never separates.
+are near zero, at −0.0003 and 0.013; copy-cipher at the last save clears that band by less than a thousandth. Facts
+at either save never separates.
 
 The copy-cipher random gap is the least stable: from −0.15 to 0.05 at the last save and from 0.01 to 0.13 at the
 five-times save. The copy-cipher seed gaps, at 0.003 to 0.035, sit inside that spread. The maths random gap is
@@ -84,8 +85,8 @@ The unmatched picture in the appendix figure stands: every Qwen fine-tune reads 
 same KL, not just one. The size-matched count of "one of six" is a single-draw number. Over three draws it is one,
 one and two, and the separating comparison changes. The random reference's draw-to-draw spread is as large as the
 fine-tune effects on two of three pairs. A one-draw band understates it, so the neuron control does not separate the
-Qwen pairs at matched size in any stable way. The maths pair at the last save is the one comparison whose seed gaps
-lie beyond all three random draws.
+Qwen pairs at matched size in any stable way. The maths pair at the last save is the only comparison whose seed gaps
+lie above all three random gaps, and the only one that clears the band on more than one draw (draws 0 and 1).
 
 ## How compelling is the evidence
 
@@ -102,9 +103,9 @@ The random reference moved far more between draws than the seed spread used in t
 
 ## What next
 
-- For the appendix sentence, writeup-lead may say that, at matched size, the neuron control separates at most one or
-  two of six comparisons depending on the random draw, and that real against shuffled maths at the last save is the
-  only one beyond all three draws. Changing the paper is writeup-lead's call.
+- For the appendix sentence, writeup-lead may describe it per pair and per draw, with no counts: at matched size,
+  real against shuffled maths at the last save clears the band on draws 0 and 1 but not on draw 2; both
+  copy-against-cipher saves clear it on draw 2 only; known against invented facts clears it on no draw. Changing the paper is writeup-lead's call.
 - A band built from the draw-to-draw spread would need more draws, perhaps ten per side, at about five minutes per
   read. That would need a new cell.
 
