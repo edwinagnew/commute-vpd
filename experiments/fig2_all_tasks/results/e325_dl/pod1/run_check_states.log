@@ -1,0 +1,61 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+E298 D REPRODUCED e58/copy (PosixPath('/root/work/experiments/open_pair/results/large/amend3/windows_copy_trained.pt'),) (512, 8)
+E298 D REPRODUCED e58/rank1 (PosixPath('/root/work/experiments/open_pair/results/large/amend3/windows_rank1_trained.pt'),) (512, 8)
+E298 D REPRODUCED e58/cipher (PosixPath('/root/work/experiments/open_pair/results/large/amend3/windows_cipher_trained.pt'),) (512, 8)
+E298 D REPRODUCED e58/prior_cipher (PosixPath('/root/work/experiments/open_pair/results/large/amend6/windows_prior_cipher_trained.pt'),) (512, 8)
+STATE e62/copy_s0 e62_copy experiments/induction_cue/results/large/copy_s0.pt 24
+STATE e62/copy_s1 e62_copy experiments/induction_cue/results/large/copy_s1.pt 24
+STATE e62/copy_s2 e62_copy experiments/induction_cue/results/large/copy_s2.pt 24
+STATE e62/lookup_s0 e62_lookup experiments/induction_cue/results/large/lookup_s0.pt 24
+STATE e62/lookup_s1 e62_lookup experiments/induction_cue/results/large/lookup_s1.pt 24
+STATE e62/lookup_s2 e62_lookup experiments/induction_cue/results/large/lookup_s2.pt 24
+STATE e46/ident32_s0 ident32 experiments/regating_table/results/large/ident32_s0.pt 24
+STATE e46/ident32_s1 ident32 experiments/regating_table/results/large/ident32_s1.pt 24
+STATE e46/ident32_s2 ident32 experiments/known_3seeds/results/large/ident32_s2.pt 24
+STATE e46/rand32_s0 rand32 experiments/regating_table/results/large/rand32_s0.pt 24
+STATE e46/rand32_s1 rand32 experiments/regating_table/results/large/rand32_s1.pt 24
+STATE e46/rand32_s2 rand32 experiments/known_3seeds/results/large/rand32_s2.pt 24
+STATE e53/lowercase_s0 lowercase experiments/performed_anchor/results/large/dW_lowercase_s0_step300.pt 24
+STATE e53/lowercase_s1 lowercase experiments/performed_anchor/results/large/dW_lowercase_s1_step300.pt 24
+STATE e53/lowercase_s2 lowercase experiments/known_3seeds/results/large/dW_lowercase_s2_step300.pt 24
+STATE e53/cipher_s0 cipher50 experiments/performed_anchor/results/large/dW_cipher_s0_step300.pt 24
+STATE e53/cipher_s1 cipher50 experiments/performed_anchor/results/large/dW_cipher_s1_step300.pt 24
+STATE e53/cipher_s2 cipher50 experiments/known_3seeds/results/large/dW_cipher_s2_step300.pt 24
+STATE e54/elicit_s0 e54_elicit experiments/keydependent_elicit/results/large/elicit_s0.pt 24
+STATE e54/elicit_s1 e54_elicit experiments/keydependent_elicit/results/large/elicit_s1.pt 24
+STATE e54/elicit_s2 e54_elicit experiments/keydependent_patch/results/large/elicit_s2.pt 24
+STATE e54/cipher_s0 e54_cipher experiments/keydependent_elicit/results/large/cipher_s0.pt 24
+STATE e54/cipher_s1 e54_cipher experiments/keydependent_elicit/results/large/cipher_s1.pt 24
+STATE e54/cipher_s2 e54_cipher experiments/keydependent_patch/results/large/cipher_s2.pt 24
+STATE e54/cipher_own_s0 e54_cipher experiments/keydependent_elicit/results/large/cipher_own_s0.pt 24
+STATE e54/cipher_own_s1 e54_cipher experiments/keydependent_elicit/results/large/cipher_own_s1.pt 24
+STATE e54/cipher_own_s2 e54_cipher experiments/known_3seeds/results/large/cipher_own_s2.pt 24
+STATE c3/rank1_s0 rank1 experiments/open_pair/results/large/amend1/rank1_s0.pt 24
+STATE c3/rank1_s1 rank1 experiments/open_pair/results/large/amend1/rank1_s1.pt 24
+STATE c3/rank1_s2 rank1 experiments/open_pair/results/large/amend1/rank1_s2.pt 24
+STATE c3/cipher_s0 cipher24 experiments/open_pair/results/large/cipher_s0.pt 24
+STATE c3/cipher_s1 cipher24 experiments/open_pair/results/large/cipher_s1.pt 24
+STATE c3/cipher_s2 cipher24 experiments/open_pair/results/large/cipher_s2.pt 24
+STATE c3/copy_s0 copy24 experiments/open_pair/results/large/amend1/copy_s0.pt 24
+STATE c3/copy_s1 copy24 experiments/open_pair/results/large/amend1/copy_s1.pt 24
+STATE c3/copy_s2 copy24 experiments/open_pair/results/large/amend1/copy_s2.pt 24
+D cipher24 kv (PosixPath('/root/work/experiments/open_pair/results/large/windows_cipher_trained.pt'), PosixPath('/root/work/experiments/open_pair/results/large/windows_cipher_new.pt')) (512, 8)
+D cipher50 text () (512, 8)
+D copy24 kv (PosixPath('/root/work/experiments/open_pair/results/large/amend1/windows_copy_trained.pt'), PosixPath('/root/work/experiments/open_pair/results/large/amend1/windows_copy_new.pt')) (512, 8)
+D e54_cipher kv (PosixPath('/root/work/experiments/keydependent_elicit/results/large/windows_cipher.pt'),) (512, 8)
+D e54_elicit kv (PosixPath('/root/work/experiments/keydependent_elicit/results/large/windows_elicit.pt'),) (512, 8)
+D e62_copy e62 (PosixPath('/root/work/experiments/induction_cue/results/large/windows.pt'),) (512, 8)
+D e62_lookup e62 (PosixPath('/root/work/experiments/induction_cue/results/large/windows.pt'),) (512, 8)
+D ident32 kv (PosixPath('/root/work/experiments/regating_table/results/large/windows_ident32.pt'),) (512, 8)
+D lowercase text () (512, 8)
+D rand32 kv (PosixPath('/root/work/experiments/regating_table/results/large/windows_rand32.pt'),) (512, 8)
+D rank1 kv (PosixPath('/root/work/experiments/open_pair/results/large/amend1/windows_rank1_trained.pt'), PosixPath('/root/work/experiments/open_pair/results/large/amend1/windows_rank1_new.pt')) (512, 8)
+CHECK DONE
+=== FINISHED (exit 0) ===
