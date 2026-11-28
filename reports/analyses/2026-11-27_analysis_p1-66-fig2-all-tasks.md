@@ -1,6 +1,6 @@
 # How much of each fine-tune's write does the needed set carry, on all sixteen known-answer tasks?
 
-We read Figure 2's retained share on all sixteen known-answer tasks at three featurizations, VPD subcomponents, top neurons and SAE latents, each fine-tune beside a random update of the same size. Fine-tunes keep a few hundredths of their write in the needed set, from 0.011 to 0.059 by task, where randoms keep 0.003 to 0.018. Tasks known to reuse old parts read no higher than tasks known to be new. A fixed neuron hook cleared the neuron control, so all three panels stand, as a description.
+We read Figure 2's retained share on all sixteen known-answer tasks at VPD subcomponents, top neurons and SAE latents, each fine-tune beside a random update of the same size. Taking each task's mean over seeds, across the three featurizations, fine-tunes keep 0.011 to 0.059 of their write in the needed set and randoms 0.003 to 0.018. Tasks known to reuse old parts and tasks known to be new overlap at every featurization, so the share does not sort them; with the neuron hook fixed, all three panels stand as a description.
 
 ## What was read
 
@@ -30,13 +30,13 @@ At SAE latents the fine-tunes run from 0.030 on the elicit and text-cipher tasks
 
 Seeds agree closely at both featurizations. The widest trained spread at VPD is on the e46 random-key task, 0.052 to 0.058; at SAE it is on the e46 identity task, 0.046 to 0.057.
 
-The tasks known to reuse old parts do not read above the tasks known to be new. At VPD the reuse tasks' mean is 0.032 and the new tasks' mean is 0.041. At SAE the two means are 0.041 and 0.045. The reuse tasks span 0.026 to 0.038 at VPD, inside the new tasks' wider span, so this reading does not order the two sides by their known answers.
+The tasks known to reuse old parts and those known to be new overlap, so the share does not sort them. At VPD the reuse tasks' mean is 0.032 and the new tasks' mean is 0.041. At SAE the two means are 0.041 and 0.045. The reuse tasks span 0.026 to 0.038 at VPD, inside the new tasks' wider span, so this reading does not order the two sides by their known answers.
 
 ### Top neurons
 
 **Reading it.** At top neurons the fine-tunes keep less than at the other two featurizations, and their randoms keep less still. The fine-tunes' seed means run from 0.011 on the e54 elicit task to 0.029 on the e54 cipher. Their randoms' seed means run from 0.003 to 0.009, the highest on e53 lowercasing; single random seeds run from 0.003 to 0.011.
 
-The fine-tunes sitting nearest their randoms are the e58 copy task, 0.012 against 0.005, and the e53 text cipher, 0.015 against 0.008. The widest seed spread is on the e54 cipher, 0.024 to 0.037.
+By difference, the fine-tunes sitting nearest their randoms are the e58 copy task, 0.012 against 0.005, and the e53 text cipher, 0.015 against 0.008. The widest seed spread is on the e54 cipher, 0.024 to 0.037.
 
 The reuse tasks' mean is 0.019 and the new tasks' mean 0.021. The reuse tasks span 0.011 to 0.028 and the new tasks 0.015 to 0.029, so at neurons too the reading does not order the two sides by their known answers.
 
@@ -57,19 +57,19 @@ Under the fixed hook the deviation is back at rounding on all four states, with 
 
 The do-nothing update under the fixed hook read a share of 1 with no changed answer.
 
-**The fix's effect on the saved neuron item.** The stage-0 reproduction reads E298's saved neuron item, the e58 copy state at seed 0, again. Under the old hook it reproduced within 5.0e-6 relative, against a tolerance of 5e-5. The user decided on 2026-11-27 that this old-hook reproduction is the apparatus check, since E298 itself was read with the old hook.
+**The fix's effect on the saved neuron item.** The stage-0 reproduction reads the saved neuron item of the e58 copy state at seed 0 again (E290's, carried by E298). Under the old hook it reproduced within 5.0e-6 relative, against a tolerance of 5e-5. The user decided on 2026-11-27 that this old-hook reproduction is the apparatus check, since E298 itself was read with the old hook.
 
-Under the fixed hook one neuron of the needed set changes: the needed set has 4171 neurons where E298's had 4170. The share moves from the saved 0.011681 to 0.011685, a relative shift of 3.4e-4 against the same 5e-5 tolerance. This shift is the fix's effect on E298's item, not an apparatus fault. No record names the added neuron, so its cause, an activation straddling its bound under the old hook, is inferred, not shown.
+Under the fixed hook one neuron of the needed set changes: the needed set has 4171 neurons where the saved item's had 4170. The share moves from the saved 0.011681 to 0.011685, a relative shift of 3.4e-4 against the same 5e-5 tolerance. This shift is the fix's effect on the saved item, not an apparatus fault. No record names the added neuron, so its cause, an activation straddling its bound under the old hook, is inferred, not shown.
 
 **Old against fixed hook on the 72 new items.** All 72 neuron items were read again under the fixed hook. The share moved by at most 3.8e-6 on any item. The needed set's size changed on 22 of the 72 items, by at most 2 neurons. At three decimals the fixed values equal the old ones. The old-hook files of the 72 items are kept in `~/commute-data/results-large/fig2_all_tasks/neurons_oldhook/`.
 
-**The top-neuron panel mixes hooks.** Its 72 rows for the twelve new tasks are read under the fixed hook. Its 24 rows for the four e58 tasks are E298's, read under the old hook, and were not read again. On the one e58 item read both ways the share moved by 3.4e-4 relative, far below the figure's resolution.
+**The top-neuron panel mixes hooks.** Its 72 rows for the twelve new tasks are read under the fixed hook. Its 24 rows for the four e58 tasks are E290's, carried by E298, read under the old hook, and were not read again. On the one e58 item read both ways the share moved by 3.4e-4 relative, far below the figure's resolution.
 
 E277 and E298 also read top neurons with the old hook. Their needed sets may differ by a neuron or two where an activation straddles its bound. They were not read again.
 
 ## Per-task values
 
-Seed mean over seeds 0 to 2, with the lowest and highest seed in brackets, from `experiments/fig2_all_tasks/results/summary.json`. Neuron columns mix hooks: the twelve new tasks under the fixed hook, the four e58 tasks from E298 under the old hook.
+Seed mean over seeds 0 to 2, with the lowest and highest seed in brackets, from `experiments/fig2_all_tasks/results/summary.json`. Neuron columns mix hooks: the twelve new tasks under the fixed hook, the four e58 tasks E290's, carried by E298, under the old hook.
 
 | task | known answer | VPD fine-tune | VPD random | SAE fine-tune | SAE random | neurons fine-tune | neurons random |
 |---|---|---|---|---|---|---|---|
@@ -92,7 +92,7 @@ Seed mean over seeds 0 to 2, with the lowest and highest seed in brackets, from 
 
 ## What we learned
 
-The fine-tunes' retained share is small on all sixteen tasks, not only on the five the old figure read. It sits above a random update of the same size at all three featurizations, by the most on the e54 and c3 ciphers at VPD and SAE. It sits closest to the random on the e53 text cipher at all three, tied with the e58 copy task at neurons. So the needed set carries more of a fine-tune's write than chance, but most of the write lies outside it. At none of the three featurizations does this reading separate the tasks known to reuse old parts from those known to build new ones. The reuse definition is under revision, so no verdict is given here under either wording.
+The fine-tunes' retained share is small on all sixteen tasks, not only on the five the old figure read. It sits above a random update of the same size at all three featurizations, by the most on the e54 and c3 ciphers at VPD and SAE. By difference it sits closest to the random on the e53 text cipher at all three, tied with the e58 copy task at neurons. So the needed set carries more of a fine-tune's write than chance, but most of the write lies outside it. At none of the three featurizations does this reading separate the tasks known to reuse old parts from those known to build new ones. The reuse definition is under revision, so no verdict is given here under either wording.
 
 ## How compelling is the evidence
 
@@ -117,7 +117,7 @@ The neuron identity deviation on the e62 and e46 states under the first hook, tr
 | stage 0, VPD and SAE | do-nothing 1, identity no flip, reproduction within tolerance | filed in `predictions.json` | as filed | as expected |
 | stage 0, neurons identity, old hook | deviation of the order of 8e-5 | filed in `predictions.json` | 0.02715 and 0.0692 on two states | not as expected; cause found |
 | stage 0, neurons identity, fixed hook | deviation under 1e-4 on four states | filed in `ident_straddle.py` | at most 7.8e-5, no flips | as expected |
-| stage 0, neurons reproduction | within 5e-5 relative of E298's item | filed in `predictions.json` | 5.0e-6 old hook; 3.4e-4 fixed hook | old hook as expected; fixed-hook shift recorded as the fix's effect, user 2026-11-27 |
+| stage 0, neurons reproduction | within 5e-5 relative of the saved item (E290's, carried by E298) | filed in `predictions.json` | 5.0e-6 old hook; 3.4e-4 fixed hook | old hook as expected; fixed-hook shift recorded as the fix's effect, user 2026-11-27 |
 
 ## Departures from the literature
 
