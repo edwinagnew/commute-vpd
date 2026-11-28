@@ -1,7 +1,34 @@
 <section id="decisions">
 <div class="sechead"><div class="eyebrow">Waiting on the user</div><h2><span class="num"></span>Pending decisions</h2></div>
-<div class="prose"><p><strong>Nothing waits on you.</strong> No question is open. The cluster card was removed on 2026-11-27 (at about 11:15 you noted the cluster was not down, and the node launches jobs again). The gain-only share card is gone: its cell (P1.58) was reopened and refilled on 2026-11-23 at 20:40, with the test on cues the fit never saw, reported as a description. The real-text finding that reverses a filed prediction (E273) asked for no choice and lives on the <a href="#e273">E273 card</a> and in the 2026-11-23 entry of section {{n:timeline}}. The convergence panel's cell (P2.66, <a href="#e272">E272</a>) is filled and no question is open on it. Before it, at about 12:40 you answered the last open card: a changed part counts as retained by what it writes, and the definition reads reuse by the write share over changed parts (section {{n:timeline}}, 2026-11-22). Behaviour read part by part is reported as a stated limit, because one part barely moves the output; the search-based version is not used; definition-lead is writing the paper's one-page justification. At about 19:20 on 2026-11-21 you chose to count only what changed, each changed part weighted by the change it carries; untouched parts no longer count as reused. Earlier that day you answered how wording A treats a new computation spread thinly over many parts (diagnose first; the diagnosis was <a href="#e247">E247</a>), and on 2026-11-20 four questions: size-normalised R, the memorising twins, the held-model reading on Qwen's pair library, and the reuse score at the VPD featurization. Your wording of the definition box (2026-11-18, about 19:00) stands. The neuron-level saturation question is closed.</p>
+<div class="prose"><p><strong>Two questions are open, both from 2026-11-27.</strong> One asks whether to test if the re-gating share on Qwen3-1.7B depends on how far an update moves the answer; the other asks what reading would tell a built-new edit from one the decomposition simply fails to explain. Earlier decisions: at about 12:40 on 2026-11-22 you answered that a changed part counts as retained by what it writes, and the definition reads reuse by the write share over changed parts (section {{n:timeline}}, 2026-11-22); at about 19:20 on 2026-11-21 you chose to count only what changed; your wording of the definition box (2026-11-18) stands.</p>
 <p>Flags on a card: <span class="chip refuted">Blocking</span> planned runs cannot go ahead; <span class="chip open">Soon</span> it decides one line's next step; <span class="chip uninf">No rush</span> nothing waits on it.</p></div>
 <div class="cards stack">
+<div class="card decision" id="decision-qwen-share-gain"><span class="chip open urgency">Soon</span>
+<div class="k">Question for you · regating-lead · new 2026-11-27</div>
+<h3>Should we test whether the re-gating share on Qwen3-1.7B depends on how far an update moves the answer?</h3>
+<p><strong>What was done.</strong> On Qwen3-1.7B we scaled random changes until each moved the trained answer by one log-odds, then read the re-gating share on them beside the fine-tunes' share, three draws each.</p>
+<p><strong>What we got.</strong> On the copying and known-answer tasks the randoms read about as high as the fine-tunes: copying 0.63 to 0.72 against 0.61 to 0.64, known answers 0.51 to 1.03 against 0.58 to 0.60. On the cipher, invented-word and both maths tasks the fine-tunes read higher (cipher 0.56 to 0.58 against 0.35 to 0.38).</p>
+<p><strong>Why it may be a gain effect.</strong> The fine-tunes move the answer by 10 to 160 log-odds and the randoms by about 1, and the code calls shares near a gain of 1 unstable. On the 67M model, random-subspace shares sat up to 0.47 below their fine-tune at the first gain and came within about 0.10 later. So the overlap on copying and known answers may come from the gain mismatch, not from the fine-tunes.</p>
+<p><strong>Options.</strong></p>
+<ul>
+<li><strong>A. Scale the copying and known-answer fine-tunes down.</strong> Re-read the share at gains 1 and 10 (plus full gain) on the VPD reading, seeds 0 to 2, same rows, and re-read the 1.03 random draw on fresh rows. About $5 to $7, under 1 hour on one H100, descriptive. If the share falls with gain, the overlap is a gain effect and the paper says so; if not, the overlap stands. Limit: it reads one reading on two kinds of task.</li>
+<li><strong>B. No run.</strong> The paper states the gain mismatch in plain words beside the Qwen values. $0; the overlap stays unexplained.</li>
+</ul>
+<p><strong>Recommendation: A.</strong> It is cheap and fast, and it settles whether the one place Qwen reads like random is a gain artefact.</p>
+<p class="small">Running: nothing; opens on your yes. Links: <code>reports/reviews/2026-11-27_review_p290-e330-randoms.md</code>, <code>~/commute-data/agents/regating-lead/draft-cell-share-gain-dependence.txt</code>. Names in the reports: E330 is the Qwen random references (cell P2.90); the premise note is <code>~/commute-data/premise/P2.90.md</code>.</p>
+</div>
+<div class="card decision asked" id="decision-new-vs-unexplained"><span class="chip uninf urgency">No rush</span>
+<div class="k">Question for you · regating-lead · new 2026-11-27 · a question about the definition</div>
+<h3>What reading would tell apart an edit that builds something new from one the decomposition simply fails to explain?</h3>
+<p><strong>What was done.</strong> On the 67M model we built edits by hand to install something new, and read how much of each stays with the decomposition's parts, under both the least-squares and the adjoint split.</p>
+<p><strong>What we got.</strong> The built-new edits read a retained share of about 0.003 to 0.019, the same as random changes of the same size (about 0.0015 to 0.011), under both splits. So "new" is currently read only as "the decomposition explains none of it", which a random change also satisfies.</p>
+<p><strong>Options.</strong></p>
+<ul>
+<li><strong>A. Keep the definition as it is.</strong> The paper's discussion states this limit. $0.</li>
+<li><strong>B. You name an added reading</strong> that a built-new edit passes and a random change fails. That is a definition change and your call; we would then price a run. Limit: nothing runs until the reading exists.</li>
+</ul>
+<p><strong>Recommendation: A for the 2026-11-29 draft, B as future work.</strong> The draft is due and the limit can be stated honestly; a new reading needs your wording first.</p>
+<p class="small">Running: nothing. Links: <code>reports/reviews/2026-11-27_review_e331-results.md</code>, <code>~/commute-data/premise/P1.67.md</code>. Names in the reports: cell P1.67; E329 and E331 are the adjoint-split runs (unscaled, scaled).</p>
+</div>
 </div>
 </section>
