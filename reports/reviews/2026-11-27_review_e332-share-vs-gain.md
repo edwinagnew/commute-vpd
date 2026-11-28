@@ -134,3 +134,23 @@ KL ratios "9 to 53" and "8 to 33" recompute as 9.4-52.8 and 7.7-32.6.
 - SHOULD (opening, sentence 2): "no longer read above the random updates" implies they did at full gain. They did
   not (known full 0.58-0.60 vs draws 0.51-1.03; copy full 0.61-0.64 vs 0.63-0.72). Say "do not read above".
 OK to fill once run 2 lands, or now with run 2 listed as Not run.
+
+## Paper check: sec4:89 (writeup-lead local d602887) and the App H draft (2026-11-27 ~20:35)
+
+Sources: P2.91 page, P2.90 E330 table, `qwen_reread.jsonl`, `qwen_gain.jsonl`, `qwen_random_vpd*.jsonl`.
+Traced and correct: VPD fine-tune gains 10.5-160.3 ("10 to 160"); every VPD fine-tune share 0.561-0.737 ("0.56 to 0.74");
+known 0.58-0.60 at full gain to 0.72-0.74 at gain one; copy 0.61-0.64 to 0.58-0.59; randoms at gain one, known
+0.515-1.031 and copy 0.630-0.719; on cipher, invented and both maths tasks randoms 0.351-0.554 against fine-tunes
+0.561-0.737 at full gains 16.2-160.3; repack 1.031 to 1.211; KL 7.7-52.8 times the gain-one fine-tunes; the
+neuron-control numbers in the draft's last bullet.
+- MUST (App H draft, last sentence): "the random draws are 9 to 23 times its norm", where "its" is the gain-one
+  fine-tune, is wrong. The draws are 8.8-23.3 times the full fine-tune's norm. The gain-one fine-tune is c = 0.009-0.010
+  of that, so the draws are about 900 to 2,500 times the gain-one fine-tune's norm. Either say "9 to 23 times the full
+  fine-tune's norm" or "about 900 to 2,500 times the norm of the scaled one".
+- SHOULD (sec4:89): "inside the random range on one task and below it on the other" should name the tasks (known
+  facts, copy), as the App H draft does.
+- SHOULD (sec4:89): the known range 0.51-1.03 is three draws whose top one is a single draw above 1, and it moved to 1.21
+  on repacked rows. One clause, or a pointer to App H, would keep a reader from taking 1.03 as a measured edge.
+- OK: "On the two tasks read at matched gain, the share does not separate a fine-tune from a random change on Qwen"
+  is scoped to the tasks read and matches the page.
+- Note: E333 (run 2, repacked fine-tunes) is pending, so re-check both texts when its rows land.
