@@ -73,3 +73,11 @@ The neurons panel passes, with notes. The full record is ~/commute-data/agents/r
 - All 72 items reran under the fix. Of the 96 top-neuron rows, 24 moved, none by more than 3.8e-6. The VPD and SAE rows are unchanged, and the figure was built from the fixed CSV (6433be77).
 - Note: the e58 reproduction gained one variable (4170 to 4171 entries, a relative change of 3.4e-4). No record names that variable, so its cause is inferred, not verified.
 - Correction to my earlier range: the random neuron range is 0.003-0.011 (top value 0.01075, already there before the fix), not 0.003-0.010.
+
+## P1.66 page check (1d5af224, 19:40)
+
+One MUST and five SHOULDs. The full record is ~/commute-data/agents/redteam-lead/measurement-record/P166_page_check.md. Every page number traced and matched.
+
+- MUST: "Tasks known to reuse old parts read no higher than tasks known to be new" (opening, and line 33) is false per task. At SAE, e53/lowercase (reuse) reads 0.0588, the highest of the 16 tasks. At neurons, e46/ident32 (reuse, 0.028) is above every new task but e54/cipher. Only the group means support it.
+- SHOULDs: the opening is four sentences, not three; its ranges are task means pooled over featurizations and should say so; the neuron rows are E290 carried by E298, not "E298's"; "nearest their randoms" holds only by difference; the figure does not mark the old-hook e58 rows (optional).
+- Separately, I checked writeup-lead's paper commit 9fe7ae3 (Fig 2 data and caption): OK. Its 288 trained rows equal definition_rows.csv at 6433be77, and the appI:42 ranges were re-derived.
