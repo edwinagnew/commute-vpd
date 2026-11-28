@@ -5,7 +5,7 @@ decomposition at full strength and again with each update shrunk until it raised
 one log-odds, the amount the random reference updates raise them, first on the original rows and then on the same
 items packed into new rows. Shrinking the update raised the known-facts share by about 0.15 on both packings, while
 the copy share fell a little on the original rows and barely moved on the new ones, and at that matched answer gain
-the fine-tunes read within the random updates' range on known facts and below or at its lower edge on copy, never
+the fine-tunes read within the random updates' range on known facts and below or level with the lowest draw on copy, never
 above it. For the paper's goal this means the Qwen appendix's comparison of
 full-strength fine-tunes with small random updates mixes how far an update moves the answer into what it says about
 how the update was built, so on these two tasks it cannot separate a fine-tune from a random change.
@@ -104,7 +104,7 @@ The same rows and share as above. "Size" is the draw's norm over the fine-tune s
 draws 0 to 2 at gain about one read 0.687, 0.515 and 1.031, so the fine-tunes sit inside the draws' range. On copy,
 the fine-tunes at gain about one, seeds 0 to 2, read 0.58 to 0.59 on these rows and the draws 0 to 2 read 0.630,
 0.666 and 0.719, so on this packing the fine-tunes read below every draw. On repacked rows, run 2 below, copy seeds 0
-and 1 at gain about one read 0.628 and 0.630, at the draws' lower edge rather than below it. The draws were read on
+and 1 at gain about one read 0.628 and 0.630, level with the lowest draw rather than below it. The draws were read on
 the original packing only, apart from known draw 2. On neither task is there any sign that a fine-tune reads above a
 random update of the same answer gain.
 
@@ -174,7 +174,7 @@ The step from full gain to gain about one, per seed, on each packing:
 | copy | 1 | -0.025 | +0.020 |
 | copy | 2 | -0.033 | no reading |
 
-**Reading it.** Packing moves the fine-tunes' shares by a few hundredths, far less than it moved the random draw. On
+**Reading it.** Packing moves the fine-tunes' shares by a few hundredths (on copy's gain-one reads, together with the gain shift the repack caused at the same scale), far less than it moved the random draw. On
 known facts, seeds 0 to 2, every share rose by 0.016 to 0.023 on the repacked rows, at full gain near 16 and at gain
 about one alike. The step from full gain to gain one is therefore +0.140 to +0.146 on repacked rows against +0.144 to
 +0.147 on the original rows, so known's rise of about 0.15 holds on both packings.
@@ -193,7 +193,7 @@ sensitivity to packing seen in run 1 belongs to that large random update far mor
 facts, seeds 0 to 2 at gain about one read 0.74 to 0.76 on repacked rows, at gains 1.017 to 1.068. Draws 0 to 2 read
 0.51 to 1.03 at gains 1.010 to 1.055, so the fine-tunes sit inside the draws' range on both packings. On copy, seeds
 0 and 1 at gains 1.0025 and 1.015 read 0.628 and 0.630 on repacked rows. Draws 0 to 2 read 0.630 to 0.719 at gains
-1.024 to 1.083. So on copy the fine-tunes read below the draws on the original rows and at their lower edge on
+1.024 to 1.083. So on copy the fine-tunes read below the draws on the original rows and level with the lowest draw on
 repacked rows, and never above them on either task.
 
 ## What we learned
