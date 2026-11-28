@@ -1,0 +1,63 @@
+E331 start, shard (3, 4), tag s3, card NVIDIA H100 80GB HBM3; settings {'items': ('x2', 'x10', 'rebuilt', 'random_size_241001', 'new_few', 'new_thin', 'random_kl_241002'), 'control': 'x2', 'derangements': 4, 'examples': 64, 'seed': 268, 'rows': 1024, 'logit_rows': 8192, 'cache_batch': 32, 'ident_vars': 3, 'gain_batch': 8}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+00:28:08 [data] train rows 0..32768: cached at /root/artifacts/sets/train_0_32768.npy
+LINE {"experiment": "E331", "stage": "0", "split": "adjoint_scaled", "item": "do_nothing", "n_changed": 0, "dd_max": 0.0, "E_b": 1.0, "seconds": 20.01936364173889}
+    site 0 (block 0, variables from 1): 256 cases, 0 needed so far; 256 cases in 0 s (4845/s)
+    site 1 (block 0, variables from 514): 256 cases, 0 needed so far; 512 cases in 0 s (5220/s)
+    site 2 (block 0, variables from 1539): 256 cases, 0 needed so far; 768 cases in 0 s (5360/s)
+    site 3 (block 0, variables from 2052): 256 cases, 0 needed so far; 1024 cases in 0 s (5427/s)
+    site 4 (block 0, variables from 3077): 256 cases, 0 needed so far; 1280 cases in 0 s (5455/s)
+    site 5 (block 0, variables from 6150): 256 cases, 0 needed so far; 1536 cases in 0 s (5479/s)
+    site 6 (block 1, variables from 9735): 256 cases, 0 needed so far; 1792 cases in 0 s (5592/s)
+    site 7 (block 1, variables from 10248): 256 cases, 0 needed so far; 2048 cases in 0 s (5680/s)
+    site 8 (block 1, variables from 11273): 256 cases, 0 needed so far; 2304 cases in 0 s (5750/s)
+    site 9 (block 1, variables from 11786): 256 cases, 0 needed so far; 2560 cases in 0 s (5806/s)
+    site 10 (block 1, variables from 12811): 256 cases, 0 needed so far; 2816 cases in 0 s (5846/s)
+    site 11 (block 1, variables from 15884): 256 cases, 0 needed so far; 3072 cases in 1 s (5882/s)
+    site 12 (block 2, variables from 19469): 256 cases, 0 needed so far; 3328 cases in 1 s (5972/s)
+    site 13 (block 2, variables from 19982): 256 cases, 0 needed so far; 3584 cases in 1 s (6051/s)
+    site 14 (block 2, variables from 21007): 256 cases, 0 needed so far; 3840 cases in 1 s (6122/s)
+    site 15 (block 2, variables from 21520): 256 cases, 0 needed so far; 4096 cases in 1 s (6184/s)
+    site 16 (block 2, variables from 22545): 256 cases, 0 needed so far; 4352 cases in 1 s (6235/s)
+    site 17 (block 2, variables from 25618): 256 cases, 0 needed so far; 4608 cases in 1 s (6282/s)
+    site 18 (block 3, variables from 29203): 256 cases, 0 needed so far; 4864 cases in 1 s (6371/s)
+    site 19 (block 3, variables from 29716): 256 cases, 0 needed so far; 5120 cases in 1 s (6454/s)
+    site 20 (block 3, variables from 30741): 256 cases, 0 needed so far; 5376 cases in 1 s (6532/s)
+    site 21 (block 3, variables from 31254): 256 cases, 0 needed so far; 5632 cases in 1 s (6602/s)
+    site 22 (block 3, variables from 32279): 256 cases, 0 needed so far; 5888 cases in 1 s (6663/s)
+    site 23 (block 3, variables from 35352): 256 cases, 0 needed so far; 6144 cases in 1 s (6722/s)
+LINE {"experiment": "E331", "stage": "0", "split": "adjoint_scaled", "item": "identity:x2", "flips": 0, "max_dev": 5.14984130859375e-05, "min_margin": 0.00020694732666015625, "cases": 6144, "cases_per_s": 6717.626768734358, "n_read_positions": 41, "n_windows": 75, "window_len": 41, "n_vars": 38938, "seconds": 1.1193656921386719}
+STAGE 0 DONE
+stage 2: ['random_size_241001']
+    site 0 (block 0, variables from 1): 131328 cases, 513 needed so far; 131328 cases in 23 s (5798/s)
+    site 1 (block 0, variables from 514): 262400 cases, 1538 needed so far; 393728 cases in 68 s (5789/s)
+    site 2 (block 0, variables from 1539): 131328 cases, 2051 needed so far; 525056 cases in 91 s (5788/s)
+    site 3 (block 0, variables from 2052): 262400 cases, 3076 needed so far; 787456 cases in 136 s (5785/s)
+    site 4 (block 0, variables from 3077): 786688 cases, 6149 needed so far; 1574144 cases in 273 s (5766/s)
+    site 5 (block 0, variables from 6150): 917760 cases, 9734 needed so far; 2491904 cases in 432 s (5771/s)
+    site 6 (block 1, variables from 9735): 131328 cases, 10247 needed so far; 2623232 cases in 452 s (5806/s)
+    site 7 (block 1, variables from 10248): 262400 cases, 11272 needed so far; 2885632 cases in 492 s (5866/s)
+    site 8 (block 1, variables from 11273): 131328 cases, 11785 needed so far; 3016960 cases in 512 s (5892/s)
+    site 9 (block 1, variables from 11786): 262400 cases, 12810 needed so far; 3279360 cases in 552 s (5939/s)
+    site 10 (block 1, variables from 12811): 786688 cases, 15883 needed so far; 4066048 cases in 674 s (6033/s)
+    site 11 (block 1, variables from 15884): 917760 cases, 19468 needed so far; 4983808 cases in 815 s (6114/s)
+    site 12 (block 2, variables from 19469): 131328 cases, 19981 needed so far; 5115136 cases in 833 s (6143/s)
+    site 13 (block 2, variables from 19982): 262400 cases, 21006 needed so far; 5377536 cases in 868 s (6197/s)
+    site 14 (block 2, variables from 21007): 131328 cases, 21519 needed so far; 5508864 cases in 885 s (6223/s)
+    site 15 (block 2, variables from 21520): 262400 cases, 22544 needed so far; 5771264 cases in 920 s (6270/s)
+    site 16 (block 2, variables from 22545): 786688 cases, 25617 needed so far; 6557952 cases in 1027 s (6386/s)
+    site 17 (block 2, variables from 25618): 917760 cases, 29202 needed so far; 7475712 cases in 1150 s (6500/s)
+    site 18 (block 3, variables from 29203): 131328 cases, 29715 needed so far; 7607040 cases in 1165 s (6529/s)
+    site 19 (block 3, variables from 29716): 262400 cases, 30740 needed so far; 7869440 cases in 1195 s (6586/s)
+    site 20 (block 3, variables from 30741): 131328 cases, 31253 needed so far; 8000768 cases in 1210 s (6613/s)
+    site 21 (block 3, variables from 31254): 262400 cases, 32278 needed so far; 8263168 cases in 1240 s (6665/s)
+    site 22 (block 3, variables from 32279): 786688 cases, 35351 needed so far; 9049856 cases in 1331 s (6799/s)
+    site 23 (block 3, variables from 35352): 917760 cases, 38935 needed so far; 9967616 cases in 1437 s (6938/s)
+LINE {"experiment": "E331", "stage": "2", "split": "adjoint_scaled", "item": "random_size_241001", "E_b_K": 0.0015058515421841, "E_b_K_E268": 0.010997719006580238, "E_b_over_E268_K": 0.0015058515421841, "size_K": 38935, "size_K_E268": 38935, "size_both": 38935, "n_changed": 38936, "n_changed_K": 38935, "n_vars": 38938, "n_windows": 75, "n_read_positions": 41, "n_pairs": 256, "shares_of_dW2": {"write2": 0.15407600230416815, "read2": 0.08885689419644932, "outside2": 0.5805152353125496, "cross_wr2": 0.05609954953150604, "cross_out2": 0.12045231865532689}, "scale": {"per_matrix": {"h.0.attn.k_proj": {"c": 0.1720045343248829, "R": 0.39898162563732453}, "h.0.attn.o_proj": {"c": 0.9461844472511539, "R": 0.44527260647133277}, "h.0.attn.q_proj": {"c": 0.15312850856516744, "R": 0.41831391804727247}, "h.0.attn.v_proj": {"c": 1.0392128703006511, "R": 0.47791827572328266}, "h.0.mlp.c_fc": {"c": 0.15569209466348585, "R": 0.3498099784610372}, "h.0.mlp.down_proj": {"c": 0.2063612550849696, "R": 0.3113172597893452}, "h.1.attn.k_proj": {"c": 0.11974249032354865, "R": 0.2605929871025825}, "h.1.attn.o_proj": {"c": 0.45640408292303003, "R": 0.4814345901133442}, "h.1.attn.q_proj": {"c": 0.16064461912869354, "R": 0.2790824725801682}, "h.1.attn.v_proj": {"c": 0.4238178532215872, "R": 0.3977148443037243}, "h.1.mlp.c_fc": {"c": 0.13513269858737192, "R": 0.3702803651611189}, "h.1.mlp.down_proj": {"c": 0.1771564404973459, "R": 0.5477844264385169}, "h.2.attn.k_proj": {"c": 0.26910520531623255, "R": 0.4374328503976354}, "h.2.attn.o_proj": {"c": 0.17165480370475328, "R": 0.34142993770755875}, "h.2.attn.q_proj": {"c": 0.2704610613526819, "R": 0.4094993862450558}, "h.2.attn.v_proj": {"c": 0.26532051919655186, "R": 0.42386197486734023}, "h.2.mlp.c_fc": {"c": 0.22516155266545937, "R": 0.4570068629837349}, "h.2.mlp.down_proj": {"c": 0.15935460978395388, "R": 0.2922784416397441}, "h.3.attn.k_proj": {"c": 0.3466513742049117, "R": 0.4591129553375141}, "h.3.attn.o_proj": {"c": 0.17107466952246392, "R": 0.436159868498206}, "h.3.attn.q_proj": {"c": 0.32175267473725205, "R": 0.41527654198767855}, "h.3.attn.v_proj": {"c": 0.3116601587124262, "R": 0.4704614902420761}, "h.3.mlp.c_fc": {"c": 0.1427205319824813, "R": 0.34926534824295014}, "h.3.mlp.down_proj": {"c": 0.021788316307479696, "R": 0.09395868228222999}}, "split_fp64_max": 2.353733472756232e-17, "c": {"median": 0.19175884779115776, "min": 0.021788316307479696, "max": 1.0392128703006511}, "R": {"median": 0.41238796411636713, "min": 0.09395868228222999, "max": 0.5477844264385169}}, "seconds": 1449.1141064167023, "peak_gpu_gb": 11.1272611618042}
+ITEM 1 of 1 DONE (random_size_241001)
+E331 DONE
+peak host RSS 6.2 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/adjoint_rho/results/items_run2_s3.jsonl, /root/out/run2_s3.log ===
