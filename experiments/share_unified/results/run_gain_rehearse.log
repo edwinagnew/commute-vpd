@@ -1,0 +1,159 @@
+rows [('known', 1066), ('copy', 1732), ('known_repack1', 1081)]; 6 states x (full + 2 scaled); repeat of p-9707d6ff/known_d2 (draw seed 228003, c 23.34, share 1.0314); 0 items in qwen_gain.jsonl
+[     0.0s] [P2.91 E332 p-9707d6ff] start; config Config(n_rows=128, row_len=256, n16=16, own_len=512, sigma_len=512, sigma_batch=2, tol=1e-06, alive_total=500244, store_err_max=0.001, gpu_max_gib=44.0, id_tol=1e-06, rep_tol=0.001, boot=2000, draws=1000, null_seeds=(0, 1, 2, 3), kl_match=1.5, kl_evals=6, inspan_a=17.78279410038923, high=0.8, problems=128, think_new=2048, think_batch=64, drop_max=0.25, limit_s=10800, first_s=7200)
+Fetching 2 files:   0%|          | 0/2 [00:00<?, ?it/s]Fetching 2 files:  50%|█████     | 1/2 [00:10<00:10, 10.57s/it]Fetching 2 files: 100%|██████████| 2/2 [00:10<00:00,  5.28s/it]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.72it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.94it/s]
+[    18.6s] [load] target, NVIDIA H100 80GB HBM3, peak GPU 6.41 GiB, host 11.4 GB
+[    39.7s]   [search c +1] gain 0
+[    45.8s] [load] components, peak GPU 24.64 GiB, host 35.9 GB
+[    50.1s] [load] gamma, peak GPU 40.55 GiB, host 50.7 GB
+[    58.1s] [item p-9707d6ff/zero/known] 27 s {"item": "p-9707d6ff/zero/known", "stage": "control", "kind": "zero", "rowset": "known", "c": 1.0, "search_gain": 0.0, "share": null, "seconds": 27.18096351623535, "gain": 0.0, "numerator": 0.0, "kl": 0.0, "share_any": NaN}
+[    58.1s] [check] zero_known: ok {"search_gain": 0.0, "gain": 0.0, "numerator": 0.0}
+[    65.7s]   [search c +1] gain 0
+[    77.8s] [item p-9707d6ff/W0/known] 20 s {"item": "p-9707d6ff/W0/known", "stage": "control", "kind": "W0", "rowset": "known", "c": 1.0, "search_gain": 0.0, "share": null, "seconds": 19.640982627868652, "gain": 0.0, "numerator": 0.0, "kl": 0.0, "share_any": NaN}
+[    77.8s] [check] W0_known: ok {"search_gain": 0.0, "gain": 0.0, "numerator": 0.0}
+[    85.7s]   [search c +1] gain 0
+[    97.4s] [item p-9707d6ff/zero/copy] 20 s {"item": "p-9707d6ff/zero/copy", "stage": "control", "kind": "zero", "rowset": "copy", "c": 1.0, "search_gain": 0.0, "share": null, "seconds": 19.666937828063965, "gain": 0.0, "numerator": 0.0, "kl": 0.0, "share_any": NaN}
+[    97.4s] [check] zero_copy: ok {"search_gain": 0.0, "gain": 0.0, "numerator": 0.0}
+[   105.1s]   [search c +1] gain 0
+[   117.3s] [item p-9707d6ff/W0/copy] 20 s {"item": "p-9707d6ff/W0/copy", "stage": "control", "kind": "W0", "rowset": "copy", "c": 1.0, "search_gain": 0.0, "share": null, "seconds": 19.868985176086426, "gain": 0.0, "numerator": 0.0, "kl": 0.0, "share_any": NaN}
+[   117.3s] [check] W0_copy: ok {"search_gain": 0.0, "gain": 0.0, "numerator": 0.0}
+[   125.3s]   [search c +1] gain 0
+[   136.4s] [item p-9707d6ff/zero/known_repack1] 19 s {"item": "p-9707d6ff/zero/known_repack1", "stage": "control", "kind": "zero", "rowset": "known_repack1", "c": 1.0, "search_gain": 0.0, "share": null, "seconds": 19.049246311187744, "gain": 0.0, "numerator": 0.0, "kl": 0.0, "share_any": NaN}
+[   136.4s] [check] zero_known_repack1: ok {"search_gain": 0.0, "gain": 0.0, "numerator": 0.0}
+[   144.0s]   [search c +1] gain 0
+[   156.1s] [item p-9707d6ff/W0/known_repack1] 20 s {"item": "p-9707d6ff/W0/known_repack1", "stage": "control", "kind": "W0", "rowset": "known_repack1", "c": 1.0, "search_gain": 0.0, "share": null, "seconds": 19.760244131088257, "gain": 0.0, "numerator": 0.0, "kl": 0.0, "share_any": NaN}
+[   156.1s] [check] W0_known_repack1: ok {"search_gain": 0.0, "gain": 0.0, "numerator": 0.0}
+wandb: Currently logged in as: edwinagnew (edwinagnew-mats) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+[   567.2s] [fetch] last.safetensors: 5637 MB in 407 s
+[   571.9s] [fetch known_s0_last] p35r3-known-s0-last: 416 s, sha256 matches
+[   639.4s] [item p-9707d6ff/full/known_s0_last] 67 s {"item": "p-9707d6ff/full/known_s0_last", "stage": "full", "target": null, "c": 1.0, "arm": "known", "seed": 0, "save": "last", "step": 300, "sha256": "c2d40008689dece8caf4ff4d0546277158f1ef0edc21ff22d194bf19255e3e69", "rowset": "known", "answers": 1066, "gain": 15.923672488629759, "numerator": 9.504233003700605, "kl": 1.8827445972591839, "share_any": 0.5968618740737772, "share": 0.5968618740737772, "e328_share": 0.5968618740737772, "diff_e328": 0.0, "e328_gain": 15.923672488629759, "seconds": 67.45092439651489}
+[   639.4s] [check] first_read_time: ok {"seconds": 67.45092439651489, "max": 720}
+[   647.7s]   [search c +0.01] gain 1.15122
+[   655.8s]   [search c +0.0151991] gain 1.71332
+[   663.9s]   [search c +0.0231013] gain 2.51944
+[   674.1s]   [search c +0.0351119] gain 3.64659
+[   682.2s]   [search c +0.053367] gain 5.17062
+[   690.4s]   [search c +0.0811131] gain 7.09861
+[   698.4s]   [search c +0.123285] gain 9.28974
+[   706.6s]   [search c +0.187382] gain 11.3595
+[   716.6s]   [search c +0.155333] gain 10.4705
+[   724.6s]   [search c +0.139309] gain 9.92215
+[   791.0s] [item p-9707d6ff/g10/known_s0_last] 152 s {"item": "p-9707d6ff/g10/known_s0_last", "stage": "g10", "target": 10, "arm": "known", "seed": 0, "save": "last", "step": 300, "sha256": "c2d40008689dece8caf4ff4d0546277158f1ef0edc21ff22d194bf19255e3e69", "rowset": "known", "answers": 1066, "status": "ok", "c": 0.13930894248187542, "search_gain": 9.922149052582297, "evals": 10, "gain": 9.922149052582297, "numerator": 6.485893954127808, "kl": 0.1641428818187842, "share_any": 0.6536783432455912, "share": 0.6536783432455912, "in_band": true, "seconds": 151.6168088912964}
+[   799.9s]   [search c +0.01] gain 1.15122
+[   807.8s]   [search c +0.005] gain 0.587084
+[   816.0s]   [search c +0.0075] gain 0.872026
+[   824.1s]   [search c +0.00875] gain 1.01234
+[   891.8s] [item p-9707d6ff/g1.05/known_s0_last] 101 s {"item": "p-9707d6ff/g1.05/known_s0_last", "stage": "g1.05", "target": 1.05, "arm": "known", "seed": 0, "save": "last", "step": 300, "sha256": "c2d40008689dece8caf4ff4d0546277158f1ef0edc21ff22d194bf19255e3e69", "rowset": "known", "answers": 1066, "status": "ok", "c": 0.00874999980442226, "search_gain": 1.0123438584251172, "evals": 4, "gain": 1.0123438584251172, "numerator": 0.753474633493739, "kl": 0.0012541631076182689, "share_any": 0.7442872569661303, "share": 0.7442872569661303, "in_band": true, "seconds": 100.73583388328552}
+[   979.6s] [fetch] last.safetensors: 5637 MB in 405 s
+[   985.3s] [fetch known_s1_last] p35r3-known-s1-last: 413 s, sha256 matches
+[  1051.1s] [item p-9707d6ff/full/known_s1_last] 66 s {"item": "p-9707d6ff/full/known_s1_last", "stage": "full", "target": null, "c": 1.0, "arm": "known", "seed": 1, "save": "last", "step": 300, "sha256": "9dc99bc0ef396cca2e37983e622f1ea97dd8f0ec3d771f627661970cb018fe73", "rowset": "known", "answers": 1066, "gain": 16.02459677762231, "numerator": 9.237862439594096, "kl": 1.4492622750575261, "share_any": 0.5764801802997247, "share": 0.5764801802997247, "e328_share": 0.5764801802997247, "diff_e328": 0.0, "e328_gain": 16.02459677762231, "seconds": 65.80962324142456}
+[  1059.5s]   [search c +0.01] gain 1.13186
+[  1069.4s]   [search c +0.0151991] gain 1.68867
+[  1077.8s]   [search c +0.0231013] gain 2.49247
+[  1085.9s]   [search c +0.0351119] gain 3.62588
+[  1093.9s]   [search c +0.053367] gain 5.18239
+[  1102.3s]   [search c +0.0811131] gain 7.18004
+[  1111.6s]   [search c +0.123285] gain 9.43865
+[  1119.6s]   [search c +0.187382] gain 11.5363
+[  1127.5s]   [search c +0.155333] gain 10.6399
+[  1135.5s]   [search c +0.139309] gain 10.0846
+[  1202.6s] [item p-9707d6ff/g10/known_s1_last] 152 s {"item": "p-9707d6ff/g10/known_s1_last", "stage": "g10", "target": 10, "arm": "known", "seed": 1, "save": "last", "step": 300, "sha256": "9dc99bc0ef396cca2e37983e622f1ea97dd8f0ec3d771f627661970cb018fe73", "rowset": "known", "answers": 1066, "status": "ok", "c": 0.13930894248187542, "search_gain": 10.084551927978598, "evals": 10, "gain": 10.084551927978598, "numerator": 6.580777060525889, "kl": 0.19576969092511254, "share_any": 0.652560183885629, "share": 0.652560183885629, "in_band": true, "seconds": 151.51223039627075}
+[  1210.8s]   [search c +0.01] gain 1.13186
+[  1218.8s]   [search c +0.005] gain 0.575752
+[  1229.3s]   [search c +0.0075] gain 0.856307
+[  1237.4s]   [search c +0.00875] gain 0.994713
+[  1245.6s]   [search c +0.009375] gain 1.06344
+[  1312.7s] [item p-9707d6ff/g1.05/known_s1_last] 110 s {"item": "p-9707d6ff/g1.05/known_s1_last", "stage": "g1.05", "target": 1.05, "arm": "known", "seed": 1, "save": "last", "step": 300, "sha256": "9dc99bc0ef396cca2e37983e622f1ea97dd8f0ec3d771f627661970cb018fe73", "rowset": "known", "answers": 1066, "status": "ok", "c": 0.00937499979045242, "search_gain": 1.0634357508582677, "evals": 5, "gain": 1.0634357508582677, "numerator": 0.7689134845034424, "kl": 0.0014048809844246768, "share_any": 0.723046487653697, "share": 0.723046487653697, "in_band": true, "seconds": 110.10572028160095}
+[  1392.8s] [fetch] last.safetensors: 5637 MB in 405 s
+[  1397.5s] [fetch known_s2_last] p35r3-known-s2-last: 412 s, sha256 matches
+[  1469.5s] [item p-9707d6ff/full/known_s2_last] 70 s {"item": "p-9707d6ff/full/known_s2_last", "stage": "full", "target": null, "c": 1.0, "arm": "known", "seed": 2, "save": "last", "step": 300, "sha256": "4f33b27ecbbbcfd2aab829ce6cffad65ae72c4e8ef13bbc37d190ff247d337c2", "rowset": "known", "answers": 1066, "gain": 15.959829863665272, "numerator": 9.300166292243917, "kl": 1.248425993458774, "share_any": 0.5827233981620953, "share": 0.5827233981620953, "e328_share": 0.5827233981620953, "diff_e328": 0.0, "e328_gain": 15.959829863665272, "seconds": 70.29339027404785}
+[  1477.8s]   [search c +0.01] gain 1.13123
+[  1485.9s]   [search c +0.0151991] gain 1.68619
+[  1494.3s]   [search c +0.0231013] gain 2.48464
+[  1503.3s]   [search c +0.0351119] gain 3.60537
+[  1512.0s]   [search c +0.053367] gain 5.13288
+[  1520.2s]   [search c +0.0811131] gain 7.09248
+[  1528.3s]   [search c +0.123285] gain 9.33425
+[  1536.3s]   [search c +0.187382] gain 11.4632
+[  1546.2s]   [search c +0.155333] gain 10.5493
+[  1554.6s]   [search c +0.139309] gain 9.98508
+[  1623.5s] [item p-9707d6ff/g10/known_s2_last] 154 s {"item": "p-9707d6ff/g10/known_s2_last", "stage": "g10", "target": 10, "arm": "known", "seed": 2, "save": "last", "step": 300, "sha256": "4f33b27ecbbbcfd2aab829ce6cffad65ae72c4e8ef13bbc37d190ff247d337c2", "rowset": "known", "answers": 1066, "status": "ok", "c": 0.13930894248187542, "search_gain": 9.985082927428694, "evals": 10, "gain": 9.985082927428694, "numerator": 6.548929831237848, "kl": 0.1915922586827123, "share_any": 0.6558713511780812, "share": 0.6558713511780812, "in_band": true, "seconds": 153.9971113204956}
+[  1633.3s]   [search c +0.01] gain 1.13123
+[  1641.2s]   [search c +0.005] gain 0.575874
+[  1649.2s]   [search c +0.0075] gain 0.856157
+[  1657.5s]   [search c +0.00875] gain 0.994349
+[  1668.9s]   [search c +0.009375] gain 1.06295
+[  1735.3s] [item p-9707d6ff/g1.05/known_s2_last] 112 s {"item": "p-9707d6ff/g1.05/known_s2_last", "stage": "g1.05", "target": 1.05, "arm": "known", "seed": 2, "save": "last", "step": 300, "sha256": "4f33b27ecbbbcfd2aab829ce6cffad65ae72c4e8ef13bbc37d190ff247d337c2", "rowset": "known", "answers": 1066, "status": "ok", "c": 0.00937499979045242, "search_gain": 1.0629488166792256, "evals": 5, "gain": 1.0629488166792256, "numerator": 0.7726795352159822, "kl": 0.0014046438795887305, "share_any": 0.7269207351205508, "share": 0.7269207351205508, "in_band": true, "seconds": 111.83575749397278}
+[  1785.4s] [fetch] last.safetensors: 5637 MB in 385 s
+[  1790.2s] [fetch copy_s0_last] p35r3-copy-s0-last: 393 s, sha256 matches
+[  1855.9s] [item p-9707d6ff/full/copy_s0_last] 66 s {"item": "p-9707d6ff/full/copy_s0_last", "stage": "full", "target": null, "c": 1.0, "arm": "copy", "seed": 0, "save": "last", "step": 300, "sha256": "03600334ac8dda1e6958b72a4d922ea228893a82b1e1737ce69c9721ba38acb5", "rowset": "copy", "answers": 1732, "gain": 10.502455977619668, "numerator": 6.693122242286682, "kl": 3.6474333489917146, "share_any": 0.6372911494748913, "share": 0.6372911494748913, "e328_share": 0.6372911494748913, "diff_e328": 0.0, "e328_gain": 10.502455977619668, "seconds": 65.6995005607605}
+[  1865.4s]   [search c +0.01] gain 1.14298
+[  1874.2s]   [search c +0.0151991] gain 1.71724
+[  1882.4s]   [search c +0.0231013] gain 2.56059
+[  1891.8s]   [search c +0.0351119] gain 3.75727
+[  1900.9s]   [search c +0.053367] gain 5.31871
+[  1914.9s]   [search c +0.0811131] gain 7.04053
+[  1922.9s]   [search c +0.123285] gain 8.5941
+[  1930.9s]   [search c +0.187382] gain 9.6515
+[  1998.0s] [item p-9707d6ff/g10/copy_s0_last] 142 s {"item": "p-9707d6ff/g10/copy_s0_last", "stage": "g10", "target": 10, "arm": "copy", "seed": 0, "save": "last", "step": 300, "sha256": "03600334ac8dda1e6958b72a4d922ea228893a82b1e1737ce69c9721ba38acb5", "rowset": "copy", "answers": 1732, "status": "ok", "c": 0.18738174438476562, "search_gain": 9.651503261363555, "evals": 8, "gain": 9.651503261363555, "numerator": 6.235779087204292, "kl": 0.8184248798546081, "share_any": 0.6460940765742752, "share": 0.6460940765742752, "in_band": true, "seconds": 142.12501072883606}
+[  2006.3s]   [search c +0.01] gain 1.14298
+[  2014.2s]   [search c +0.005] gain 0.576855
+[  2022.4s]   [search c +0.0075] gain 0.861498
+[  2032.5s]   [search c +0.00875] gain 1.00266
+[  2040.7s]   [search c +0.009375] gain 1.07292
+[  2106.7s] [item p-9707d6ff/g1.05/copy_s0_last] 109 s {"item": "p-9707d6ff/g1.05/copy_s0_last", "stage": "g1.05", "target": 1.05, "arm": "copy", "seed": 0, "save": "last", "step": 300, "sha256": "03600334ac8dda1e6958b72a4d922ea228893a82b1e1737ce69c9721ba38acb5", "rowset": "copy", "answers": 1732, "status": "ok", "c": 0.00937499979045242, "search_gain": 1.0729203029956058, "evals": 5, "gain": 1.0729203029956058, "numerator": 0.6208705007605592, "kl": 0.0034731312926085697, "share_any": 0.5786734569446412, "share": 0.5786734569446412, "in_band": true, "seconds": 108.71676301956177}
+[  2190.2s] [fetch] last.safetensors: 5637 MB in 397 s
+[  2194.9s] [fetch copy_s1_last] p35r3-copy-s1-last: 405 s, sha256 matches
+[  2261.8s] [item p-9707d6ff/full/copy_s1_last] 67 s {"item": "p-9707d6ff/full/copy_s1_last", "stage": "full", "target": null, "c": 1.0, "arm": "copy", "seed": 1, "save": "last", "step": 300, "sha256": "21e8d9382ed3259d03dd09c9138d95920bdb1ebe6d8b7a8de128b9c35b18a617", "rowset": "copy", "answers": 1732, "gain": 10.861068542796364, "numerator": 6.633655841199218, "kl": 3.3648732124679452, "share_any": 0.6107737756244076, "share": 0.6107737756244076, "e328_share": 0.6107737756244076, "diff_e328": 0.0, "e328_gain": 10.861068542796364, "seconds": 66.89936661720276}
+[  2271.2s]   [search c +0.01] gain 1.08382
+[  2281.3s]   [search c +0.0151991] gain 1.63386
+[  2290.0s]   [search c +0.0231013] gain 2.44789
+[  2299.3s]   [search c +0.0351119] gain 3.61328
+[  2308.0s]   [search c +0.053367] gain 5.15168
+[  2316.1s]   [search c +0.0811131] gain 6.86552
+[  2324.6s]   [search c +0.123285] gain 8.46258
+[  2332.8s]   [search c +0.187382] gain 9.63183
+[  2404.7s] [item p-9707d6ff/g10/copy_s1_last] 143 s {"item": "p-9707d6ff/g10/copy_s1_last", "stage": "g10", "target": 10, "arm": "copy", "seed": 1, "save": "last", "step": 300, "sha256": "21e8d9382ed3259d03dd09c9138d95920bdb1ebe6d8b7a8de128b9c35b18a617", "rowset": "copy", "answers": 1732, "status": "ok", "c": 0.18738174438476562, "search_gain": 9.631831925757472, "evals": 8, "gain": 9.631831925757472, "numerator": 6.238121249154523, "kl": 0.7676453607675244, "share_any": 0.6476567798564384, "share": 0.6476567798564384, "in_band": true, "seconds": 142.90736842155457}
+[  2414.4s]   [search c +0.01] gain 1.08382
+[  2485.4s] [item p-9707d6ff/g1.05/copy_s1_last] 81 s {"item": "p-9707d6ff/g1.05/copy_s1_last", "stage": "g1.05", "target": 1.05, "arm": "copy", "seed": 1, "save": "last", "step": 300, "sha256": "21e8d9382ed3259d03dd09c9138d95920bdb1ebe6d8b7a8de128b9c35b18a617", "rowset": "copy", "answers": 1732, "status": "ok", "c": 0.009999999776482582, "search_gain": 1.0838241847155834, "evals": 1, "gain": 1.0838241847155834, "numerator": 0.6349440512774003, "kl": 0.003502912490886019, "share_any": 0.585836762301094, "share": 0.585836762301094, "in_band": true, "seconds": 80.65994024276733}
+[  2602.2s] [fetch] last.safetensors: 5637 MB in 404 s
+[  2607.3s] [fetch copy_s2_last] p35r3-copy-s2-last: 412 s, sha256 matches
+[  2675.6s] [item p-9707d6ff/full/copy_s2_last] 68 s {"item": "p-9707d6ff/full/copy_s2_last", "stage": "full", "target": null, "c": 1.0, "arm": "copy", "seed": 2, "save": "last", "step": 300, "sha256": "d71262369bc555379e3b93eb6f0b165e4a3deee0845127e60f4133e58895312f", "rowset": "copy", "answers": 1732, "gain": 10.579848820051412, "numerator": 6.5828302585826215, "kl": 3.9426480570736704, "share_any": 0.6222045674326216, "share": 0.6222045674326216, "e328_share": 0.6222045674326216, "diff_e328": 0.0, "e328_gain": 10.579848820051412, "seconds": 68.28422856330872}
+[  2685.8s]   [search c +0.01] gain 1.13412
+[  2695.2s]   [search c +0.0151991] gain 1.70418
+[  2703.4s]   [search c +0.0231013] gain 2.5454
+[  2712.6s]   [search c +0.0351119] gain 3.75127
+[  2722.5s]   [search c +0.053367] gain 5.3283
+[  2731.6s]   [search c +0.0811131] gain 7.02547
+[  2739.8s]   [search c +0.123285] gain 8.52631
+[  2748.1s]   [search c +0.187382] gain 9.53432
+[  2757.6s]   [search c +0.284804] gain 10.1977
+[  2825.2s] [item p-9707d6ff/g10/copy_s2_last] 150 s {"item": "p-9707d6ff/g10/copy_s2_last", "stage": "g10", "target": 10, "arm": "copy", "seed": 2, "save": "last", "step": 300, "sha256": "d71262369bc555379e3b93eb6f0b165e4a3deee0845127e60f4133e58895312f", "rowset": "copy", "answers": 1732, "status": "ok", "c": 0.2848035991191864, "search_gain": 10.197655951745649, "evals": 9, "gain": 10.197655951745649, "numerator": 6.473958662320801, "kl": 1.5798499867102236, "share_any": 0.63484772313902, "share": 0.63484772313902, "in_band": true, "seconds": 149.62689590454102}
+[  2835.1s]   [search c +0.01] gain 1.13412
+[  2844.1s]   [search c +0.005] gain 0.573243
+[  2852.4s]   [search c +0.0075] gain 0.855309
+[  2860.6s]   [search c +0.00875] gain 0.995106
+[  2869.5s]   [search c +0.009375] gain 1.0647
+[  2937.7s] [item p-9707d6ff/g1.05/copy_s2_last] 113 s {"item": "p-9707d6ff/g1.05/copy_s2_last", "stage": "g1.05", "target": 1.05, "arm": "copy", "seed": 2, "save": "last", "step": 300, "sha256": "d71262369bc555379e3b93eb6f0b165e4a3deee0845127e60f4133e58895312f", "rowset": "copy", "answers": 1732, "status": "ok", "c": 0.00937499979045242, "search_gain": 1.064699103961294, "evals": 5, "gain": 1.064699103961294, "numerator": 0.6270268711614743, "kl": 0.0034481125529359897, "share_any": 0.5889240150842365, "share": 0.5889240150842365, "in_band": true, "seconds": 112.55902647972107}
+[  2993.2s]   [search c +1] gain 0.0187702
+[  3002.6s]   [search c -1] gain -0.0169157
+[  3010.5s]   [search c +0.01] gain 0.000177437
+[  3017.9s]   [search c +0.0231013] gain 0.000409142
+[  3026.9s]   [search c +0.053367] gain 0.000944584
+[  3034.5s]   [search c +0.123285] gain 0.00217844
+[  3043.8s]   [search c +0.284804] gain 0.00503697
+[  3051.5s]   [search c +0.657933] gain 0.0120905
+[  3059.3s]   [search c +1.51991] gain 0.0293986
+[  3068.3s]   [search c +3.51119] gain 0.0756113
+[  3076.1s]   [search c +8.11131] gain 0.216775
+[  3085.3s]   [search c +18.7382] gain 0.733609
+[  3092.8s]   [search c +43.2876] gain 2.81358
+[  3101.4s]   [search c +31.0129] gain 1.70257
+[  3109.2s]   [search c +24.8755] gain 1.17251
+[  3116.6s]   [search c +21.8069] gain 0.941175
+[  3125.7s]   [search c +23.3412] gain 1.05419
+[  3195.7s] [item p-9707d6ff/repeat/known_d2_repack1] 214 s {"item": "p-9707d6ff/repeat/known_d2_repack1", "stage": "repeat", "arm": "known", "seed": 2, "target": 1.05, "c": 23.34119415283203, "rowset": "known_repack1", "answers": 1081, "draw_seed": 228003, "norms_from": "known_s2_last", "e330_c": 23.34119415283203, "e330_share": 1.0313777629592973, "status": "ok", "signed_c": 23.34119415283203, "probe": {"x": 1, "plus": 0.018770213282900027, "minus": -0.016915652317847273, "tie": false}, "probe_sign": 1.0, "tries": {"+": {"status": "ok", "x": 23.34119415283203, "gain": 1.0541939830247227, "evals": 15}}, "search_gain": 1.0541939830247227, "evals": 17, "size": 46.015090735437624, "gain": 1.0541939830247227, "numerator": 1.2764339895976924, "kl": 0.06120323094909612, "share": 1.2108150967958595, "max_search_gain": 2.8135756673451624, "search_seconds": 143.92618894577026, "seconds": 213.94487953186035}
+[  3195.7s] [done] peak GPU 42.13 GiB, host 50.7 GB
+QWEN_GAIN DONE
+peak host RSS 48.4 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/share_unified/results/qwen_gain.jsonl, /root/work/experiments/share_unified/results/stopped_gain.json ===
