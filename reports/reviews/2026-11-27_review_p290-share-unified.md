@@ -31,3 +31,51 @@ Verdict: **code OK; E327 holds; E328's fine-tune numbers are correct as read but
 - Any check of E330 (gain-matched randoms): still running.
 - `qwen_reread.py` and `share_reading.answer_cells` read line by line: I checked their outputs' arithmetic, not the row selection (128 rows, whole answers only) against the App H inventory.
 - The draft CSV and analysis (`qwen_share_new.csv`, `2026-11-27_analysis_p290-share-unified.md`): not yet in the repo.
+
+## Re-check of the final page (2026-11-27)
+
+Page `reports/analyses/2026-11-27_analysis_p290-share-unified.md` at 4c2c6fe7, with the E330 check
+(`2026-11-27_review_p290-e330-randoms.md`). No wrong number found, and no comparison is made without naming its task.
+Two small items remain open, neither a MUST.
+
+Earlier items:
+
+- MUST 1 (no comparison without references; per task, with n draws): closed. Page :85-100 names each task and its draw
+  count ("two draws", "three", "one draw each" on the neuron cipher and invented facts). :99-100 states plainly that on
+  copy and known facts the randoms read as high on both decompositions. :6-7 says any comparison holds only task by
+  task. No sentence says "re-gated more than random" without a task.
+- MUST 2 (base-model rows are a determinism check): closed, :30-32 and :60.
+- SHOULD 1 (multi-token numeric check): the check was done (`tests/test_share_unit.py::test_multi_token_against_brute_force`,
+  passed on the E328 rerun and E330 pods), but the page's "Not run" :162-163 still lists it as not run and says E327
+  tests only one-token answers. **Open (SHOULD): replace that bullet with "done: tests/test_share_unit.py, 1-6 token
+  answers in float64".**
+- SHOULD 2 (end token is part of the answer): closed, :14-15.
+- SHOULD 3 (every sentence citing the old KL values): closed, :102-152 (13 items, incl. the abstract and the non-input file).
+- SHOULD 4 (E327 as 47 of 48, cause unverified): closed, :21-25.
+- E330 MUST (per task, n draws): closed as above. E330 SHOULD (dots, not ranges; capped draws named): the page shows
+  every draw in a table (:76-83) and names the eight "no band" draws, their tasks and largest gains, and says leaving
+  them out is not neutral (:68-71). The figure is not built yet (:165); the plan at :123-124 is one dot per draw with
+  the capped draws in the caption. Closed on the page, to be checked on the figure. Note for writeup-lead: the
+  `random_kl` column of `qwen_share_new.csv` is the mean of the read draws only (`build_csv.sh:7-8`). The figure must
+  plot dots from `qwen_share_random_draws.csv`, not that mean, or the known-facts spread and the capped draws vanish.
+- E330 (a)-(c) (1.03 draw, gain-1 reference not like for like, spread): closed, :62-66 and :91-94.
+
+New items:
+
+- **SHOULD: the opening paragraph :5-6** compares tasks without draw counts ("random changes read lower on cipher,
+  invented facts and both maths tasks"). Cipher and invented facts rest on two VPD draws each. A clause "(two or three
+  draws per task)" would meet the n-draws rule in the summary too.
+- NIT: :93 "seed spread of 0.02 or less" for the known-facts fine-tunes. VPD reads 0.5765-0.5969, a spread of 0.0204.
+  It rounds to 0.02, so this is fine as written.
+
+Spot-checks (jq on the files the sidecar names), all match:
+
+| Page | Value | Source |
+|---|---|---|
+| :79 VPD known draws | 0.687 / 0.515 / 1.031 | `qwen_random_vpd*.jsonl` numerator/gain = 0.6870, 0.5146, 1.0314; draw 2 numerator 1.0697, gain 1.0371 (:91) |
+| :80 VPD cipher | no band / 0.375 / 0.351 | draw 0 status cap, gain 0.00016; draws 1, 2: 0.3750, 0.3509 |
+| :22 E327 miss | 0.7519 to 0.7494, 0.00245 | `repro_67m.jsonl` e53/lowercase_s0 old 0.75188, new 0.74943; 47 of 48 within 0.002 |
+| :25 67M range | 0.12 to 1.10 | `repro_67m.jsonl` new min 0.1156, max 1.0991 |
+| :33-34 run-1 randoms | 11 of 12 negative, one at +1.19 | `qwen_reread.jsonl` run1 gains: only VPD gold +1.1916 |
+| :16, :31 | answer counts; 16 rows, 20 for maths | `run_qwen.log:1-5` |
+| :43-48 | fine-tune means and seed ranges | `qwen_share_new.csv` |
