@@ -12,3 +12,5 @@ Don't build `paper/paper/main.pdf` and never commit it. The user builds it in Te
 
 **Why:** cpu-run builds were slow and flaky (friction 1178), and the committed PDF conflicted with the user's local build.
 **How to apply:** check edits with a grep for broken refs, or ask the user, and leave the PDF alone. Before the final push of the draft (due 2026-11-29, [[project-draft-deadline-2026-11-29]]), remove the `.gitignore` line, rebuild once and commit main.pdf so the final push carries the real draft. This supersedes the "rebuild main.pdf after merges" part of [[feedback-avoid-paper-merge-conflicts]].
+
+Figures too (2026-11-27): the user renders every included plot on the laptop with `uv run paper/figures/src/make_all.py [names]` (whip-lead, a423aab/939097c; PDF only, from data/*.csv). A figure change = edit its CSV or script, commit, tell the user which name to re-run. Fig 1 TikZ (src/fig1_definition_rho.tex) is outside make_all: the user compiles it in TeXstudio, so after a .tex change say "pull, then recompile" — a PDF built before the pull shows the old panel (11-27, rho overlay).

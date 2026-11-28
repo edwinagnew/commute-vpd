@@ -1,0 +1,35 @@
+{
+  "experiment": "E331",
+  "cell": "P1.67",
+  "filed": "2026-11-27, regating-lead, before any GPU run; user approved via whip-lead: \"yes, run the scaled adjoint on 4 pods\"",
+  "settings": {
+    "items": ["x2", "x10", "rebuilt", "random_size_241001", "new_few", "new_thin", "random_kl_241002"],
+    "control": "x2",
+    "derangements": 4,
+    "examples": 64,
+    "seed": 268,
+    "rows": 1024,
+    "logit_rows": 8192,
+    "cache_batch": 32,
+    "ident_vars": 3,
+    "gain_batch": 8,
+    "settings_source": "Every setting is E329's (results/predictions.json), so the only change from E329's stage 2 is the split: items in the same order (--shard I 4 gives each of four pods one 41-position item); the scan settings are E268's; gain_batch, E247's write batch, also batches the Sigma pass (memory only; Sigma is a sum over every position). The scale: GOALS.md Terms, adjoint split, 'a per-matrix scale c = argmin ||(c K(dW) - dW) Sigma^1/2|| (user-confirmed 2026-10-20)', computed by split.adjoint_scale; Sigma = split.input_second_moments (E[a a^T] of each matrix's input over every position, on W0, bf16 autocast as that helper runs) on the item's own read rows D, the rows its rho is read on."
+  },
+  "readings": {
+    "E_b_K": "rho at VPD as E329: stand_in.explained_share(num, den, dd, K and changed), K by needed.needed_set on the scaled-adjoint featurization. 1 when K has no changed member. Blind to how much each variable matters for the behaviour (it weighs by write change). Positive control: the do-nothing (1 exactly)",
+    "E_b_over_E268_K": "the same share over E268's least-squares K: the split's effect with the variable set held fixed",
+    "scale": "per changed matrix c and R from split.adjoint_scale (R = the share of dW's Sigma-weighted energy that c K(dW) reproduces, the squared weighted cosine of K(dW) and dW), with median, min, max over the changed matrices; split_fp64_max, the largest relative gap between pieces plus remainder and dW (rounding level expected)",
+    "shares_of_dW2": "kstar_vpd.norm_shares total, as E329: write side, read side, remainder and cross terms as shares of |dW|^2"
+  },
+  "rules": {
+    "R0a": "Stage 0 stops the job unless the do-nothing (F = M) under the scaled split has no changed variable, every dd exactly 0.0 and E_b exactly 1.0",
+    "R0b": "Stage 0 stops the job on any argmax change under the identity interchange (x' = x) on x2 under the scaled featurization; its largest logit deviation is recorded, not barred",
+    "items": "descriptive, no rule: no verdict under either wording until the user adopts one (CLAUDE.md, P1.1)"
+  },
+  "expected": {
+    "stage0": "do-nothing: 0 changed, dd 0.0, E_b 1.0 (dW = 0 gives zero pieces, so c is not computed). Identity: 0 argmax changes, largest logit deviation about 5e-5 (E329's adjoint value on x2, 5.1e-5)",
+    "scale": "c in (0, 1) on most changed matrices: E329's unscaled pieces on x2 carry 42x (write) and 8.5x (read) |dW|^2, so c should shrink them to about dW's size; R in (0, 1], low where dW lies mostly outside both spans. split_fp64_max at rounding level (below 1e-12)",
+    "stage2": "descriptive. Least squares (E268): x2 0.761, x10 0.761, rebuilt 0.623, new_few 0.0127, new_thin 0.0188, randoms 0.0110 and 0.0106. Unscaled adjoint (E329): x2 and x10 0.207, rebuilt 0.012, new_few 0.0127, new_thin 0.0133, randoms 0.0018 and 0.0016. Rival a (the scaled adjoint separates more cleanly than least squares): x2 and x10 above 0.761 by more than the scan noise 0.003, nearer 1; new_few and new_thin at or below their least-squares 0.0127 and 0.0188; randoms at or below 0.011. Rival b (the scale does not rescue it): the gain edits at or below their least-squares 0.761, as E329's unscaled 0.207 or between. Noise: 0.0026, the sd of E_b_K between two scan seeds on one built edit (results/spread_rows_E301.csv). Anything else is reported as read"
+  },
+  "cost": "as E329's stage 2: about 4 x 1,445 s + 3 x 495 s of scans (E329's measured s/item on H100s), plus one Sigma pass per item (a forward over D, seconds) and stage 0; on four H100 pods the longest shard (one 41-position item and one 512-window item) is about 1,940 s, ~33 min, plus set-up"
+}

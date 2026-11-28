@@ -1,0 +1,208 @@
+shard (1, 2), tag vpd1: 9 of 18 draws per decomposition [('copy', 1), ('cipher', 0), ('cipher', 2), ('known', 1), ('invented', 0), ('invented', 2), ('gold', 1), ('gold_shuf', 0), ('gold_shuf', 2)]; 0 items in qwen_random_vpd1.jsonl; rows [('copy', 1732), ('cipher', 1591), ('known', 1066), ('invented', 901), ('gold', 97)]
+[     0.0s] [P2.90 random p-9707d6ff] start; config Config(n_rows=128, row_len=256, n16=16, own_len=512, sigma_len=512, sigma_batch=2, tol=1e-06, alive_total=500244, store_err_max=0.001, gpu_max_gib=44.0, id_tol=1e-06, rep_tol=0.001, boot=2000, draws=1000, null_seeds=(0, 1, 2, 3), kl_match=1.5, kl_evals=6, inspan_a=17.78279410038923, high=0.8, problems=128, think_new=2048, think_batch=64, drop_max=0.25, limit_s=10800, first_s=7200)
+Fetching 2 files:   0%|          | 0/2 [00:00<?, ?it/s]Fetching 2 files:  50%|█████     | 1/2 [00:04<00:04,  4.28s/it]Fetching 2 files: 100%|██████████| 2/2 [00:04<00:00,  2.14s/it]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:03<00:03,  3.59s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:03<00:00,  1.60s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:03<00:00,  1.90s/it]
+[    15.6s] [load] target, NVIDIA H100 80GB HBM3, peak GPU 6.41 GiB, host 11.1 GB
+[    47.3s]   [search c +1] gain 0
+[    54.2s] [load] components, peak GPU 24.64 GiB, host 35.7 GB
+[    66.2s] [load] gamma, peak GPU 40.55 GiB, host 50.6 GB
+[    75.0s] [item p-9707d6ff/zero/copy] {"item": "p-9707d6ff/zero/copy", "decomp": "p-9707d6ff", "kind": "zero", "rowset": "copy", "search_gain": 0.0, "gain": 0.0, "numerator": 0.0, "kl": 0.0, "share_any": NaN}
+[    75.0s] [check] zero_p-9707d6ff_copy: ok {"search_gain": 0.0, "gain": 0.0, "numerator": 0.0}
+[    85.7s]   [search c +1] gain 0
+[    99.3s] [item p-9707d6ff/zero/cipher] {"item": "p-9707d6ff/zero/cipher", "decomp": "p-9707d6ff", "kind": "zero", "rowset": "cipher", "search_gain": 0.0, "gain": 0.0, "numerator": 0.0, "kl": 0.0, "share_any": NaN}
+[    99.3s] [check] zero_p-9707d6ff_cipher: ok {"search_gain": 0.0, "gain": 0.0, "numerator": 0.0}
+[   108.6s]   [search c +1] gain 0
+[   121.1s] [item p-9707d6ff/zero/known] {"item": "p-9707d6ff/zero/known", "decomp": "p-9707d6ff", "kind": "zero", "rowset": "known", "search_gain": 0.0, "gain": 0.0, "numerator": 0.0, "kl": 0.0, "share_any": NaN}
+[   121.1s] [check] zero_p-9707d6ff_known: ok {"search_gain": 0.0, "gain": 0.0, "numerator": 0.0}
+[   131.7s]   [search c +1] gain 0
+[   144.9s] [item p-9707d6ff/zero/invented] {"item": "p-9707d6ff/zero/invented", "decomp": "p-9707d6ff", "kind": "zero", "rowset": "invented", "search_gain": 0.0, "gain": 0.0, "numerator": 0.0, "kl": 0.0, "share_any": NaN}
+[   144.9s] [check] zero_p-9707d6ff_invented: ok {"search_gain": 0.0, "gain": 0.0, "numerator": 0.0}
+[   154.7s]   [search c +1] gain 0
+[   170.4s] [item p-9707d6ff/zero/gold] {"item": "p-9707d6ff/zero/gold", "decomp": "p-9707d6ff", "kind": "zero", "rowset": "gold", "search_gain": 0.0, "gain": 0.0, "numerator": 0.0, "kl": 0.0, "share_any": NaN}
+[   170.4s] [check] zero_p-9707d6ff_gold: ok {"search_gain": 0.0, "gain": 0.0, "numerator": 0.0}
+wandb: Currently logged in as: edwinagnew (edwinagnew-mats) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+[   327.6s] [fetch] last.safetensors: 5637 MB in 155 s
+[   331.5s] [fetch copy_s1_last] p35r3-copy-s1-last: 161 s, sha256 matches
+[   397.3s]   [search c +1] gain 0.00487601
+[   409.6s]   [search c -1] gain 0.00425198
+[   421.5s]   [search c +0.01] gain 6.81093e-07
+[   432.6s]   [search c +0.0231013] gain 1.69156e-06
+[   441.9s]   [search c +0.053367] gain 1.46879e-05
+[   451.3s]   [search c +0.123285] gain 7.30978e-05
+[   460.7s]   [search c +0.284804] gain 0.000396459
+[   472.2s]   [search c +0.657933] gain 0.00213307
+[   483.7s]   [search c +1.51991] gain 0.0108278
+[   489.4s] [fetch] last.safetensors: 5637 MB in 156 s
+[   493.1s] [fetch cipher_s0_last] p35r3-cipher-s0-last: 162 s, sha256 matches
+[   493.1s]   [search c +3.51119] gain 0.0467851
+[   502.3s]   [search c +8.11131] gain 0.187244
+[   511.6s]   [search c +18.7382] gain 0.696541
+[   522.0s]   [search c +43.2876] gain 0.984369
+[   533.7s]   [search c +100] gain -6.80089
+[   543.4s]   [search c -0.01] gain -1.00434e-07
+[   553.2s]   [search c -0.0231013] gain 3.65028e-06
+[   562.9s]   [search c -0.053367] gain 1.5272e-05
+[   574.0s]   [search c -0.123285] gain 7.13891e-05
+[   585.4s]   [search c -0.284804] gain 0.00037313
+[   594.9s]   [search c -0.657933] gain 0.00191193
+[   604.6s]   [search c -1.51991] gain 0.00934183
+[   614.7s]   [search c -3.51119] gain 0.0452292
+[   628.4s]   [search c -8.11131] gain 0.232989
+[   639.6s]   [search c -18.7382] gain 1.16988
+[   650.5s]   [search c -13.4247] gain 0.626411
+[   659.7s]   [search c -16.0815] gain 0.883477
+[   668.9s]   [search c -17.4098] gain 1.02377
+[   748.2s] [item p-9707d6ff/copy_d1] {"item": "p-9707d6ff/copy_d1", "decomp": "p-9707d6ff", "kind": "random", "arm": "copy", "rowset": "copy", "draw": 1, "draw_seed": 228002, "norms_from": "copy_s1_last", "norms_sha256": "21e8d9382ed3259d03dd09c9138d95920bdb1ebe6d8b7a8de128b9c35b18a617", "fine_tune_size": 2.1155127714621984, "answers": 1732, "status": "ok", "signed_c": -17.40981614589691, "probe": {"x": 1, "plus": 0.0048760069253224285, "minus": 0.004251977936693596, "tie": false}, "probe_sign": 1.0, "tries": {"+": {"status": "cap", "x": 100, "gain": -6.800889375053443, "evals": 12}, "-": {"status": "ok", "x": 17.40981614589691, "gain": 1.0237663376666681, "evals": 13}}, "search_gain": 1.0237663376666681, "evals": 27, "size": 36.83068840544132, "gain": 1.0237663376666681, "numerator": 0.6453796000004203, "kl": 0.11226188785375933, "share": 0.6303973633977324, "max_search_gain": 1.1698753365526136, "search_seconds": 282.88565278053284, "seconds": 362.1679744720459}
+[   809.4s]   [search c +1] gain -0.00496722
+[   819.3s]   [search c -1] gain -0.00349865
+[   828.8s]   [search c -0.01] gain 8.91287e-06
+[   838.2s]   [search c -0.0231013] gain 2.56565e-05
+[   847.9s]   [search c -0.053367] gain 5.84301e-05
+[   860.7s]   [search c -0.123285] gain 0.000123667
+[   871.2s]   [search c -0.284804] gain 0.000160901
+[   880.6s]   [search c -0.657933] gain -0.000954059
+[   890.1s]   [search c -1.51991] gain -0.010264
+[   900.1s]   [search c -3.51119] gain -0.0734842
+[   903.7s] [fetch] last.safetensors: 5637 MB in 153 s
+[   908.6s] [fetch cipher_s2_last] p35r3-cipher-s2-last: 160 s, sha256 matches
+[   912.2s]   [search c -8.11131] gain -0.491207
+[   922.8s]   [search c -18.7382] gain -3.50938
+[   932.4s]   [search c -43.2876] gain -17.5188
+[   941.7s]   [search c -100] gain -29.9697
+[   951.3s]   [search c +0.01] gain -1.06329e-05
+[   962.8s]   [search c +0.0231013] gain -2.87833e-05
+[   972.5s]   [search c +0.053367] gain -6.31751e-05
+[   981.7s]   [search c +0.123285] gain -0.000175249
+[   991.0s]   [search c +0.284804] gain -0.000579775
+[  1000.8s]   [search c +0.657933] gain -0.00241132
+[  1013.5s]   [search c +1.51991] gain -0.0105936
+[  1023.1s]   [search c +3.51119] gain -0.0426429
+[  1032.5s]   [search c +8.11131] gain -0.124505
+[  1042.1s]   [search c +18.7382] gain -0.652967
+[  1052.8s]   [search c +43.2876] gain -13.9244
+[  1064.9s]   [search c +100] gain -32.3917
+[  1147.0s] [item p-9707d6ff/cipher_d0] {"item": "p-9707d6ff/cipher_d0", "decomp": "p-9707d6ff", "kind": "random", "arm": "cipher", "rowset": "cipher", "draw": 0, "draw_seed": 228001, "norms_from": "cipher_s0_last", "norms_sha256": "482cf720e65603acb597331935eea0c81535dffd856b233c8df515b7c2d63542", "fine_tune_size": 5.0906525993504985, "answers": 1591, "status": "cap", "signed_c": -0.2848035991191864, "probe": {"x": 1, "plus": -0.004967218890323747, "minus": -0.003498653678393875, "tie": false}, "probe_sign": -1.0, "tries": {"-": {"status": "cap", "x": 100, "gain": -29.969688083548533, "evals": 12}, "+": {"status": "cap", "x": 100, "gain": -32.391716979036495, "evals": 12}}, "search_gain": 0.00016090096285865498, "evals": 26, "size": 1.4498361821597094, "gain": 0.00016090096285865498, "numerator": -0.004051629724689627, "kl": 9.717908329128672e-05, "share": NaN, "max_search_gain": 0.00016090096285865498, "search_seconds": 268.4706196784973, "seconds": 350.5975000858307}
+[  1206.7s]   [search c +1] gain -0.263339
+[  1220.2s]   [search c -1] gain 0.26629
+[  1231.5s]   [search c -0.01] gain 0.00264742
+[  1240.9s]   [search c -0.0231013] gain 0.00611583
+[  1250.3s]   [search c -0.053367] gain 0.0141347
+[  1260.5s]   [search c -0.123285] gain 0.0326745
+[  1274.5s]   [search c -0.284804] gain 0.075577
+[  1285.1s]   [search c -0.657933] gain 0.175026
+[  1294.6s]   [search c -1.51991] gain 0.404622
+[  1300.2s] [fetch] last.safetensors: 5637 MB in 151 s
+[  1303.7s] [fetch known_s1_last] p35r3-known-s1-last: 156 s, sha256 matches
+[  1304.0s]   [search c -3.51119] gain 0.936512
+[  1314.8s]   [search c -8.11131] gain 2.18781
+[  1327.1s]   [search c -5.81125] gain 1.55562
+[  1336.7s]   [search c -4.66122] gain 1.24484
+[  1346.7s]   [search c -4.08621] gain 1.09062
+[  1431.4s] [item p-9707d6ff/cipher_d2] {"item": "p-9707d6ff/cipher_d2", "decomp": "p-9707d6ff", "kind": "random", "arm": "cipher", "rowset": "cipher", "draw": 2, "draw_seed": 228003, "norms_from": "cipher_s2_last", "norms_sha256": "16f98df4c4cca116d8c46c66b1cc865433d64798cf2e133bff677794a8725d21", "fine_tune_size": 5.009413420879869, "answers": 1591, "status": "ok", "signed_c": -4.086206376552582, "probe": {"x": 1, "plus": -0.2633385220815698, "minus": 0.2662899234475652, "tie": false}, "probe_sign": -1.0, "tries": {"-": {"status": "ok", "x": 4.086206376552582, "gain": 1.0906185744012977, "evals": 12}}, "search_gain": 1.0906185744012977, "evals": 14, "size": 20.469497063178434, "gain": 1.0906185744012977, "numerator": 0.3826483264068978, "kl": 0.01832364534706406, "share": 0.3508544007853113, "max_search_gain": 2.1878117248147735, "search_seconds": 150.26616621017456, "seconds": 234.94741010665894}
+[  1490.5s]   [search c +1] gain -0.0236199
+[  1500.3s]   [search c -1] gain 0.0260828
+[  1511.8s]   [search c -0.01] gain 0.000251466
+[  1524.2s]   [search c -0.0231013] gain 0.000581143
+[  1534.8s]   [search c -0.053367] gain 0.00133355
+[  1544.4s]   [search c -0.123285] gain 0.00308317
+[  1553.8s]   [search c -0.284804] gain 0.00717664
+[  1563.3s]   [search c -0.657933] gain 0.0168859
+[  1572.7s]   [search c -1.51991] gain 0.0406316
+[  1582.2s]   [search c -3.51119] gain 0.103115
+[  1587.6s] [fetch] last.safetensors: 5637 MB in 154 s
+[  1591.5s] [fetch invented_s0_last] p35r3-invented-s0-last: 160 s, sha256 matches
+[  1591.9s]   [search c -8.11131] gain 0.295212
+[  1601.7s]   [search c -18.7382] gain 1.05475
+[  1681.3s] [item p-9707d6ff/known_d1] {"item": "p-9707d6ff/known_d1", "decomp": "p-9707d6ff", "kind": "random", "arm": "known", "rowset": "known", "draw": 1, "draw_seed": 228002, "norms_from": "known_s1_last", "norms_sha256": "9dc99bc0ef396cca2e37983e622f1ea97dd8f0ec3d771f627661970cb018fe73", "fine_tune_size": 1.7842153189503767, "answers": 1066, "status": "ok", "signed_c": -18.738174438476562, "probe": {"x": 1, "plus": -0.023619915814070504, "minus": 0.02608281244641784, "tie": false}, "probe_sign": -1.0, "tries": {"-": {"status": "ok", "x": 18.738174438476562, "gain": 1.054746178708361, "evals": 10}}, "search_gain": 1.054746178708361, "evals": 12, "size": 33.43293788235507, "gain": 1.054746178708361, "numerator": 0.5427902764110563, "kl": 0.035918660566215434, "share": 0.5146169641266258, "max_search_gain": 1.054746178708361, "search_seconds": 121.26905727386475, "seconds": 200.89697265625}
+[  1741.9s]   [search c +1] gain 0.0200805
+[  1751.8s]   [search c -1] gain -0.0180065
+[  1761.9s]   [search c +0.01] gain 0.00019268
+[  1771.5s]   [search c +0.0231013] gain 0.000440968
+[  1784.1s]   [search c +0.053367] gain 0.00101183
+[  1795.1s]   [search c +0.123285] gain 0.00235085
+[  1804.6s]   [search c +0.284804] gain 0.00549443
+[  1814.4s]   [search c +0.657933] gain 0.0130067
+[  1825.4s]   [search c +1.51991] gain 0.0317975
+[  1834.1s] [fetch] last.safetensors: 5637 MB in 150 s
+[  1838.2s]   [search c +3.51119] gain 0.0817264
+[  1839.0s] [fetch invented_s2_last] p35r3-invented-s2-last: 157 s, sha256 matches
+[  1847.7s]   [search c +8.11131] gain 0.246841
+[  1857.0s]   [search c +18.7382] gain 0.827943
+[  1866.5s]   [search c +43.2876] gain -0.539586
+[  1878.3s]   [search c +100] gain -82.8076
+[  1890.4s]   [search c -0.01] gain -0.000185753
+[  1900.0s]   [search c -0.0231013] gain -0.000428184
+[  1913.6s]   [search c -0.053367] gain -0.000997321
+[  1925.2s]   [search c -0.123285] gain -0.00229827
+[  1941.8s]   [search c -0.284804] gain -0.00526526
+[  1951.6s]   [search c -0.657933] gain -0.0119875
+[  1961.3s]   [search c -1.51991] gain -0.0268296
+[  1971.2s]   [search c -3.51119] gain -0.0563791
+[  1983.0s]   [search c -8.11131] gain -0.105657
+[  1994.2s]   [search c -18.7382] gain -0.255471
+[  2004.1s]   [search c -43.2876] gain -2.07854
+[  2013.7s]   [search c -100] gain -61.3186
+[  2095.6s] [item p-9707d6ff/invented_d0] {"item": "p-9707d6ff/invented_d0", "decomp": "p-9707d6ff", "kind": "random", "arm": "invented", "rowset": "invented", "draw": 0, "draw_seed": 228001, "norms_from": "invented_s0_last", "norms_sha256": "e640b8ad8ef8652fa3e54b273311c5831705d6bf873154e6e50949dc420bf171", "fine_tune_size": 4.063738646443482, "answers": 901, "status": "cap", "signed_c": 18.738174438476562, "probe": {"x": 1, "plus": 0.020080495461867017, "minus": -0.018006533554720188, "tie": false}, "probe_sign": 1.0, "tries": {"+": {"status": "cap", "x": 100, "gain": -82.8075925822887, "evals": 12}, "-": {"status": "cap", "x": 100, "gain": -61.3185814358036, "evals": 12}}, "search_gain": 0.8279434400042687, "evals": 26, "size": 76.14704362944882, "gain": 0.8279434400042687, "numerator": 0.9302625940978507, "kl": 0.3133135283330297, "share": NaN, "max_search_gain": 0.8279434400042687, "search_seconds": 284.9653842449188, "seconds": 366.88957834243774}
+[  2155.6s]   [search c +1] gain -0.0504818
+[  2165.1s]   [search c -1] gain 0.0562434
+[  2174.7s]   [search c -0.01] gain 0.00054571
+[  2186.1s]   [search c -0.0231013] gain 0.00125564
+[  2199.9s]   [search c -0.053367] gain 0.00290358
+[  2209.8s]   [search c -0.123285] gain 0.00671459
+[  2219.4s]   [search c -0.284804] gain 0.0155977
+[  2229.4s]   [search c -0.657933] gain 0.0365282
+[  2240.5s]   [search c -1.51991] gain 0.0871735
+[  2249.1s] [fetch] last.safetensors: 5637 MB in 151 s
+[  2253.9s]   [search c -3.51119] gain 0.215284
+[  2254.5s] [fetch gold_s1_last] p35-gold-s1-last: 158 s, sha256 matches
+[  2264.1s]   [search c -8.11131] gain 0.533232
+[  2273.6s]   [search c -18.7382] gain 1.09311
+[  2353.7s] [item p-9707d6ff/invented_d2] {"item": "p-9707d6ff/invented_d2", "decomp": "p-9707d6ff", "kind": "random", "arm": "invented", "rowset": "invented", "draw": 2, "draw_seed": 228003, "norms_from": "invented_s2_last", "norms_sha256": "4735cc3ae99669d494d0009de4788bdfd49fb69ec539b8bf85399bebf3141cee", "fine_tune_size": 3.9917225325208436, "answers": 901, "status": "ok", "signed_c": -18.738174438476562, "probe": {"x": 1, "plus": -0.0504818122366107, "minus": 0.05624335712734517, "tie": false}, "probe_sign": -1.0, "tries": {"-": {"status": "ok", "x": 18.738174438476562, "gain": 1.0931093297807488, "evals": 10}}, "search_gain": 1.0931093297807488, "evals": 12, "size": 74.79759312435705, "gain": 1.0931093297807488, "numerator": 0.40983186028791363, "kl": 0.23839442686137466, "share": 0.3749230283947132, "max_search_gain": 1.0931093297807488, "search_seconds": 129.14669966697693, "seconds": 209.2039716243744}
+[  2413.3s]   [search c +1] gain -1.32778
+[  2427.6s]   [search c -1] gain 1.32622
+[  2438.1s]   [search c -0.01] gain 0.0133055
+[  2449.0s]   [search c -0.0231013] gain 0.0306583
+[  2466.1s]   [search c -0.053367] gain 0.0708707
+[  2476.4s]   [search c -0.123285] gain 0.163718
+[  2487.1s]   [search c -0.284804] gain 0.37821
+[  2497.3s]   [search c -0.657933] gain 0.873715
+[  2506.7s] [fetch] last.safetensors: 5637 MB in 151 s
+[  2510.6s]   [search c -1.51991] gain 2.01405
+[  2512.4s] [fetch gold_shuf_s0_last] p35-gold_shuf-s0-last: 158 s, sha256 matches
+[  2522.2s]   [search c -1.08892] gain 1.44376
+[  2532.3s]   [search c -0.873428] gain 1.15887
+[  2542.6s]   [search c -0.76568] gain 1.01634
+[  2628.5s] [item p-9707d6ff/gold_d1] {"item": "p-9707d6ff/gold_d1", "decomp": "p-9707d6ff", "kind": "random", "arm": "gold", "rowset": "gold", "draw": 1, "draw_seed": 228002, "norms_from": "gold_s1_last", "norms_sha256": "e868dc889dd2bd5ed1b39594282a9e96d908fdc645dcda75ae610fcfb26589cf", "fine_tune_size": 2.871619308489337, "answers": 97, "status": "ok", "signed_c": -0.7656804621219635, "probe": {"x": 1, "plus": -1.327777007406952, "minus": 1.3262194309923043, "tie": false}, "probe_sign": -1.0, "tries": {"-": {"status": "ok", "x": 0.7656804621219635, "gain": 1.016344827193378, "evals": 10}}, "search_gain": 1.016344827193378, "evals": 12, "size": 2.198742799166825, "gain": 1.016344827193378, "numerator": 0.5621297215046009, "kl": 0.0003109096051096818, "share": 0.5530895680916823, "max_search_gain": 2.0140539375095123, "search_seconds": 143.60451531410217, "seconds": 229.5010232925415}
+[  2688.2s]   [search c +1] gain 0.533814
+[  2701.0s]   [search c -1] gain -0.594992
+[  2713.5s]   [search c +0.01] gain 0.00568768
+[  2724.6s]   [search c +0.0231013] gain 0.0130748
+[  2734.8s]   [search c +0.053367] gain 0.0302096
+[  2746.5s]   [search c +0.123285] gain 0.0692895
+[  2760.9s]   [search c +0.284804] gain 0.157375
+[  2771.2s]   [search c +0.657933] gain 0.355171
+[  2781.4s]   [search c +1.51991] gain 0.799514
+[  2788.7s] [fetch] last.safetensors: 5637 MB in 158 s
+[  2791.9s]   [search c +3.51119] gain 1.74419
+[  2794.1s] [fetch gold_shuf_s2_last] p35-gold_shuf-s2-last: 165 s, sha256 matches
+[  2806.7s]   [search c +2.51555] gain 1.28882
+[  2816.8s]   [search c +2.01773] gain 1.04768
+[  2903.1s] [item p-9707d6ff/gold_shuf_d0] {"item": "p-9707d6ff/gold_shuf_d0", "decomp": "p-9707d6ff", "kind": "random", "arm": "gold_shuf", "rowset": "gold", "draw": 0, "draw_seed": 228001, "norms_from": "gold_shuf_s0_last", "norms_sha256": "ef72e2815b53c15f7863252746db3b20b1da5ec5a75b3395191b1224cb9f0704", "fine_tune_size": 2.954231703766619, "answers": 97, "status": "ok", "signed_c": 2.017731249332428, "probe": {"x": 1, "plus": 0.5338142139862937, "minus": -0.5949917303087505, "tie": false}, "probe_sign": 1.0, "tries": {"+": {"status": "ok", "x": 2.017731249332428, "gain": 1.0476798768741649, "evals": 10}}, "search_gain": 1.0476798768741649, "evals": 12, "size": 5.960845626463727, "gain": 1.0476798768741649, "numerator": 0.576951567406499, "kl": 0.0021156104652068435, "share": 0.5506945204749749, "max_search_gain": 1.7441868777456884, "search_seconds": 141.0238859653473, "seconds": 227.25520992279053}
+[  2961.7s]   [search c +1] gain -0.602418
+[  2971.8s]   [search c -1] gain 0.600572
+[  2982.1s]   [search c -0.01] gain 0.00603837
+[  2996.4s]   [search c -0.0231013] gain 0.0139392
+[  3006.8s]   [search c -0.053367] gain 0.0322255
+[  3017.0s]   [search c -0.123285] gain 0.0743409
+[  3027.6s]   [search c -0.284804] gain 0.17143
+[  3040.9s]   [search c -0.657933] gain 0.395559
+[  3052.4s]   [search c -1.51991] gain 0.911449
+[  3062.6s]   [search c -3.51119] gain 2.11368
+[  3072.6s]   [search c -2.51555] gain 1.50801
+[  3084.4s]   [search c -2.01773] gain 1.2092
+[  3097.2s]   [search c -1.76882] gain 1.06025
+[  3183.2s] [item p-9707d6ff/gold_shuf_d2] {"item": "p-9707d6ff/gold_shuf_d2", "decomp": "p-9707d6ff", "kind": "random", "arm": "gold_shuf", "rowset": "gold", "draw": 2, "draw_seed": 228003, "norms_from": "gold_shuf_s2_last", "norms_sha256": "6d76b44f3ea1cf2fdc4d36685e3a2e9c47dd495411ffa26301b09a4036052cbd", "fine_tune_size": 2.9535276851931265, "answers": 97, "status": "ok", "signed_c": -1.7688211500644684, "probe": {"x": 1, "plus": -0.6024181215305735, "minus": 0.6005717388494181, "tie": false}, "probe_sign": -1.0, "tries": {"-": {"status": "ok", "x": 1.7688211500644684, "gain": 1.0602513117443524, "evals": 11}}, "search_gain": 1.0602513117443524, "evals": 13, "size": 5.224262236876646, "gain": 1.0602513117443524, "numerator": 0.5062956336712273, "kl": 0.0020916778118269318, "share": 0.47752417569590827, "max_search_gain": 2.1136795281384417, "search_seconds": 145.5769693851471, "seconds": 231.55935502052307}
+[  3183.6s] [p-9707d6ff done] peak GPU 42.13 GiB, host 50.6 GB
+QWEN_RANDOM DONE
+peak host RSS 48.2 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/share_unified/results/qwen_random_vpd1.jsonl and experiments/share_unified/results/run_random_vpd1.log ===

@@ -98,22 +98,31 @@ def _rel(a: Tensor, b: Tensor) -> float:
     return float((a - b).norm() / b.norm()) if b.any() else float((a - b).norm())
 
 
-SPLITS = ("least_squares", "adjoint")
+SPLITS = ("least_squares", "adjoint", "adjoint_scaled")
 
 
-def _pieces(dW: Tensor, b: SP.Basis, Ua: Tensor, Va: Tensor, split: str) -> tuple[Tensor, Tensor]:
-    """(dU, dV) in the theory layout. "adjoint" (P1.67, 2026-11-27) is `split.adjoint_split` unscaled (c = 1): its
-    first-order change K(dW) is not dW, and the remainder takes dW - K(dW), so the pieces still sum to dW."""
+def _pieces(dW: Tensor, b: SP.Basis, Ua: Tensor, Va: Tensor, split: str, sigma: Tensor | None) -> tuple[Tensor, Tensor, dict[str, float]]:
+    """(dU, dV) in the theory layout, and the scale's record. "adjoint" (P1.67, 2026-11-27) is `split.adjoint_split`
+    unscaled (c = 1); "adjoint_scaled" (GOALS.md Terms' adjoint split, 2026-11-27) is its pieces times c from
+    `split.adjoint_scale` on `sigma`, the matrix's input second moment, recorded with its reproduced-energy share R. The
+    first-order change c K(dW) is not dW in either, and the remainder takes the rest, so the pieces still sum to dW."""
     assert split in SPLITS, split
     if not dW.any():
-        return torch.zeros_like(Ua), torch.zeros_like(Va)
-    return SP.adjoint_split(dW, Ua, Va) if split == "adjoint" else SP.least_squares_split(dW, b, Ua, Va)
+        return torch.zeros_like(Ua), torch.zeros_like(Va), {}
+    if split == "least_squares":
+        return *SP.least_squares_split(dW, b, Ua, Va), {}
+    dU, dV = SP.adjoint_split(dW, Ua, Va)
+    if split == "adjoint":
+        return dU, dV, {}
+    assert sigma is not None, "the scaled adjoint split needs the matrix's input second moment"
+    c, r = SP.adjoint_scale(dW, Ua, Va, sigma)
+    return c * dU, c * dV, {"c": c, "R": r}
 
 
 def _site(name: str, off: int, WM: Tensor, WF: Tensor, U: Tensor, V: Tensor, delta: Tensor, b: SP.Basis,
-          split: str = "least_squares") -> tuple[Site, dict[str, float]]:  # fmt: skip
+          split: str = "least_squares", sigma: Tensor | None = None) -> tuple[Site, dict[str, float]]:  # fmt: skip
     Ua, Va, dW = U.T.double(), V.double(), WF.double() - WM.double()
-    dUa, dVa = _pieces(dW, b, Ua, Va, split)
+    dUa, dVa, scale = _pieces(dW, b, Ua, Va, split, sigma)
     wr, rd = dUa @ Va.T, Ua @ dVa.T  # write side sum_c du_c v_c^T, read side sum_c u_c dv_c^T
     out = dW - (wr + rd)
     C = U.shape[0]
@@ -126,7 +135,7 @@ def _site(name: str, off: int, WM: Tensor, WF: Tensor, U: Tensor, V: Tensor, del
            "outside_share": float(out.norm() / dW.norm()) if dW.any() else 0.0}  # fmt: skip
     chk |= {"dW2": float((dW**2).sum()), "write2": float((wr**2).sum()), "read2": float((rd**2).sum()), "outside2": float((out**2).sum()),
             "cross_wr2": 2 * float((wr * rd).sum()), "cross_out2": 2 * float(((wr + rd) * out).sum())}  # fmt: skip
-    return s, chk
+    return s, chk | scale
 
 
 NORMS = ("write2", "read2", "outside2", "cross_wr2", "cross_out2")
@@ -142,14 +151,16 @@ def norm_shares(feat: Feat) -> dict[str, Any]:
 
 
 def featurize(M: R.Model, F: R.Model, uv: dict[str, tuple[Tensor, Tensor]], delta: dict[str, Tensor], b: dict[str, SP.Basis],
-              split: str = "least_squares") -> Feat:  # fmt: skip
+              split: str = "least_squares", sigma: dict[str, Tensor] | None = None) -> Feat:  # fmt: skip
     """The variables of the pair (F, M) and their mechanisms. `uv`, `delta`: the decomposition's (U, V) and Delta per
     matrix (`vpd.component_weights`, `vpd.weight_deltas`), keyed by module name. `split`: how delta-W is split over the
-    subcomponents (`SPLITS`, `_pieces`); `b` is read by the least-squares split only."""
+    subcomponents (`SPLITS`, `_pieces`); `b` is read by the least-squares split only, `sigma` (each matrix's input
+    second moment, `split.input_second_moments`) by the scaled adjoint split only."""
     sites, checks, changed, off = [], {}, set(), 1
     for k in sorted(uv):
         WM, WF = M.net.get_submodule(k).weight, F.net.get_submodule(k).weight
-        s, checks[k] = _site(k, off, WM, WF, uv[k][0], uv[k][1], delta[k], b[k], split)
+        sk = None if sigma is None else sigma[k].to(WM.device)
+        s, checks[k] = _site(k, off, WM, WF, uv[k][0], uv[k][1], delta[k], b[k], split, sk)
         moved = (s.dU != 0).any(1) | (s.dV != 0).any(0)
         changed |= {off + int(c) for c in moved.nonzero().squeeze(1).tolist()} | ({s.rem} if bool((s.rf != s.rm).any()) else set())
         sites.append(s)
