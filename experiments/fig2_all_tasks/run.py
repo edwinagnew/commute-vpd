@@ -385,19 +385,28 @@ def repro(feat: str, rd: Any, sts: States, cfg: Config) -> tuple[dict[str, Any],
     return out, [f"E_b {got['E_b_K']!r} off the saved {saved!r} by {rel:.3g} relative (tol {tol:.3g})"] if rel > tol else []
 
 
-def stage0(feat: str, rd: Any, sts: States, cfg: Config, tag: str) -> None:
+def reported(out_miss: tuple[dict[str, Any], list[str]], why: str) -> tuple[dict[str, Any], list[str]]:
+    """A check's record with its misses kept as a note instead of a stop (user, 2026-11-27, ask 60)."""
+    out, miss = out_miss
+    return out | {"miss_not_stopped": miss, "why_not_stopped": why}, []
+
+
+def stage0(feat: str, rd: Any, sts: States, cfg: Config, tag: str, repro_why: str | None) -> None:
     part(feat, "do_nothing", tag, lambda: do_nothing(rd, sts, cfg))
     part(feat, "identity", tag, lambda: identity(rd, sts, cfg))
     if feat == "sae":
         part(feat, "must_flip", tag, lambda: must_flip(rd, sts, cfg))
-    part(feat, "repro", tag, lambda: repro(feat, rd, sts, cfg))
+    if repro_why:
+        part(feat, "repro", tag, lambda: reported(repro(feat, rd, sts, cfg), repro_why))
+    else:
+        part(feat, "repro", tag, lambda: repro(feat, rd, sts, cfg))
     log(f"STAGE 0 DONE ({feat}, {tag})")
 
 
 # ---- main ---------------------------------------------------------------------------------------------------------------
 
 
-def main(feat: str, shard: tuple[int, int], items: list[str] | None, tag: str) -> int:
+def main(feat: str, shard: tuple[int, int], items: list[str] | None, tag: str, repro_why: str | None) -> int:
     cfg = load_config()
     todo = items if items is not None else cfg.items()[shard[0] :: shard[1]]
     assert all(i in cfg.items() for i in todo), [i for i in todo if i not in cfg.items()]
@@ -410,7 +419,7 @@ def main(feat: str, shard: tuple[int, int], items: list[str] | None, tag: str) -
         for item in dict.fromkeys([cfg.control, cfg.repro[feat]["state"], *todo]):
             log(f"manifest {item}: {tuple(sts.make(item)[1].shape)}")
         return 0
-    stage0(feat, rd, sts, cfg, tag)
+    stage0(feat, rd, sts, cfg, tag, repro_why)
     for k, item in enumerate(todo):
         read_item(feat, rd, sts, item, cfg)
         log(f"ITEM {k + 1} of {len(todo)} DONE ({feat} {item})")
@@ -424,11 +433,12 @@ if __name__ == "__main__":
     ap.add_argument("--shard", nargs=2, type=int, default=(0, 1), metavar=("I", "N"), help="every N-th item from the I-th (0-based)")
     ap.add_argument("--items", nargs="+", help="these items instead of the shard")
     ap.add_argument("--tag", help="this job's name in its stage-0 and state-file records (default shard<I>of<N>)")
+    ap.add_argument("--repro-reported", metavar="WHY", help="record the reproduction's miss with WHY instead of stopping")
     args = ap.parse_args()
     require_filed(PRED)
     code = 1
     try:
-        code = main(args.feat, (args.shard[0], args.shard[1]), args.items, args.tag or f"shard{args.shard[0]}of{args.shard[1]}")
+        code = main(args.feat, (args.shard[0], args.shard[1]), args.items, args.tag or f"shard{args.shard[0]}of{args.shard[1]}", args.repro_reported)
     except SystemExit as e:
         code = e.code if isinstance(e.code, int) else 1
     hard_exit(code)
