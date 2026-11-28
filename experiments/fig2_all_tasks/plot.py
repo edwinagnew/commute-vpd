@@ -3,9 +3,9 @@
     ~/commute-agents/fleet/cpu-run python3 experiments/fig2_all_tasks/plot.py
 
 Reads results/summary.json (score.py). Writes results/per_task.json (per featurization, task and side: the three
-seeds' E_b over K, their mean, min and max) and figures/fig2_all_tasks.png: for VPD subcomponents and SAE latents,
-every seed's trained and matched-random value per task, one row per task. The top-neuron panel is held (its identity
-control is off on two states), so neurons go into per_task.json only.
+seeds' E_b over K, their mean, min and max) and figures/fig2_all_tasks.png: for VPD subcomponents, top neurons and SAE latents,
+every seed's trained and matched-random value per task, one row per task, at all three featurizations. The top-neuron
+panel is read under the fixed neuron hook (E326 rerun 2, d2d81436).
 """
 
 from __future__ import annotations
@@ -19,7 +19,7 @@ from commute import figures as FG
 HERE = Path(__file__).resolve().parent
 RESULTS = HERE / "results"
 FEATS = {"VPD": "VPD subcomponents", "top": "top neurons", "SAE": "SAE latents"}
-PLOTTED = ("VPD", "SAE")
+PLOTTED = ("VPD", "top", "SAE")
 
 
 def per_task(summary: dict) -> dict:
@@ -50,7 +50,7 @@ def main() -> None:
     order = ordered(table["VPD"])
     n_reuse = sum(table["VPD"][t]["side"] == "reuse" for t in order)
     labels = [f"{t} ({table['VPD'][t]['side']})" for t in order]
-    fig, axes = FG.figure((7.5, 5.2), ncols=2)
+    fig, axes = FG.figure((10.5, 5.2), ncols=3)
     data = []
     for ax, feat in zip(axes, PLOTTED, strict=True):
         for side, method, offset in (("trained", "eb", -0.15), ("random", "random", 0.15)):
@@ -66,10 +66,9 @@ def main() -> None:
     handles = [axes[0].collections[0], axes[0].collections[len(order)]]
     fig.legend(handles, ["fine-tune, one point per seed", FG.METHODS["random"].label + ", one per seed"],
                fontsize=7, loc="outside upper center", ncols=2, frameon=False)  # fmt: skip
-    fig.suptitle("How much of each task's fine-tune write the needed set carries, against a matched random", fontsize=9)
     FG.save(fig, HERE / "figures" / "fig2_all_tasks.png", data=data,
             n="16 known-answer tasks x seeds 0-2, each state beside one random update of the same size; "
-              "512 windows of 8 tokens; top-neuron panel held pending its identity check")  # fmt: skip
+              "512 windows of 8 tokens")  # fmt: skip
 
 
 if __name__ == "__main__":
