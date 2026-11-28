@@ -1,0 +1,125 @@
+15.92	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "full" and .arm == "known" and .seed == 0))[0] | .gain	this
+0.597	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "full" and .arm == "known" and .seed == 0))[0] | .share	this
+9.92	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "g10" and .arm == "known" and .seed == 0))[0] | .gain	this
+0.654	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "g10" and .arm == "known" and .seed == 0))[0] | .share	this
+0.139	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "g10" and .arm == "known" and .seed == 0))[0] | .c	this
+1.012	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "g1.05" and .arm == "known" and .seed == 0))[0] | .gain	this
+0.744	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "g1.05" and .arm == "known" and .seed == 0))[0] | .share	this
+0.00875	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "g1.05" and .arm == "known" and .seed == 0))[0] | .c	this
+0.147	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | (map(select(.stage == "g1.05")) | sort_by(.arm, .seed)) as $a | (map(select(.stage == "full")) | sort_by(.arm, .seed)) as $b | [range($a|length)] | map({arm: $a[.].arm, seed: $a[.].seed, d: ($a[.].share - $b[.].share)}) | map(select(.arm == "known" and .seed == 0))[0].d	this
+16.02	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "full" and .arm == "known" and .seed == 1))[0] | .gain	this
+0.576	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "full" and .arm == "known" and .seed == 1))[0] | .share	this
+10.08	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "g10" and .arm == "known" and .seed == 1))[0] | .gain	this
+0.653	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "g10" and .arm == "known" and .seed == 1))[0] | .share	this
+0.139	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "g10" and .arm == "known" and .seed == 1))[0] | .c	this
+1.063	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "g1.05" and .arm == "known" and .seed == 1))[0] | .gain	this
+0.723	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "g1.05" and .arm == "known" and .seed == 1))[0] | .share	this
+0.00937	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "g1.05" and .arm == "known" and .seed == 1))[0] | .c	this
+0.147	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | (map(select(.stage == "g1.05")) | sort_by(.arm, .seed)) as $a | (map(select(.stage == "full")) | sort_by(.arm, .seed)) as $b | [range($a|length)] | map({arm: $a[.].arm, seed: $a[.].seed, d: ($a[.].share - $b[.].share)}) | map(select(.arm == "known" and .seed == 1))[0].d	this
+15.96	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "full" and .arm == "known" and .seed == 2))[0] | .gain	this
+0.583	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "full" and .arm == "known" and .seed == 2))[0] | .share	this
+9.99	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "g10" and .arm == "known" and .seed == 2))[0] | .gain	this
+0.656	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "g10" and .arm == "known" and .seed == 2))[0] | .share	this
+0.139	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "g10" and .arm == "known" and .seed == 2))[0] | .c	this
+1.063	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "g1.05" and .arm == "known" and .seed == 2))[0] | .gain	this
+0.727	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "g1.05" and .arm == "known" and .seed == 2))[0] | .share	this
+0.00937	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "g1.05" and .arm == "known" and .seed == 2))[0] | .c	this
+0.144	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | (map(select(.stage == "g1.05")) | sort_by(.arm, .seed)) as $a | (map(select(.stage == "full")) | sort_by(.arm, .seed)) as $b | [range($a|length)] | map({arm: $a[.].arm, seed: $a[.].seed, d: ($a[.].share - $b[.].share)}) | map(select(.arm == "known" and .seed == 2))[0].d	this
+10.50	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "full" and .arm == "copy" and .seed == 0))[0] | .gain	this
+0.637	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "full" and .arm == "copy" and .seed == 0))[0] | .share	this
+9.65	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "g10" and .arm == "copy" and .seed == 0))[0] | .gain	this
+0.646	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "g10" and .arm == "copy" and .seed == 0))[0] | .share	this
+0.187	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "g10" and .arm == "copy" and .seed == 0))[0] | .c	this
+1.073	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "g1.05" and .arm == "copy" and .seed == 0))[0] | .gain	this
+0.579	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "g1.05" and .arm == "copy" and .seed == 0))[0] | .share	this
+0.00937	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "g1.05" and .arm == "copy" and .seed == 0))[0] | .c	this
+-0.059	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | (map(select(.stage == "g1.05")) | sort_by(.arm, .seed)) as $a | (map(select(.stage == "full")) | sort_by(.arm, .seed)) as $b | [range($a|length)] | map({arm: $a[.].arm, seed: $a[.].seed, d: ($a[.].share - $b[.].share)}) | map(select(.arm == "copy" and .seed == 0))[0].d	this
+10.86	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "full" and .arm == "copy" and .seed == 1))[0] | .gain	this
+0.611	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "full" and .arm == "copy" and .seed == 1))[0] | .share	this
+9.63	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "g10" and .arm == "copy" and .seed == 1))[0] | .gain	this
+0.648	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "g10" and .arm == "copy" and .seed == 1))[0] | .share	this
+0.187	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "g10" and .arm == "copy" and .seed == 1))[0] | .c	this
+1.084	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "g1.05" and .arm == "copy" and .seed == 1))[0] | .gain	this
+0.586	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "g1.05" and .arm == "copy" and .seed == 1))[0] | .share	this
+0.0100	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "g1.05" and .arm == "copy" and .seed == 1))[0] | .c	this
+-0.025	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | (map(select(.stage == "g1.05")) | sort_by(.arm, .seed)) as $a | (map(select(.stage == "full")) | sort_by(.arm, .seed)) as $b | [range($a|length)] | map({arm: $a[.].arm, seed: $a[.].seed, d: ($a[.].share - $b[.].share)}) | map(select(.arm == "copy" and .seed == 1))[0].d	this
+10.58	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "full" and .arm == "copy" and .seed == 2))[0] | .gain	this
+0.622	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "full" and .arm == "copy" and .seed == 2))[0] | .share	this
+10.20	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "g10" and .arm == "copy" and .seed == 2))[0] | .gain	this
+0.635	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "g10" and .arm == "copy" and .seed == 2))[0] | .share	this
+0.285	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "g10" and .arm == "copy" and .seed == 2))[0] | .c	this
+1.065	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "g1.05" and .arm == "copy" and .seed == 2))[0] | .gain	this
+0.589	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "g1.05" and .arm == "copy" and .seed == 2))[0] | .share	this
+0.00937	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "g1.05" and .arm == "copy" and .seed == 2))[0] | .c	this
+-0.033	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | (map(select(.stage == "g1.05")) | sort_by(.arm, .seed)) as $a | (map(select(.stage == "full")) | sort_by(.arm, .seed)) as $b | [range($a|length)] | map({arm: $a[.].arm, seed: $a[.].seed, d: ($a[.].share - $b[.].share)}) | map(select(.arm == "copy" and .seed == 2))[0].d	this
+0.58	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | [map(select(.stage == "full" and .arm == "known"))[] | .share] | min	this
+0.60	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | [map(select(.stage == "full" and .arm == "known"))[] | .share] | max	this
+0.65	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | [map(select(.stage == "g10" and .arm == "known"))[] | .share] | min	this
+0.66	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | [map(select(.stage == "g10" and .arm == "known"))[] | .share] | max	this
+0.72	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | [map(select(.stage == "g1.05" and .arm == "known"))[] | .share] | min	this
+0.74	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | [map(select(.stage == "g1.05" and .arm == "known"))[] | .share] | max	this
+0.61	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | [map(select(.stage == "full" and .arm == "copy"))[] | .share] | min	this
+0.64	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | [map(select(.stage == "full" and .arm == "copy"))[] | .share] | max	this
+0.63	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | [map(select(.stage == "g10" and .arm == "copy"))[] | .share] | min	this
+0.65	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | [map(select(.stage == "g10" and .arm == "copy"))[] | .share] | max	this
+0.58	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | [map(select(.stage == "g1.05" and .arm == "copy"))[] | .share] | min	this
+0.59	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | [map(select(.stage == "g1.05" and .arm == "copy"))[] | .share] | max	this
+9.6	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | [map(select(.stage == "g10" and .arm == "copy"))[] | .gain] | min	this
+10.2	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | [map(select(.stage == "g10" and .arm == "copy"))[] | .gain] | max	this
+10.5	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | [map(select(.stage == "full" and .arm == "copy"))[] | .gain] | min	this
+10.9	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | [map(select(.stage == "full" and .arm == "copy"))[] | .gain] | max	this
+0.15	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | (map(select(.stage == "g1.05")) | sort_by(.arm, .seed)) as $a | (map(select(.stage == "full")) | sort_by(.arm, .seed)) as $b | [range($a|length)] | map({arm: $a[.].arm, seed: $a[.].seed, d: ($a[.].share - $b[.].share)}) | map(select(.arm == "known") | .d) | max	this
+0.06	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | (map(select(.stage == "g1.05")) | sort_by(.arm, .seed)) as $a | (map(select(.stage == "full")) | sort_by(.arm, .seed)) as $b | [range($a|length)] | map({arm: $a[.].arm, seed: $a[.].seed, d: ($a[.].share - $b[.].share)}) | map(select(.arm == "copy") | .d | fabs) | max	this
+0.02	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | (map(select(.stage == "g1.05")) | sort_by(.arm, .seed)) as $a | (map(select(.stage == "full")) | sort_by(.arm, .seed)) as $b | [range($a|length)] | map({arm: $a[.].arm, seed: $a[.].seed, d: ($a[.].share - $b[.].share)}) | map(select(.arm == "copy") | .d | fabs) | min	this
+0.009	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | [map(select(.stage == "g1.05" and .arm == "known"))[] | .c] | min	this
+0.0013	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | [map(select(.stage == "g1.05" and .arm == "known"))[] | .kl] | min	this
+0.0014	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | [map(select(.stage == "g1.05" and .arm == "known"))[] | .kl] | max	this
+0.0034	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | [map(select(.stage == "g1.05" and .arm == "copy"))[] | .kl] | min	this
+0.0035	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | [map(select(.stage == "g1.05" and .arm == "copy"))[] | .kl] | max	this
+1.054	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "repeat"))[0] | .gain	this
+1.276	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "repeat"))[0] | .numerator	this
+1.211	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "repeat"))[0] | .share	this
+0.0612	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "repeat"))[0] | .kl	this
+23.34	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "repeat"))[0] | .c	this
+46.02	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "repeat"))[0] | .size	this
+0.18	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "repeat"))[0] | .share - .e330_share	this
+0.2	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "repeat"))[0] | .share - .e330_share	this
+23.3	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "repeat"))[0] | .c	this
+1.010	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl	[.[] | select(.item == "p-9707d6ff/known_d0")][0] | .gain	earlier
+0.687	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl	[.[] | select(.item == "p-9707d6ff/known_d0")][0] | .share	earlier
+0.0132	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl	[.[] | select(.item == "p-9707d6ff/known_d0")][0] | .kl	earlier
+12.1	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl	[.[] | select(.item == "p-9707d6ff/known_d0")][0] | .size / .fine_tune_size	earlier
+1.055	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl	[.[] | select(.item == "p-9707d6ff/known_d1")][0] | .gain	earlier
+0.515	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl	[.[] | select(.item == "p-9707d6ff/known_d1")][0] | .share	earlier
+0.0359	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl	[.[] | select(.item == "p-9707d6ff/known_d1")][0] | .kl	earlier
+18.7	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl	[.[] | select(.item == "p-9707d6ff/known_d1")][0] | .size / .fine_tune_size	earlier
+1.037	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl	[.[] | select(.item == "p-9707d6ff/known_d2")][0] | .gain	earlier
+1.031	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl	[.[] | select(.item == "p-9707d6ff/known_d2")][0] | .share	earlier
+0.0662	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl	[.[] | select(.item == "p-9707d6ff/known_d2")][0] | .kl	earlier
+23.3	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl	[.[] | select(.item == "p-9707d6ff/known_d2")][0] | .size / .fine_tune_size	earlier
+1.083	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl	[.[] | select(.item == "p-9707d6ff/copy_d0")][0] | .gain	earlier
+0.719	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl	[.[] | select(.item == "p-9707d6ff/copy_d0")][0] | .share	earlier
+0.0270	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl	[.[] | select(.item == "p-9707d6ff/copy_d0")][0] | .kl	earlier
+8.8	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl	[.[] | select(.item == "p-9707d6ff/copy_d0")][0] | .size / .fine_tune_size	earlier
+1.024	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl	[.[] | select(.item == "p-9707d6ff/copy_d1")][0] | .gain	earlier
+0.630	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl	[.[] | select(.item == "p-9707d6ff/copy_d1")][0] | .share	earlier
+0.1123	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl	[.[] | select(.item == "p-9707d6ff/copy_d1")][0] | .kl	earlier
+17.4	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl	[.[] | select(.item == "p-9707d6ff/copy_d1")][0] | .size / .fine_tune_size	earlier
+1.065	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl	[.[] | select(.item == "p-9707d6ff/copy_d2")][0] | .gain	earlier
+0.666	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl	[.[] | select(.item == "p-9707d6ff/copy_d2")][0] | .share	earlier
+0.0680	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl	[.[] | select(.item == "p-9707d6ff/copy_d2")][0] | .kl	earlier
+13.4	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl	[.[] | select(.item == "p-9707d6ff/copy_d2")][0] | .size / .fine_tune_size	earlier
+1.070	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl	[.[] | select(.item == "p-9707d6ff/known_d2")][0] | .numerator	earlier
+0.017	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl	[.[] | select(.item == "p-9707d6ff/known_d2")][0] | .gain as $a | 1.0541939830247227 - $a	earlier
+0.21	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl	[.[] | select(.item == "p-9707d6ff/known_d2")][0] | .numerator as $a | 1.2764339895976924 - $a	earlier
+0.51	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl	[.[] | select(.decomp == "p-9707d6ff" and .arm == "known" and .kind == "random" and .status == "ok") | .share] | min	earlier
+1.03	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl	[.[] | select(.decomp == "p-9707d6ff" and .arm == "known" and .kind == "random" and .status == "ok") | .share] | max	earlier
+0.63	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl	[.[] | select(.decomp == "p-9707d6ff" and .arm == "copy" and .kind == "random" and .status == "ok") | .share] | min	earlier
+0.72	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl	[.[] | select(.decomp == "p-9707d6ff" and .arm == "copy" and .kind == "random" and .status == "ok") | .share] | max	earlier
+1.003	experiments/share_unified/results/predictions_random.json	.settings.qwen_random | .target_gain * (1 - .gain_rel_tol)	earlier
+1.097	experiments/share_unified/results/predictions_random.json	.settings.qwen_random | .target_gain * (1 + .gain_rel_tol)	earlier
+9.55	experiments/share_unified/results/predictions_random.json	.settings.qwen_random | 10 * (1 - .gain_rel_tol)	earlier
+10.45	experiments/share_unified/results/predictions_random.json	.settings.qwen_random | 10 * (1 + .gain_rel_tol)	earlier
+7.20	given	E332 pod cost from remote-kernels status, one RunPod H100 (not in spend-history)
+4.41	given	the H100 pod rate per hour, remote-kernels status for E332
+1.21	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "repeat"))[0] | .share	this
