@@ -311,3 +311,5 @@
 0.02715	experiments/fig2_all_tasks/results/ident_straddle.json	.[] | select(.item=="e62/copy_s0") | .old_max_dev	this
 0.0692	experiments/fig2_all_tasks/results/ident_straddle.json	.[] | select(.item=="e46/ident32_s0") | .old_max_dev	this
 7.8e-5	experiments/fig2_all_tasks/results/stage0/neurons_identity_fix2.json	.max_dev	this
+0.011	experiments/fig2_all_tasks/results/summary.json	[.rows[] | select(.feat=="top" and .side=="random") | .value] | max	this
+0.011	experiments/fig2_all_tasks/results/per_task.json	[.top[] | .random.max] | max	this

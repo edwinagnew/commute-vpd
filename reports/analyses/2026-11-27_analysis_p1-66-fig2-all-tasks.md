@@ -34,7 +34,7 @@ The tasks known to reuse old parts do not read above the tasks known to be new. 
 
 ### Top neurons
 
-**Reading it.** At top neurons the fine-tunes keep less than at the other two featurizations, and their randoms keep less still. The fine-tunes' seed means run from 0.011 on the e54 elicit task to 0.029 on the e54 cipher. Their randoms run from 0.003 to 0.009, the highest on e53 lowercasing.
+**Reading it.** At top neurons the fine-tunes keep less than at the other two featurizations, and their randoms keep less still. The fine-tunes' seed means run from 0.011 on the e54 elicit task to 0.029 on the e54 cipher. Their randoms' seed means run from 0.003 to 0.009, the highest on e53 lowercasing; single random seeds run from 0.003 to 0.011.
 
 The fine-tunes sitting nearest their randoms are the e58 copy task, 0.012 against 0.005, and the e53 text cipher, 0.015 against 0.008. The widest seed spread is on the e54 cipher, 0.024 to 0.037.
 
@@ -59,15 +59,17 @@ The do-nothing update under the fixed hook read a share of 1 with no changed ans
 
 **The fix's effect on the saved neuron item.** The stage-0 reproduction reads E298's saved neuron item, the e58 copy state at seed 0, again. Under the old hook it reproduced within 5.0e-6 relative, against a tolerance of 5e-5. The user decided on 2026-11-27 that this old-hook reproduction is the apparatus check, since E298 itself was read with the old hook.
 
-Under the fixed hook one neuron of the needed set changes: the needed set has 4171 neurons where E298's had 4170. The share moves from the saved 0.011681 to 0.011685, a relative shift of 3.4e-4 against the same 5e-5 tolerance. This shift is the fix's effect on E298's item, not an apparatus fault.
+Under the fixed hook one neuron of the needed set changes: the needed set has 4171 neurons where E298's had 4170. The share moves from the saved 0.011681 to 0.011685, a relative shift of 3.4e-4 against the same 5e-5 tolerance. This shift is the fix's effect on E298's item, not an apparatus fault. No record names the added neuron, so its cause, an activation straddling its bound under the old hook, is inferred, not shown. No record names the added neuron, so that it straddled its bound under the old hook is inferred, not shown.
 
-**Old against fixed hook on the 72 new items.** All 72 neuron items were read again under the fixed hook. The share moved by at most 3.8e-6 on any item. The needed set's size changed on 22 of the 72 items, by at most 2 neurons. The table and figure use the fixed-hook values; at three decimals they equal the old ones.
+**Old against fixed hook on the 72 new items.** All 72 neuron items were read again under the fixed hook. The share moved by at most 3.8e-6 on any item. The needed set's size changed on 22 of the 72 items, by at most 2 neurons. At three decimals the fixed values equal the old ones. The old-hook files of the 72 items are kept in `~/commute-data/results-large/fig2_all_tasks/neurons_oldhook/`.
+
+**The top-neuron panel mixes hooks.** Its 72 rows for the twelve new tasks are read under the fixed hook. Its 24 rows for the four e58 tasks are E298's, read under the old hook, and were not read again. On the one e58 item read both ways the share moved by 3.4e-4 relative, far below the figure's resolution.
 
 E277 and E298 also read top neurons with the old hook. Their needed sets may differ by a neuron or two where an activation straddles its bound. They were not read again.
 
 ## Per-task values
 
-Seed mean over seeds 0 to 2, with the lowest and highest seed in brackets, from `experiments/fig2_all_tasks/results/summary.json`. Neuron columns are the fixed-hook reads.
+Seed mean over seeds 0 to 2, with the lowest and highest seed in brackets, from `experiments/fig2_all_tasks/results/summary.json`. Neuron columns mix hooks: the twelve new tasks under the fixed hook, the four e58 tasks from E298 under the old hook.
 
 | task | known answer | VPD fine-tune | VPD random | SAE fine-tune | SAE random | neurons fine-tune | neurons random |
 |---|---|---|---|---|---|---|---|
@@ -94,7 +96,7 @@ The fine-tunes' retained share is small on all sixteen tasks, not only on the fi
 
 ## How compelling is the evidence
 
-The stage-0 controls read as filed at VPD and SAE: the do-nothing update read a share of 1 with no changed answer, the identity swap changed no answer, and a saved item from the five-task figure reproduced. At top neurons the same controls read as filed under the fixed hook, with the reproduction read as described above. The rescoring found all 288 rows, and the 52 rows shared with E298's figure match it.
+The stage-0 controls read as filed at VPD and SAE: the do-nothing update read a share of 1 with no changed answer, the identity swap changed no answer, and a saved item from the five-task figure reproduced. At top neurons the same controls read as filed under the fixed hook, with the reproduction read as described above. The rescoring found all 288 rows, and the 52 rows shared with E298's figure match it. A redteam re-check passed the top-neuron rows after the hook fix.
 
 Three seeds per task and one random per state is the whole sample; a random's spread across seeds is the only noise floor read here. The measurement is blind to whether the write it counts is the one the behaviour uses: it is a share of write change, not of behaviour. The identity control under the fixed hook was read on four states, not on all 48.
 
@@ -119,7 +121,7 @@ The neuron identity deviation on the e62 and e46 states under the first hook, tr
 
 ## Departures from the literature
 
-None beyond those `experiments/fig2_all_tasks/README.md` lists against the five-task protocol: the matched random's seed base, the stage-0 control state and the reproduction items.
+None beyond those `experiments/fig2_all_tasks/README.md` lists against the five-task protocol: the matched random's seed base, the stage-0 control state, the reproduction items, the neuron hook change and the mixed-hook neuron panel.
 
 ## Not run
 
