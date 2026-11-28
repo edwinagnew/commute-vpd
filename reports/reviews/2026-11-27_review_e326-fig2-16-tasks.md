@@ -64,3 +64,12 @@ that of the new tasks at all three featurizations (VPD 0.032 vs 0.041, neurons 0
 - SHOULD: the caption cites tab:built for the built edits' windows, but that table covers only the copy edits, while Fig 2
   also plots the induction, bigram and extra-draw edits. SHOULD: in appI, the 94-state read's random (0.011) sits next to
   Fig 2's VPD randoms (0.012-0.017); name each one's run.
+
+## Neuron rows after the hook fix (19:15, 2026-11-27)
+
+The neurons panel passes, with notes. The full record is ~/commute-data/agents/redteam-lead/measurement-record/E326_neurons_verdict.md.
+
+- The fix (d2d81436) reads x's activation from F's own cache. The identity check now reads 7.8e-5 on e62 (was 0.027) and 5.5e-5 on e46 (was 0.069), with 0 flips.
+- All 72 items reran under the fix. Of the 96 top-neuron rows, 24 moved, none by more than 3.8e-6. The VPD and SAE rows are unchanged, and the figure was built from the fixed CSV (6433be77).
+- Note: the e58 reproduction gained one variable (4170 to 4171 entries, a relative change of 3.4e-4). No record names that variable, so its cause is inferred, not verified.
+- Correction to my earlier range: the random neuron range is 0.003-0.011 (top value 0.01075, already there before the fix), not 0.003-0.010.
