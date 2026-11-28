@@ -11,6 +11,7 @@
 #                                  side, draw, status, gain, share (share empty when the draw never reached the band).
 #   results/known_share_check.csv  E327's 48 67M states (results/repro_67m.jsonl, W0 control left out): the paper's
 #                                  share (old), the re-read (new), new - old.
+#   results/qwen_share_vs_gain.csv  E332 (cell P2.91): VPD known and copy fine-tunes at full gain, ~10 and ~1.05.
 set -euo pipefail
 R=experiments/share_unified/results
 RAND_FILES=("$R/qwen_random_vpd0.jsonl" "$R/qwen_random_vpd1.jsonl" "$R/qwen_random_neuron0.jsonl" "$R/qwen_random_neuron1.jsonl")
@@ -43,4 +44,19 @@ jq -rs '
   | [.item, .old, .new, (.new - .old)] | map(tostring) | join(",") )
 ' "$R/repro_67m.jsonl" > "$R/known_share_check.csv"
 
-wc -l "$R/qwen_share_new.csv" "$R/qwen_share_random_draws.csv" "$R/known_share_check.csv"
+# Cell P2.91 (E332): each VPD known and copy fine-tune (seeds 0-2, last save) read at its full gain (target "full",
+# c = 1) and scaled down to answer gains of about 10 and 1.05 (results/qwen_gain.jsonl). Controls and the repeat draw
+# are left out: they are not fine-tune reads.
+jq -rs '
+  def title: if . == "p-9707d6ff" then "VPD decomposition" else "One subcomponent per MLP neuron" end;
+  def order: if .stage == "full" then 0 elif .stage == "g10" then 1 else 2 end;
+  "decomposition,side,seed,target,c,gain,share",
+  ( map(select(.stage == "full" or .stage == "g10" or .stage == "g1.05"))
+  | if length != 18 then error("expected 18 fine-tune reads, got \(length)") else . end
+  | sort_by(.arm != "known", .seed, order)[]
+  | if .stage != "full" and (.status != "ok" or .in_band != true) then error("\(.item): not in its gain band") else . end
+  | [(.item | split("/")[0] | title), .arm, .seed, (.target // "full"), .c, .gain, .share]
+  | map(tostring) | join(",") )
+' "$R/qwen_gain.jsonl" > "$R/qwen_share_vs_gain.csv"
+
+wc -l "$R/qwen_share_new.csv" "$R/qwen_share_random_draws.csv" "$R/known_share_check.csv" "$R/qwen_share_vs_gain.csv"
