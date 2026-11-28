@@ -1,0 +1,11 @@
+0.761	experiments/adjoint_rho/results/items_s0.jsonl + experiments/adjoint_rho/results/items_s1.jsonl	[.[] | select(.stage == "0" and .split == "least_squares" and .item == "x2")][0] | .E_b_K_saved_K	this
+0.623	experiments/adjoint_rho/results/items_s0.jsonl + experiments/adjoint_rho/results/items_s1.jsonl	[.[] | select(.stage == "0" and .split == "least_squares" and .item == "rebuilt")][0] | .E_b_K_saved_K	this
+0.013	experiments/adjoint_rho/results/items_s0.jsonl + experiments/adjoint_rho/results/items_s1.jsonl	[.[] | select(.stage == "0" and .split == "least_squares" and .item == "new_few")][0] | .E_b_K_saved_K	this
+0.019	experiments/adjoint_rho/results/items_s0.jsonl + experiments/adjoint_rho/results/items_s1.jsonl	[.[] | select(.stage == "1" and .item == "new_thin")][0] | .E_b_K	this
+0.011	experiments/adjoint_rho/results/items_s0.jsonl + experiments/adjoint_rho/results/items_s1.jsonl	[.[] | select(.stage == "0" and .split == "least_squares" and .item == "random_size_241001")][0] | .E_b_K_saved_K	this
+0.207	experiments/adjoint_rho/results/items_s0.jsonl + experiments/adjoint_rho/results/items_s1.jsonl	[.[] | select(.stage == "2" and .item == "x2")][0] | .E_b_K	this
+0.012	experiments/adjoint_rho/results/items_s2.jsonl + experiments/adjoint_rho/results/items_s3.jsonl	[.[] | select(.stage == "2" and .item == "rebuilt")][0] | .E_b_K	this
+0.0018	experiments/adjoint_rho/results/items_s2.jsonl + experiments/adjoint_rho/results/items_s3.jsonl	[.[] | select(.stage == "2" and .item == "random_size_241001")][0] | .E_b_K	this
+0.0016	experiments/adjoint_rho/results/items_s2.jsonl + experiments/adjoint_rho/results/items_s3.jsonl	[.[] | select(.stage == "2" and .item == "random_kl_241002")][0] | .E_b_K	this
+8.5	experiments/adjoint_rho/results/items_s0.jsonl + experiments/adjoint_rho/results/items_s1.jsonl	[.[] | select(.stage == "2" and .item == "x2")][0] | .shares_of_dW2["read2"]	this
+4.8	experiments/adjoint_rho/results/items_s0.jsonl + experiments/adjoint_rho/results/items_s1.jsonl	[.[] | select(.stage == "2" and .item == "new_thin")][0] | .shares_of_dW2["outside2"]	this
