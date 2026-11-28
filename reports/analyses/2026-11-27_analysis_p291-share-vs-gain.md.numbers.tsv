@@ -123,3 +123,59 @@
 7.20	given	E332 pod cost from remote-kernels status, one RunPod H100 (not in spend-history)
 4.41	given	the H100 pod rate per hour, remote-kernels status for E332
 1.21	experiments/share_unified/results/qwen_gain.jsonl	[., inputs] | map(select(.stage == "repeat"))[0] | .share	this
+15.73	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | map(select(.item == "p-9707d6ff/full/known_s0_last_repack1"))[0] | .gain	this
+0.620	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | map(select(.item == "p-9707d6ff/full/known_s0_last_repack1"))[0] | .share	this
+0.023	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | map(select(.item == "p-9707d6ff/full/known_s0_last_repack1"))[0] | .diff_e332	this
+1.017	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | map(select(.item == "p-9707d6ff/g1.05/known_s0_last_repack1"))[0] | .gain	this
+0.760	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | map(select(.item == "p-9707d6ff/g1.05/known_s0_last_repack1"))[0] | .share	this
+0.016	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | map(select(.item == "p-9707d6ff/g1.05/known_s0_last_repack1"))[0] | .diff_e332	this
+0.140	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | (map(select(.item == "p-9707d6ff/g1.05/known_s0_last_repack1"))[0] | .share) - (map(select(.item == "p-9707d6ff/full/known_s0_last_repack1"))[0] | .share)	this
+15.85	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | map(select(.item == "p-9707d6ff/full/known_s1_last_repack1"))[0] | .gain	this
+0.599	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | map(select(.item == "p-9707d6ff/full/known_s1_last_repack1"))[0] | .share	this
+0.022	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | map(select(.item == "p-9707d6ff/full/known_s1_last_repack1"))[0] | .diff_e332	this
+1.067	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | map(select(.item == "p-9707d6ff/g1.05/known_s1_last_repack1"))[0] | .gain	this
+0.743	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | map(select(.item == "p-9707d6ff/g1.05/known_s1_last_repack1"))[0] | .share	this
+0.020	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | map(select(.item == "p-9707d6ff/g1.05/known_s1_last_repack1"))[0] | .diff_e332	this
+0.145	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | (map(select(.item == "p-9707d6ff/g1.05/known_s1_last_repack1"))[0] | .share) - (map(select(.item == "p-9707d6ff/full/known_s1_last_repack1"))[0] | .share)	this
+15.80	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | map(select(.item == "p-9707d6ff/full/known_s2_last_repack1"))[0] | .gain	this
+0.603	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | map(select(.item == "p-9707d6ff/full/known_s2_last_repack1"))[0] | .share	this
+0.020	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | map(select(.item == "p-9707d6ff/full/known_s2_last_repack1"))[0] | .diff_e332	this
+1.068	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | map(select(.item == "p-9707d6ff/g1.05/known_s2_last_repack1"))[0] | .gain	this
+0.749	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | map(select(.item == "p-9707d6ff/g1.05/known_s2_last_repack1"))[0] | .share	this
+0.022	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | map(select(.item == "p-9707d6ff/g1.05/known_s2_last_repack1"))[0] | .diff_e332	this
+0.146	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | (map(select(.item == "p-9707d6ff/g1.05/known_s2_last_repack1"))[0] | .share) - (map(select(.item == "p-9707d6ff/full/known_s2_last_repack1"))[0] | .share)	this
+10.19	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | map(select(.item == "p-9707d6ff/full/copy_s0_last_repack1"))[0] | .gain	this
+0.634	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | map(select(.item == "p-9707d6ff/full/copy_s0_last_repack1"))[0] | .share	this
+-0.003	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | map(select(.item == "p-9707d6ff/full/copy_s0_last_repack1"))[0] | .diff_e332	this
+1.0025	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | map(select(.item == "p-9707d6ff/g1.05/copy_s0_last_repack1"))[0] | .gain	this
+0.628	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | map(select(.item == "p-9707d6ff/g1.05/copy_s0_last_repack1"))[0] | .share	this
+0.049	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | map(select(.item == "p-9707d6ff/g1.05/copy_s0_last_repack1"))[0] | .diff_e332	this
+-0.006	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | (map(select(.item == "p-9707d6ff/g1.05/copy_s0_last_repack1"))[0] | .share) - (map(select(.item == "p-9707d6ff/full/copy_s0_last_repack1"))[0] | .share)	this
+10.57	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | map(select(.item == "p-9707d6ff/full/copy_s1_last_repack1"))[0] | .gain	this
+0.610	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | map(select(.item == "p-9707d6ff/full/copy_s1_last_repack1"))[0] | .share	this
+-0.001	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | map(select(.item == "p-9707d6ff/full/copy_s1_last_repack1"))[0] | .diff_e332	this
+1.015	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | map(select(.item == "p-9707d6ff/g1.05/copy_s1_last_repack1"))[0] | .gain	this
+0.630	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | map(select(.item == "p-9707d6ff/g1.05/copy_s1_last_repack1"))[0] | .share	this
+0.044	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | map(select(.item == "p-9707d6ff/g1.05/copy_s1_last_repack1"))[0] | .diff_e332	this
+0.020	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | (map(select(.item == "p-9707d6ff/g1.05/copy_s1_last_repack1"))[0] | .share) - (map(select(.item == "p-9707d6ff/full/copy_s1_last_repack1"))[0] | .share)	this
+10.31	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | map(select(.item == "p-9707d6ff/full/copy_s2_last_repack1"))[0] | .gain	this
+0.627	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | map(select(.item == "p-9707d6ff/full/copy_s2_last_repack1"))[0] | .share	this
+0.004	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | map(select(.item == "p-9707d6ff/full/copy_s2_last_repack1"))[0] | .diff_e332	this
+0.995	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | map(select(.item == "p-9707d6ff/g1.05/copy_s2_last_repack1"))[0] | .gain	this
+0.60	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | [map(select(.stage == "full" and .arm == "known" and (.share | isnan | not)))[] | .share] | min	this
+0.62	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | [map(select(.stage == "full" and .arm == "known" and (.share | isnan | not)))[] | .share] | max	this
+0.74	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | [map(select(.stage == "g1.05" and .arm == "known" and (.share | isnan | not)))[] | .share] | min	this
+0.76	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | [map(select(.stage == "g1.05" and .arm == "known" and (.share | isnan | not)))[] | .share] | max	this
+0.61	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | [map(select(.stage == "full" and .arm == "copy" and (.share | isnan | not)))[] | .share] | min	this
+0.63	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | [map(select(.stage == "full" and .arm == "copy" and (.share | isnan | not)))[] | .share] | max	this
+0.63	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | [map(select(.stage == "g1.05" and .arm == "copy" and (.share | isnan | not)))[] | .share] | min	this
+0.63	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | [map(select(.stage == "g1.05" and .arm == "copy" and (.share | isnan | not)))[] | .share] | max	this
+0.016	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | [map(select(.stage == "full" and .arm == "known" and (.share | isnan | not)))[], map(select(.stage == "g1.05" and .arm == "known" and (.share | isnan | not)))[] | .diff_e332] | min	this
+0.023	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | [map(select(.stage == "full" and .arm == "known" and (.share | isnan | not)))[], map(select(.stage == "g1.05" and .arm == "known" and (.share | isnan | not)))[] | .diff_e332] | max	this
+0.004	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | [map(select(.stage == "full" and .arm == "copy" and (.share | isnan | not)))[] | .diff_e332 | fabs] | max	this
+0.05	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | [map(select(.stage != "control" and .stage != "repeat" and (.diff_e332 | isnan | not)))[] | .diff_e332 | fabs] | max	this
+0.995	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | map(select(.item == "p-9707d6ff/g1.05/copy_s2_last_repack1"))[0] | .gain	this
+1.211	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | map(select(.stage == "repeat"))[0] | .share	this
+0	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | map(select(.stage == "repeat"))[0] | .share - .e332_share	this
+0	experiments/share_unified/results/qwen_repack.jsonl	[., inputs] | [map(select(.stage == "control"))[] | .gain, .numerator | fabs] | max	this
+3.62	given	E333 pod cost from remote-kernels status, one RunPod H100 SXM at $4.41/h, ~49 min (not in spend-history)

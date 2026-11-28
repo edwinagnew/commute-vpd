@@ -11,7 +11,8 @@
 #                                  side, draw, status, gain, share (share empty when the draw never reached the band).
 #   results/known_share_check.csv  E327's 48 67M states (results/repro_67m.jsonl, W0 control left out): the paper's
 #                                  share (old), the re-read (new), new - old.
-#   results/qwen_share_vs_gain.csv  E332 (cell P2.91): VPD known and copy fine-tunes at full gain, ~10 and ~1.05.
+#   results/qwen_share_vs_gain.csv  E332 and E333 (cell P2.91): VPD known and copy fine-tunes at full gain, ~10 and
+#                                  ~1.05 on E328's rows (packing seed0), and at full and ~1.05 on repacked rows (seed1).
 set -euo pipefail
 R=experiments/share_unified/results
 RAND_FILES=("$R/qwen_random_vpd0.jsonl" "$R/qwen_random_vpd1.jsonl" "$R/qwen_random_neuron0.jsonl" "$R/qwen_random_neuron1.jsonl")
@@ -44,19 +45,28 @@ jq -rs '
   | [.item, .old, .new, (.new - .old)] | map(tostring) | join(",") )
 ' "$R/repro_67m.jsonl" > "$R/known_share_check.csv"
 
-# Cell P2.91 (E332): each VPD known and copy fine-tune (seeds 0-2, last save) read at its full gain (target "full",
-# c = 1) and scaled down to answer gains of about 10 and 1.05 (results/qwen_gain.jsonl). Controls and the repeat draw
-# are left out: they are not fine-tune reads.
-jq -rs '
+# Cell P2.91. E332 (packing "seed0", results/qwen_gain.jsonl): each VPD known and copy fine-tune (seeds 0-2, last
+# save) read at its full gain (target "full", c = 1) and scaled down to answer gains of about 10 and 1.05, on E328's
+# rows. E333 (packing "seed1", results/qwen_repack.jsonl): the same fine-tunes at c = 1 and at E332's gain-1.05 c, on
+# the rows repacked with packing seed 1; no new search, so a read can fall outside the band (copy s0, gain 1.0025) or
+# under the share's floor of gain >= 1 (copy s2, gain 0.995: NaN in the jsonl, empty here). Controls and the repeat draw are left
+# out: they are not fine-tune reads.
+jq -rn --slurpfile g "$R/qwen_gain.jsonl" --slurpfile p "$R/qwen_repack.jsonl" '
   def title: if . == "p-9707d6ff" then "VPD decomposition" else "One subcomponent per MLP neuron" end;
   def order: if .stage == "full" then 0 elif .stage == "g10" then 1 else 2 end;
-  "decomposition,side,seed,target,c,gain,share",
-  ( map(select(.stage == "full" or .stage == "g10" or .stage == "g1.05"))
-  | if length != 18 then error("expected 18 fine-tune reads, got \(length)") else . end
-  | sort_by(.arm != "known", .seed, order)[]
+  def reads: map(select(.stage == "full" or .stage == "g10" or .stage == "g1.05"))
+    | sort_by(.arm != "known", .seed, order);
+  def row($packing): [(.item | split("/")[0] | title), .arm, .seed, $packing, (.target // "full"), .c, .gain,
+    (.share | if . == null or isnan then "" else . end)] | map(tostring) | join(",");
+  "decomposition,side,seed,packing,target,c,gain,share",
+  ( $g | reads
+  | if length != 18 then error("E332: expected 18 fine-tune reads, got \(length)") else . end
+  | .[]
   | if .stage != "full" and (.status != "ok" or .in_band != true) then error("\(.item): not in its gain band") else . end
-  | [(.item | split("/")[0] | title), .arm, .seed, (.target // "full"), .c, .gain, .share]
-  | map(tostring) | join(",") )
-' "$R/qwen_gain.jsonl" > "$R/qwen_share_vs_gain.csv"
+  | row("seed0") ),
+  ( $p | reads
+  | if length != 12 then error("E333: expected 12 fine-tune reads, got \(length)") else . end
+  | .[] | row("seed1") )
+' > "$R/qwen_share_vs_gain.csv"
 
 wc -l "$R/qwen_share_new.csv" "$R/qwen_share_random_draws.csv" "$R/known_share_check.csv" "$R/qwen_share_vs_gain.csv"
