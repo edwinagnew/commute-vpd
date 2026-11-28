@@ -3,8 +3,8 @@
 We took the known-facts and copy fine-tunes of Qwen3-1.7B, three seeds each, and read their re-gating share on the VPD
 decomposition at full strength and again with each update shrunk until it raised the trained answers by only about
 one log-odds, the amount the random reference updates raise them. Shrinking the update raised the known-facts share
-by about 0.15 and lowered the copy share by about 0.02 to 0.06, and at that matched answer gain the fine-tunes no
-longer read above the random updates on either task. For the paper's goal this means the Qwen appendix's comparison of
+by about 0.15 and lowered the copy share by about 0.02 to 0.06, and at that matched answer gain the fine-tunes do
+not read above the random updates on either task. For the paper's goal this means the Qwen appendix's comparison of
 full-strength fine-tunes with small random updates mixes how far an update moves the answer into what it says about
 how the update was built, so on these two tasks it cannot separate a fine-tune from a random change.
 
