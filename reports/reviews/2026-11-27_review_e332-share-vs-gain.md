@@ -154,3 +154,23 @@ neuron-control numbers in the draft's last bullet.
 - OK: "On the two tasks read at matched gain, the share does not separate a fine-tune from a random change on Qwen"
   is scoped to the tasks read and matches the page.
 - Note: E333 (run 2, repacked fine-tunes) is pending, so re-check both texts when its rows land.
+
+## Re-check with run 2 in (E333, repacked rows; bc09bb4d, 1a15389c; 2026-11-27 ~21:00)
+
+Every run-2 row on the page matches `qwen_repack.jsonl`, and so does the CSV (`qwen_share_vs_gain.csv`, 30 rows plus the
+header, packing column, copy seed 2's repacked gain-one share empty). The deltas, the steps per packing, the answer
+counts 1,081 and 1,724, the zero and W0 controls at exactly 0, and the draw-2 repeat (1.2108150967958595, equal to
+E332's) all match. The opening's and the Answer's numbers match too.
+- MUSTs (a)-(c) still hold. (a) Every comparison gives task, seed or draw, packing and gain. (b) Nothing says "above
+  matched randoms"; "never above" is true on both packings. (c) The 0.18 is given as one draw's packing sensitivity,
+  beside at most 0.049 for the fine-tunes.
+- "Copy shows no clear change with gain": supported. The steps run -0.059 to +0.020 across packings, against a
+  repack move of up to 0.049 at gain one.
+- SHOULD 1: at fixed c, copy's repacked gain-one reads land at gains 1.0025 and 1.015, against 1.073 and 1.084
+  originally. So the +0.044 and +0.049 are packing plus a gain shift of about 0.07 that the packing caused, not packing
+  at fixed gain. Seed 0, at 1.0025, also sits outside the band, as the page says. The sentence "Packing moves the
+  fine-tunes' shares by a few hundredths" could name this in a clause.
+- SHOULD 2: on repacked copy, "at their lower edge ... never above" rests on 0.6299 against draw 1's 0.6304, which is
+  0.0005 apart and on different row sets. The draws' own repack sensitivity on copy is unmeasured (0.18 on known draw 2).
+  "Level with the lowest draw" would say it more exactly. That is still no separation, so the conclusion stands.
+Verdict: OK to fill.
