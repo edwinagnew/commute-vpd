@@ -18,7 +18,8 @@ activation.
 Interchange (`Swap`, the layer's sites of `needed.scan_sites`; `scan` its alias): F's run on D is cached once (each block's input, each layer's z and a). A case (variable u,
 pair (x, x')) reruns blocks l.. from x's cached block input with u's value set to its value in F's cached run on x':
 head h's z slice replaced by x''s (pre-hook on o_proj), neuron i's activation a_i replaced by a_i - s_i(a) + s_i(a'),
-the remainder's a by s(a) + (a' - s(a')) (pre-hook on down_proj), at every position. A variable is needed when some
+the remainder's a by s(a) + (a' - s(a')) (pre-hook on down_proj), at every position; a is x's activation from F's
+cached run, not the rerun's copy, so an activation at its bound keeps its side (2026-11-27). A variable is needed when some
 pair changes F's argmax token at some read position.
 
 Write share (`sites`): per variable num = sum <w_F, w_M>, den = sum |w_M|^2, dd = sum |w_F - w_M|^2 over every position
