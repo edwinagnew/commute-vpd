@@ -174,3 +174,15 @@ E332's) all match. The opening's and the Answer's numbers match too.
   0.0005 apart and on different row sets. The draws' own repack sensitivity on copy is unmeasured (0.18 on known draw 2).
   "Level with the lowest draw" would say it more exactly. That is still no separation, so the conclusion stands.
 Verdict: OK to fill.
+
+## Paper re-check with E333: sec4:89 (writeup-lead local 29ca946) and the App H draft (2026-11-27 ~21:25)
+
+No MUST. Every number traces to page fac49fcf, `qwen_repack.jsonl` and `qwen_gain.jsonl`: known repacked 0.74-0.76 at
+gain one vs 0.60-0.62 full; copy 0.58-0.59 original, 0.628/0.630 repacked (seeds 0, 1); seed 2 has no reading;
+the ≤0.05 and 0.18 repack moves; "below or level with the lowest draw" (0.6299 vs 0.6304). "Copy shows no clear
+change" is scoped to copy, and the closing sentence to the two tasks read.
+- NIT (App H): copy seed 0's repacked gain-one read is at 1.0025, just under the band 1.003-1.097 that the sentence before
+  gives for the random changes. Seed 2's "reaches no gain of one" really means its gain, 0.995, is under the share's floor
+  of 1. Either can stay as it is in the body; a footnote is optional.
+- NIT (both): copy's ≤0.05 repack move happens alongside a gain shift of ~0.07 at fixed c (1.07-1.08 to 1.00-1.02).
+  Optional to say.
