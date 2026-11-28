@@ -1,0 +1,43 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+    site 0 (block 0, variables from 0): 197056 cases, 0 needed so far; 197056 cases in 4 s (54994/s)
+    site 1 (block 1, variables from 3079): 197056 cases, 0 needed so far; 394112 cases in 6 s (61708/s)
+    site 2 (block 2, variables from 6158): 197056 cases, 0 needed so far; 591168 cases in 8 s (70048/s)
+    site 3 (block 3, variables from 9237): 197056 cases, 0 needed so far; 788224 cases in 10 s (80952/s)
+    site 0 (block 0, variables from 0): 197056 cases, 0 needed so far; 197056 cases in 4 s (54371/s)
+    site 1 (block 1, variables from 3079): 197056 cases, 0 needed so far; 394112 cases in 7 s (60597/s)
+    site 2 (block 2, variables from 6158): 197056 cases, 0 needed so far; 591168 cases in 9 s (68432/s)
+    site 3 (block 3, variables from 9237): 197056 cases, 0 needed so far; 788224 cases in 10 s (78641/s)
+STRADDLE {"item": "e62/copy_s0", "old_max_dev": 0.027153849601745605, "old_flips": 0, "straddles": 1, "rerun_noise_max": 8.392333984375e-05, "fixed_max_dev": 7.808208465576172e-05, "fixed_flips": 0, "cases": 788224}
+    site 0 (block 0, variables from 0): 197056 cases, 0 needed so far; 197056 cases in 4 s (55560/s)
+    site 1 (block 1, variables from 3079): 197056 cases, 0 needed so far; 394112 cases in 6 s (62112/s)
+    site 2 (block 2, variables from 6158): 197056 cases, 0 needed so far; 591168 cases in 8 s (70421/s)
+    site 3 (block 3, variables from 9237): 197056 cases, 0 needed so far; 788224 cases in 10 s (81305/s)
+    site 0 (block 0, variables from 0): 197056 cases, 0 needed so far; 197056 cases in 4 s (54205/s)
+    site 1 (block 1, variables from 3079): 197056 cases, 0 needed so far; 394112 cases in 7 s (60445/s)
+    site 2 (block 2, variables from 6158): 197056 cases, 0 needed so far; 591168 cases in 9 s (68299/s)
+    site 3 (block 3, variables from 9237): 197056 cases, 0 needed so far; 788224 cases in 10 s (78507/s)
+STRADDLE {"item": "e46/ident32_s0", "old_max_dev": 0.06920576095581055, "old_flips": 0, "straddles": 2, "rerun_noise_max": 7.62939453125e-05, "fixed_max_dev": 5.53131103515625e-05, "fixed_flips": 0, "cases": 788224}
+    site 0 (block 0, variables from 0): 197056 cases, 0 needed so far; 197056 cases in 4 s (55535/s)
+    site 1 (block 1, variables from 3079): 197056 cases, 0 needed so far; 394112 cases in 6 s (62079/s)
+    site 2 (block 2, variables from 6158): 197056 cases, 0 needed so far; 591168 cases in 8 s (70378/s)
+    site 3 (block 3, variables from 9237): 197056 cases, 0 needed so far; 788224 cases in 10 s (81261/s)
+    site 0 (block 0, variables from 0): 197056 cases, 0 needed so far; 197056 cases in 4 s (54163/s)
+    site 1 (block 1, variables from 3079): 197056 cases, 0 needed so far; 394112 cases in 7 s (60384/s)
+    site 2 (block 2, variables from 6158): 197056 cases, 0 needed so far; 591168 cases in 9 s (68225/s)
+    site 3 (block 3, variables from 9237): 197056 cases, 0 needed so far; 788224 cases in 10 s (78409/s)
+STRADDLE {"item": "e58/copy_s0", "old_max_dev": 5.14984130859375e-05, "old_flips": 0, "straddles": 0, "rerun_noise_max": 8.7738037109375e-05, "fixed_max_dev": 5.340576171875e-05, "fixed_flips": 0, "cases": 788224}
+    site 0 (block 0, variables from 0): 197056 cases, 0 needed so far; 197056 cases in 4 s (55474/s)
+    site 1 (block 1, variables from 3079): 197056 cases, 0 needed so far; 394112 cases in 6 s (62014/s)
+    site 2 (block 2, variables from 6158): 197056 cases, 0 needed so far; 591168 cases in 8 s (70298/s)
+    site 3 (block 3, variables from 9237): 197056 cases, 0 needed so far; 788224 cases in 10 s (81177/s)
+    site 0 (block 0, variables from 0): 197056 cases, 0 needed so far; 197056 cases in 4 s (54195/s)
+    site 1 (block 1, variables from 3079): 197056 cases, 0 needed so far; 394112 cases in 7 s (60427/s)
+    site 2 (block 2, variables from 6158): 197056 cases, 0 needed so far; 591168 cases in 9 s (68277/s)
+    site 3 (block 3, variables from 9237): 197056 cases, 0 needed so far; 788224 cases in 10 s (78476/s)
+STRADDLE {"item": "c3/copy_s0", "old_max_dev": 4.57763671875e-05, "old_flips": 0, "straddles": 0, "rerun_noise_max": 0.0001068115234375, "fixed_max_dev": 5.054473876953125e-05, "fixed_flips": 0, "cases": 788224}
+=== FINISHED ident_straddle ===
+peak host RSS 6.4 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/fig2_all_tasks/results/ident_straddle.json ===
