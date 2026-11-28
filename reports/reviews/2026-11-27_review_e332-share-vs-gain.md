@@ -120,3 +120,17 @@ share by up to 0.15 on these tasks it read, so those gaps are stated with both g
 - Gain-matched reads on cipher, invented, gold and gold_shuf (not in E332's scope).
 - The neuron-basis decomposition (E332 reads VPD p-9707d6ff only).
 - `check.py` of `/writeup` (not run: Python is refused on the dev node outside `cpu-run`, and this is a review, not a write-up).
+
+## Re-check of the P2.91 page (2026-11-27 20:15)
+
+Page `reports/analyses/2026-11-27_analysis_p291-share-vs-gain.md` (regating-lead, 20:06). All three MUSTs are met.
+Every fine-tune row (c, gain, share, KL) matches `qwen_gain.jsonl` and `qwen_share_vs_gain.csv`. Every random row
+(size ratio, gain, KL, share) matches `qwen_random_vpd0/1.jsonl`, and so do the repack row and the band claims. The
+KL ratios "9 to 53" and "8 to 33" recompute as 9.4-52.8 and 7.7-32.6.
+- MUST 1 met: both tables give task, seed or draw and gain; cipher/invented/gold are stated with both gains.
+- MUST 2 met: no "above matched randoms" on known or copy.
+- MUST 3 met: the repeat is given as a row-packing sensitivity of one draw (0.18), and the same-rows read floor is
+  exactly 0.
+- SHOULD (opening, sentence 2): "no longer read above the random updates" implies they did at full gain. They did
+  not (known full 0.58-0.60 vs draws 0.51-1.03; copy full 0.61-0.64 vs 0.63-0.72). Say "do not read above".
+OK to fill once run 2 lands, or now with run 2 listed as Not run.
