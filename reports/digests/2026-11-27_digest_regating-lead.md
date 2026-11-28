@@ -1,29 +1,15 @@
 # regating-lead digest, 2026-11-27
 
-P2.87, due 11-28: filled. It needed a reference update for the re-gating share on tasks built to reuse. Updates trained only inside a fixed random subspace all reached one log-odds gain. At that first point their share sat below their own fine-tune's on the copying tasks and near it elsewhere. By step 300 every task was within about 0.10 of its fine-tune's share. The cell is redteamed and has been relayed to writeup-lead through whip-lead. No open cells remain, so I am finishing.
+**Cells.** P2.90 (one re-gating share on both models) is filled. P2.91 (does the Qwen re-gating share depend on answer gain) is filled, 2 of 2 runs. No cell of mine is open. I am finishing because whip-lead says there is nothing more for me.
 
-## Cells
-All of regating-lead's cells are filled or closed (`fleet/cell list regating-lead`). P2.87 used its 1 run of 1 (E319).
+**What ran.** Two RunPod H100 runs re-read the Qwen fine-tunes on the known-facts and copy tasks. Each fine-tune was scaled down to a small answer gain, and run 2 also read every item packed into new rows. On known facts, shrinking the update raised the share by about 0.15 on both packings. On copy the share showed no clear change. At matched gain the fine-tunes read within the random updates' range, or level with the lowest one, and never above it. One random draw's share moved by 0.18 on a single repack. The page is `reports/analyses/2026-11-27_analysis_p291-share-vs-gain.md`. The redteam cleared it (`reports/reviews/2026-11-27_review_e332-share-vs-gain.md`), and writeup-lead has applied it to section 4.5 and the Qwen appendix draft.
 
-## What ran and what it found
-- E319: one RunPod L40 run on 11-26 ($0.32), plus a figure drawn on 11-27 on a 4090 pod ($0.06) while the CPU worker was down.
-- The control reproduced the 24 fine-tune shares exactly, and all 24 random-subspace updates reached gain 1.
-- At the first state with gain 1, the four copying tasks read 0.39 to 0.47 below their own fine-tune. The rank tasks read 0.12 to 0.14 below, and two tasks read level or above.
-- The filed rule reads "rival a" at both reads. At the first read it rests on one task that clears the bar by about one batch spread; without that task the rule reads "between".
-- The report is `reports/analyses/2026-11-26_analysis_p2-87-subspace-share.md`, with its figure at `experiments/subspace_share/figures/shares.png`. The review is `reports/reviews/2026-11-27_review_e319-subspace-share.md`.
+**Waiting on the user.** None of my asks are open. The premise check came back doubtful (`commute-data/premise/P2.91.md`): near a gain of one the ratio may be dominated by its small denominator. whip-lead is putting that question to the user.
 
-## For your gate
-The premise check came back doubtful (`~/commute-data/premise/P2.87.md`). A trained reference is a solution to the same task, so its share may match the fine-tune's because the task and the gain fix it. If so, it is not a null. The check asks: if any trained update reaching gain 1 reads about the same share, what does the share tell you about a fine-tune that the task and its gain do not? There are no asks open.
+**Money.** $7.20 for run 1 and $3.62 for run 2, $10.82 in all. No pods are left.
 
-## Money
-About $0.38 on pods today and yesterday. No pods are running.
+**Friction noted today.** 1213, 1218, 1219, 1220: jsonl slurping and rounding in `fleet/numbers`, `cpu-run` refusing a plot-only render, and NaN shares in the writers' output.
 
-## Problems and friction
-- Problem 7 is open: the CPU worker l40-worker is NOT_RESPONDING, so `cpu-run` cannot start Python.
-- Friction 1192 and 1195: `cpu-run` cut short plotting jobs that should have taken seconds, and a plot needed a pod because the worker was down.
-
-## Not done
-- pyright on `src/commute/subspace.py` and `experiments/subspace_share/` (needs the CPU worker).
-- Backlog 13 (SVD signs).
-- Extracting the E319 .pt tars into `results/large/`.
-- The redteam figure nits (a 0.65 line, the new-side band, the legend position), left for whoever draws the paper version.
+## Not run
+- The E332 gain figure (`plot_gain.py` has never run, because `cpu-run` refused the render).
+- The random draws on copy and on known draws 0 and 1, read on the repacked rows.
