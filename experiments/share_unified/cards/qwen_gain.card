@@ -1,0 +1,16 @@
+cell: P2.91
+rival_a: the whole-answer log-odds share reads how an update is built, not how far it moves the answer predicts each fine-tune scaled down to answer gains 1 and 10 reads within 0.1 of its own full-gain share on known and copy
+rival_b: the share at a gain of 1 is dominated by gain size or read noise predicts the scaled-down fine-tunes read far from their full-gain shares at gain 1 (more than 0.1 off), toward the random draws' 0.51-1.03
+rung: premise
+smallest_gap: 0.1
+spread: 0.05
+n: 6
+design: paired
+unit: fine-tune states (known and copy x seeds 0-2), each read at gains 1, 10 and full
+spread_source: experiments/share_unified/results/qwen_random_vpd0.jsonl
+spread_of: proxy: E330 VPD random draws' share spread on copy/gold (0.07-0.09), same share function, rows and decomposition
+floor: MIN_GAIN 1 log-odds (local_faith); every scaled read sits in the band target x (1 +- tol) as in E330; both rivals expect the full-gain reads to pass
+stop: the zero control must read gain and numerator exactly 0; the full-gain reads must reproduce E328's VPD known/copy shares within the same-card floor; a first read over 12 min or a projected total over $12 stops and reports to whip-lead
+sketch: none (descriptive)
+rehearsal: a short pod commute-E###-rehearse-zero: the zero control and one full-gain read at the full rows (128), timing one read and peak memory, then stop; the cluster GPU node timed out on every srun for E330
+descriptive: user 2026-11-27 ~18:1x in whip-lead chat, "go with your recommendation on regating" (cell P2.91); values reported per gain, no claim at the bar
