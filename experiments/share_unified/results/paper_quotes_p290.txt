@@ -1,0 +1,72 @@
+# Paper lines quoted by reports/analyses/2026-11-27_analysis_p290-share-unified.md, from the paper clone ~/commute-agents/writeup-lead/paper/paper/ at commit 105c329, via git show 105c329:./<file> (2026-11-27).
+## main.tex lines 49-49
+49: \new{\textbf{[writeup-lead version, for comparison.]} A common view of LLM training holds that post-training can only elicit what pre-training already put into a base model. This \emph{Elicitation Hypothesis} underpins several approaches to alignment, among them persona steering and alignment pre-training, yet the evidence for it is indirect: behavioural studies show that a base model can be prompted into a post-trained capability, and mechanistic studies show that some features or circuits survive fine-tuning, but none has been checked against a fine-tune known to build something new. We give a mechanistic definition of reuse in the language of causal abstraction: a fine-tune reuses its base model, for a behaviour, to the extent that the variables its behaviour needs are still computed by the base model's mechanisms. The definition is stated relative to a featurization of the base model, so it applies to SAE latents, neurons or parameter subcomponents alike, and under it a new mechanism is a defined outcome rather than an absence of evidence. On a 67M-parameter model we score readings against fine-tunes built to reuse or to learn something new. A direct approximation of the definition separates hand-made edits but reads every trained fine-tune low. Among cheaper proxies, a re-gating share separates the fine-tunes built to reuse from those built new, where published model-diffing tools do not; but no proxy tracks reuse on realistic fine-tunes, and on Qwen3-1.7B the re-gating share saturates. Any method that claims to see what fine-tuning learns should first pass fine-tunes whose answer is known.}
+## sec5_results.tex lines 10-10
+10: First, we measure the definition through its approximation $\rho$ at three featurizations on the 67M model. $\rho$ separates edits built by hand but reads every trained fine-tune \old{as mostly new}\new{low, so at all three featurizations it cannot distinguish trained fine-tunes on reuse tasks from those on new tasks} (Section~\ref{sec:res_definition}). Next, of the the three main proxies we test, the re-gating share agrees with how the known-answer fine-tunes were built, steering and effective rank only in part (Section~\ref{sec:res_prior}), but all three fail on realistic fine-tunes (Section~\ref{sec:res_beyond}). Finally, we report how published model-diffing tools perform in this setting; none detected reuse successfully (Section~\ref{sec:res_tools}).  On Qwen3-1.7B the re-gating share saturates\new{ on VPD} (Section~\ref{sec:res_qwen}). More comprehensive experiments can be found in Appendix~\ref{sec:app_results_detail}.
+## sec5_results.tex lines 85-85
+85: \old{We repeated the main experiments on Qwen3-1.7B, for which we also have a VPD decomposition available}\new{On Qwen3-1.7B, for which a VPD decomposition is also available, we read the re-gating share on three built pairs of fine-tunes} (Appendix~\ref{sec:qwen}). The re-gating share breaks down completely\new{ on VPD}: it reads 0.99 or more for every fine-tune and for random changes that move the output as much, so it cannot tell them apart\new{ (Figure~\ref{fig:qwen_share}). With one subcomponent per MLP neuron it reads 0.92 to 0.99 for fine-tunes and 0.81 to 0.92 for random changes, but no pair separates from random changes on every random draw}. The definition itself has not yet been measured on Qwen.
+## appH_qwen_short.tex lines 17-40
+17: \caption{\new{\textbf{On Qwen3-1.7B, the re-gating share saturates on VPD.} The share for each side of the three Qwen pairs at its last saved step, on the VPD decomposition and on the control with one subcomponent per MLP neuron; dot: mean of three seeds, bar: seed range; cross: one random change of the same KL\new{, \protect\old{a single draw per side}\protect\new{a single draw per side on VPD; on the neuron control, the first of three draws, the other two in the text}. The two sides of a pair are shown at their saved sizes, not matched in update size}.}}
+18: \label{fig:qwen_share}
+19: \end{figure}
+20: 
+21: \new{\paragraph{The re-gating share saturates on VPD.} Every fine-tune reads between 0.990 and 0.9993, and random
+22: changes of matched output change (the same KL from the base model) read 0.993 to 1.009 (Figure~\ref{fig:qwen_share}).
+23: The updates sit outside the subcomponents just as random changes do: for each of 15 saved updates from earlier runs, the share of its
+24: norm outside the subcomponents' span is 0.97 to 1.00 times the share expected for a Gaussian change of the same norms. The instrument
+25: is not blind: a change planted on often-active subcomponents is put back on them at 0.89, against 0.06 by chance. Yet
+26: the share differs by less than 0.01 between changes planted on often-active and on rarely-active subcomponents. The
+27: share here is the KL form (Appendix~\ref{sec:app_baseline}); on the 67M too, this form reads random changes of matched
+28: output change as high as most fine-tunes\new{: 0.97 to 0.99 for the random changes, against 0.89 to 1.00 for the 73 of 88 saved
+29: fine-tunes that its rule scores}.}
+30: 
+31: \new{\paragraph{On the neuron control the share moves, but no pair separates on every random draw.} It is no longer
+32: pinned near 1. Once the two sides of each pair are matched in update size, we compare each pair's gap in share with
+33: the gap between random changes of the same sizes, on three random draws (a pair clears it when all three seeds' gaps have one sign and lie further from zero than the random gap plus a seed spread of 0.002), and which pairs clear it depends on the
+34: draw. Real against shuffled maths solutions, at the last save, clears it on the first two draws but not the third,
+35: and is the only pair that clears it on more than one draw. Copy against cipher clears it on the third draw only, at
+36: both saves, and at the last save by less than 0.001. Known against invented facts clears it on no
+37: draw; at the five-times save its gap lies below all three random gaps.}\new{ At the saved sizes
+38: plotted in Figure~\ref{fig:qwen_share}, each fine-tune, on both sides of every pair, reads above all three of its
+39: random changes, but there the sides differ in update size.}
+40: 
+## appE_methods_detail.tex lines 24-27
+24:         Figure~\ref{fig:qwen_share} one draw per side, scaled to within 1.5 times the KL of its first seed.} \old{These never raise the
+25:         trained answer by the one log-odds that the re-gating share needs, so for that share the same directions are
+26:         instead scaled}\new{For the re-gating share (in the text only, not plotted) the directions are instead scaled} over 12 log-spaced sizes from 0.01 to 100 times the fine-tune's, then by bisection, until the
+27:         gain is 1.00 to 1.10 log-odds; their KL is not matched (Section~\ref{sec:res_prior}).}}
+## appE_methods_detail.tex lines 116-120
+116: 
+117: \begin{revised}
+118: \new{The score is the log-odds of the trained answer, and the share is read only when the gain $G$ is at least one
+119: log-odds. The share cannot see the remainder, or any rescaling of a subcomponent, since the gates only switch
+120: subcomponents down. A KL form, used on Qwen, is in Appendix~\ref{sec:app_baseline}.}
+## appE_methods_detail.tex lines 184-190
+184: \new{\paragraph{KL form of the share.} On Qwen the log-odds form could not be scored, so the share compares output
+185: distributions instead. Let $K_{ab}$ be the KL from the fine-tuned model's output to a masked forward that uses
+186: components $C_a$ under the gates read on model $b$'s activations. $C_0$ is the base decomposition; $C_1$ is the
+187: decomposition carried onto the fine-tune by the least-squares split (Appendix~\ref{sec:app_carrying}). So $K_{00}$ is
+188: the base model's distance from the fine-tune, and $K_{11}$ is how close the carried decomposition gets under its own
+189: gates. Then $\phi_\Gamma^{\mathrm{KL}} = (K_{00} - K_{01})/(K_{00} - K_{11})$, summed over every position up to the
+190: read position. It is 0 when the new gates do not help, and 1 when the new gates alone close the gap.}
+## sec5_baselines_scorecard_caveats.tex lines 61-66
+61: On Qwen3-1.7B's VPD decomposition the procedure returns no call: fine-tunes read shares of 0.990 to 0.9998, and random
+62: changes of matched output change read 0.992 to 1.009, so the two cannot be told apart. The held-model survival
+63: separates no pair of the Qwen library once the larger update is shrunk to its partner's size. Appendix~\ref{sec:qwen}
+64: gives the setup, the frozen-neuron control and the RL and supervised updates.
+65: 
+66: The Qwen share is a KL ratio, a different formula from the 67M log-odds share, because the log-odds form could not be
+## figures/data/qwen_share.csv (whole file)
+decomposition,side,mean,seed_min,seed_max,random_kl
+VPD decomposition,copy,0.9973344882639551,0.9941791944333481,0.9992918572496585,1.0093668499716169
+VPD decomposition,cipher,0.9940876419301178,0.9918660842426311,0.9952019639889734,1.0070034907291292
+VPD decomposition,known,0.9935740100609718,0.9917032402409781,0.9950126567515031,1.0069849901515868
+VPD decomposition,invented,0.9907633006260728,0.990116449617712,0.9919856123836052,1.002169923376006
+VPD decomposition,gold,0.9989241295233132,0.9989009196687494,0.9989586265252326,0.9931142833049637
+VPD decomposition,gold_shuf,0.998231173186686,0.9980501643010038,0.9983344546749705,0.9934819665127685
+One subcomponent per MLP neuron,copy,0.983625046591816,0.9800567718802164,0.986138932840614,0.8095441229492737
+One subcomponent per MLP neuron,cipher,0.96380699202163,0.9603722532156301,0.9683245827345268,0.9191676392536977
+One subcomponent per MLP neuron,known,0.9750112990434969,0.9676889007237651,0.9788229626907748,0.9092308364378094
+One subcomponent per MLP neuron,invented,0.9257482217450685,0.9212948911913735,0.9308345041413907,0.888109797725025
+One subcomponent per MLP neuron,gold,0.9598777191470456,0.9579598396358591,0.960847545042335,0.905136328701232
+One subcomponent per MLP neuron,gold_shuf,0.9539071754535048,0.9525544753408005,0.9552046658885999,0.9067212988159904

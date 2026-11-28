@@ -20,12 +20,54 @@
 0.719	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl + experiments/share_unified/results/qwen_random_neuron0.jsonl + experiments/share_unified/results/qwen_random_neuron1.jsonl	[.[] | select(.decomp == "p-9707d6ff" and .status == "ok" and .item != "p-9707d6ff/known_d2") | .share] | max	this
 -0.28	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl + experiments/share_unified/results/qwen_random_neuron0.jsonl + experiments/share_unified/results/qwen_random_neuron1.jsonl	[.[] | select(.decomp == "p-015e0710" and .status == "ok") | .share] | min	this
 0.73	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl + experiments/share_unified/results/qwen_random_neuron0.jsonl + experiments/share_unified/results/qwen_random_neuron1.jsonl	[.[] | select(.decomp == "p-015e0710" and .status == "ok") | .share] | max	this
--6.8	experiments/share_unified/results/run_random_vpd1.log	grep -n 'search c +100' (line 41, inside the p-9707d6ff/copy_d1 search that ends at line 55)	this
-0.02	experiments/share_unified/results/qwen_reread.jsonl	[.[] | select(.kind == "fine-tune" and .save == "last" and .arm == "known")] | group_by(.decomp) | map(map(.share) | max - min) | max	this
-10.1	experiments/share_unified/results/qwen_reread.jsonl	[.[] | select(.kind == "fine-tune" and .save == "last") | .gain] | min	this
-160.3	experiments/share_unified/results/qwen_reread.jsonl	[.[] | select(.kind == "fine-tune" and .save == "last") | .gain] | max	this
-0.12	experiments/share_unified/results/repro_67m.jsonl	[.[] | select(.item != "W0") | .new] | min	this
-1.10	experiments/share_unified/results/repro_67m.jsonl	[.[] | select(.item != "W0") | .new] | max	this
+0.002	experiments/share_unified/results/predictions.json	.settings.repro_67m.floor_abs	this
+1e-6	experiments/share_unified/results/predictions.json	.settings.qwen_reread.gain_floor	this
+0.00245	experiments/share_unified/results/repro_67m.jsonl	[., inputs] | map(select(.item == "e53/lowercase_s0"))[0] | .new_minus_old | fabs	this
+0.7519	experiments/share_unified/results/repro_67m.jsonl	[., inputs] | map(select(.item == "e53/lowercase_s0"))[0] | .old	this
+0.7494	experiments/share_unified/results/repro_67m.jsonl	[., inputs] | map(select(.item == "e53/lowercase_s0"))[0] | .new	this
+0.00045	experiments/share_unified/results/repro_67m.jsonl	[., inputs] | map(select(.item == "e53/lowercase_s0"))[0] | (.new_minus_old | fabs) - 0.002	this
+0.12	experiments/share_unified/results/repro_67m.jsonl	[., inputs] | map(select(.item != "W0") | .new) | min	this
+1.10	experiments/share_unified/results/repro_67m.jsonl	[., inputs] | map(select(.item != "W0") | .new) | max	this
+0.052	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.old_K_means != null) | .K_means as $k | .old_K_means as $o | ($k | keys[]) as $key | (($k[$key] - $o[$key]) / $o[$key] | fabs)) | max * 100	this
+1.19	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "random") | .gain) | max	this
+10.1	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last") | .gain) | min	this
+160.3	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last") | .gain) | max	this
+0.02	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .arm == "known")) | group_by(.decomp) | map(map(.share) | max - min) | max	this
+-6.8	experiments/share_unified/results/run_random_vpd1.log	[scan("search c \\+100\\] gain (-?[0-9.]+)")] | first[0] | tonumber	this
+0.991	experiments/share_unified/results/paper_quotes_p290.txt	[scan("VPD decomposition,invented,([0-9.]+)")] | first[0] | tonumber	earlier
+0.999	experiments/share_unified/results/paper_quotes_p290.txt	[scan("VPD decomposition,gold,([0-9.]+)")] | first[0] | tonumber	earlier
+0.926	experiments/share_unified/results/paper_quotes_p290.txt	[scan("One subcomponent per MLP neuron,invented,([0-9.]+)")] | first[0] | tonumber	earlier
+0.984	experiments/share_unified/results/paper_quotes_p290.txt	[scan("One subcomponent per MLP neuron,copy,([0-9.]+)")] | first[0] | tonumber	earlier
+0.99	experiments/share_unified/results/paper_quotes_p290.txt	[scan("VPD decomposition,gold,[0-9.]+,[0-9.]+,[0-9.]+,([0-9.]+)")] | first[0] | tonumber	earlier
+1.01	experiments/share_unified/results/paper_quotes_p290.txt	[scan("VPD decomposition,copy,[0-9.]+,[0-9.]+,[0-9.]+,([0-9.]+)")] | first[0] | tonumber	earlier
+0.92	experiments/share_unified/results/paper_quotes_p290.txt	[scan("reads (0\\.92) to 0\\.99 for fine-tunes")] | first[0] | tonumber	earlier
+0.81	experiments/share_unified/results/paper_quotes_p290.txt	[scan("and (0\\.81) to 0\\.92")] | first[0] | tonumber	earlier
+0.990	experiments/share_unified/results/paper_quotes_p290.txt	[scan("between (0\\.990) and 0\\.9993")] | first[0] | tonumber	earlier
+0.9993	experiments/share_unified/results/paper_quotes_p290.txt	[scan("between 0\\.990 and (0\\.9993)")] | first[0] | tonumber	earlier
+0.993	experiments/share_unified/results/paper_quotes_p290.txt	[scan("read (0\\.993) to 1\\.009")] | first[0] | tonumber	earlier
+1.009	experiments/share_unified/results/paper_quotes_p290.txt	[scan("read 0\\.993 to (1\\.009)")] | first[0] | tonumber	earlier
+0.97	experiments/share_unified/results/paper_quotes_p290.txt	[scan("is (0\\.97) to 1\\.00 times")] | first[0] | tonumber	earlier
+1.00	experiments/share_unified/results/paper_quotes_p290.txt	[scan("is 0\\.97 to (1\\.00) times")] | first[0] | tonumber	earlier
+0.89	experiments/share_unified/results/paper_quotes_p290.txt	[scan("at (0\\.89), against")] | first[0] | tonumber	earlier
+0.06	experiments/share_unified/results/paper_quotes_p290.txt	[scan("against (0\\.06) by chance")] | first[0] | tonumber	earlier
+0.01	experiments/share_unified/results/paper_quotes_p290.txt	[scan("less than (0\\.01) between")] | first[0] | tonumber	earlier
+0.9998	experiments/share_unified/results/paper_quotes_p290.txt	[scan("0\\.990 to (0\\.9998)")] | first[0] | tonumber	earlier
+0.992	experiments/share_unified/results/paper_quotes_p290.txt	[scan("read (0\\.992) to 1\\.009")] | first[0] | tonumber	earlier
+1.5	experiments/share_unified/results/paper_quotes_p290.txt	[scan("within (1\\.5) times the KL")] | first[0] | tonumber	earlier
+0.09	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl + experiments/share_unified/results/qwen_random_neuron0.jsonl + experiments/share_unified/results/qwen_random_neuron1.jsonl	[.[] | select(.item == "p-015e0710/cipher_d2")][0] | .share	this
+0.23	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl + experiments/share_unified/results/qwen_random_neuron0.jsonl + experiments/share_unified/results/qwen_random_neuron1.jsonl	[.[] | select(.item == "p-015e0710/known_d1")][0] | .share	this
+0.37	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl + experiments/share_unified/results/qwen_random_neuron0.jsonl + experiments/share_unified/results/qwen_random_neuron1.jsonl	[.[] | select(.item == "p-9707d6ff/cipher_d1")][0] | .share	this
+0.35	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl + experiments/share_unified/results/qwen_random_neuron0.jsonl + experiments/share_unified/results/qwen_random_neuron1.jsonl	[.[] | select(.item == "p-9707d6ff/cipher_d2")][0] | .share	this
+0.40	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl + experiments/share_unified/results/qwen_random_neuron0.jsonl + experiments/share_unified/results/qwen_random_neuron1.jsonl	[.[] | select(.item == "p-9707d6ff/invented_d1")][0] | .share	this
+0.43	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl + experiments/share_unified/results/qwen_random_neuron0.jsonl + experiments/share_unified/results/qwen_random_neuron1.jsonl	[.[] | select(.item == "p-015e0710/copy_d0")][0] | .share	this
+0.53	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl + experiments/share_unified/results/qwen_random_neuron0.jsonl + experiments/share_unified/results/qwen_random_neuron1.jsonl	[.[] | select(.item == "p-015e0710/copy_d1")][0] | .share	this
+0.48	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl + experiments/share_unified/results/qwen_random_neuron0.jsonl + experiments/share_unified/results/qwen_random_neuron1.jsonl	[.[] | select(.item == "p-9707d6ff/gold_shuf_d2")][0] | .share	this
+0.55	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl + experiments/share_unified/results/qwen_random_neuron0.jsonl + experiments/share_unified/results/qwen_random_neuron1.jsonl	[.[] | select(.item == "p-9707d6ff/gold_d0")][0] | .share	this
+0.51	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl + experiments/share_unified/results/qwen_random_neuron0.jsonl + experiments/share_unified/results/qwen_random_neuron1.jsonl	[.[] | select(.item == "p-9707d6ff/known_d1")][0] | .share	this
+0.69	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl + experiments/share_unified/results/qwen_random_neuron0.jsonl + experiments/share_unified/results/qwen_random_neuron1.jsonl	[.[] | select(.item == "p-9707d6ff/known_d0")][0] | .share	this
+0.63	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl + experiments/share_unified/results/qwen_random_neuron0.jsonl + experiments/share_unified/results/qwen_random_neuron1.jsonl	[.[] | select(.item == "p-9707d6ff/copy_d1")][0] | .share	this
+0.72	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl + experiments/share_unified/results/qwen_random_neuron0.jsonl + experiments/share_unified/results/qwen_random_neuron1.jsonl	[.[] | select(.item == "p-9707d6ff/copy_d0")][0] | .share	this
+1.03	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl + experiments/share_unified/results/qwen_random_neuron0.jsonl + experiments/share_unified/results/qwen_random_neuron1.jsonl	[.[] | select(.item == "p-9707d6ff/known_d2")][0] | .share	this
 0.086	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl + experiments/share_unified/results/qwen_random_neuron0.jsonl + experiments/share_unified/results/qwen_random_neuron1.jsonl	[.[] | select(.item == "p-015e0710/cipher_d2")][0] | .share	this
 0.434	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl + experiments/share_unified/results/qwen_random_neuron0.jsonl + experiments/share_unified/results/qwen_random_neuron1.jsonl	[.[] | select(.item == "p-015e0710/copy_d0")][0] | .share	this
 0.534	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl + experiments/share_unified/results/qwen_random_neuron0.jsonl + experiments/share_unified/results/qwen_random_neuron1.jsonl	[.[] | select(.item == "p-015e0710/copy_d1")][0] | .share	this
@@ -54,3 +96,75 @@
 0.687	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl + experiments/share_unified/results/qwen_random_neuron0.jsonl + experiments/share_unified/results/qwen_random_neuron1.jsonl	[.[] | select(.item == "p-9707d6ff/known_d0")][0] | .share	this
 0.515	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl + experiments/share_unified/results/qwen_random_neuron0.jsonl + experiments/share_unified/results/qwen_random_neuron1.jsonl	[.[] | select(.item == "p-9707d6ff/known_d1")][0] | .share	this
 1.031	experiments/share_unified/results/qwen_random_vpd0.jsonl + experiments/share_unified/results/qwen_random_vpd1.jsonl + experiments/share_unified/results/qwen_random_neuron0.jsonl + experiments/share_unified/results/qwen_random_neuron1.jsonl	[.[] | select(.item == "p-9707d6ff/known_d2")][0] | .share	this
+0.300	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-015e0710" and .arm == "cipher") | .share) | add / length	this
+0.30	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-015e0710" and .arm == "cipher") | .share) | add / length	this
+0.296	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-015e0710" and .arm == "cipher") | .share) | min	this
+0.30	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-015e0710" and .arm == "cipher") | .share) | min	this
+0.304	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-015e0710" and .arm == "cipher") | .share) | max	this
+0.30	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-015e0710" and .arm == "cipher") | .share) | max	this
+0.441	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-015e0710" and .arm == "copy") | .share) | add / length	this
+0.44	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-015e0710" and .arm == "copy") | .share) | add / length	this
+0.416	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-015e0710" and .arm == "copy") | .share) | min	this
+0.42	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-015e0710" and .arm == "copy") | .share) | min	this
+0.460	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-015e0710" and .arm == "copy") | .share) | max	this
+0.46	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-015e0710" and .arm == "copy") | .share) | max	this
+0.299	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-015e0710" and .arm == "gold") | .share) | add / length	this
+0.30	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-015e0710" and .arm == "gold") | .share) | add / length	this
+0.298	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-015e0710" and .arm == "gold") | .share) | min	this
+0.30	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-015e0710" and .arm == "gold") | .share) | min	this
+0.301	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-015e0710" and .arm == "gold") | .share) | max	this
+0.30	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-015e0710" and .arm == "gold") | .share) | max	this
+0.304	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-015e0710" and .arm == "gold_shuf") | .share) | add / length	this
+0.30	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-015e0710" and .arm == "gold_shuf") | .share) | add / length	this
+0.302	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-015e0710" and .arm == "gold_shuf") | .share) | min	this
+0.30	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-015e0710" and .arm == "gold_shuf") | .share) | min	this
+0.306	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-015e0710" and .arm == "gold_shuf") | .share) | max	this
+0.31	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-015e0710" and .arm == "gold_shuf") | .share) | max	this
+0.351	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-015e0710" and .arm == "invented") | .share) | add / length	this
+0.35	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-015e0710" and .arm == "invented") | .share) | add / length	this
+0.349	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-015e0710" and .arm == "invented") | .share) | min	this
+0.35	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-015e0710" and .arm == "invented") | .share) | min	this
+0.352	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-015e0710" and .arm == "invented") | .share) | max	this
+0.35	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-015e0710" and .arm == "invented") | .share) | max	this
+0.303	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-015e0710" and .arm == "known") | .share) | add / length	this
+0.30	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-015e0710" and .arm == "known") | .share) | add / length	this
+0.299	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-015e0710" and .arm == "known") | .share) | min	this
+0.30	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-015e0710" and .arm == "known") | .share) | min	this
+0.309	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-015e0710" and .arm == "known") | .share) | max	this
+0.31	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-015e0710" and .arm == "known") | .share) | max	this
+0.572	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-9707d6ff" and .arm == "cipher") | .share) | add / length	this
+0.57	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-9707d6ff" and .arm == "cipher") | .share) | add / length	this
+0.561	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-9707d6ff" and .arm == "cipher") | .share) | min	this
+0.56	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-9707d6ff" and .arm == "cipher") | .share) | min	this
+0.578	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-9707d6ff" and .arm == "cipher") | .share) | max	this
+0.58	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-9707d6ff" and .arm == "cipher") | .share) | max	this
+0.623	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-9707d6ff" and .arm == "copy") | .share) | add / length	this
+0.62	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-9707d6ff" and .arm == "copy") | .share) | add / length	this
+0.611	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-9707d6ff" and .arm == "copy") | .share) | min	this
+0.61	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-9707d6ff" and .arm == "copy") | .share) | min	this
+0.637	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-9707d6ff" and .arm == "copy") | .share) | max	this
+0.64	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-9707d6ff" and .arm == "copy") | .share) | max	this
+0.737	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-9707d6ff" and .arm == "gold") | .share) | add / length	this
+0.74	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-9707d6ff" and .arm == "gold") | .share) | add / length	this
+0.737	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-9707d6ff" and .arm == "gold") | .share) | min	this
+0.74	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-9707d6ff" and .arm == "gold") | .share) | min	this
+0.737	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-9707d6ff" and .arm == "gold") | .share) | max	this
+0.74	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-9707d6ff" and .arm == "gold") | .share) | max	this
+0.709	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-9707d6ff" and .arm == "gold_shuf") | .share) | add / length	this
+0.71	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-9707d6ff" and .arm == "gold_shuf") | .share) | add / length	this
+0.707	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-9707d6ff" and .arm == "gold_shuf") | .share) | min	this
+0.71	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-9707d6ff" and .arm == "gold_shuf") | .share) | min	this
+0.710	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-9707d6ff" and .arm == "gold_shuf") | .share) | max	this
+0.71	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-9707d6ff" and .arm == "gold_shuf") | .share) | max	this
+0.647	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-9707d6ff" and .arm == "invented") | .share) | add / length	this
+0.65	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-9707d6ff" and .arm == "invented") | .share) | add / length	this
+0.642	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-9707d6ff" and .arm == "invented") | .share) | min	this
+0.64	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-9707d6ff" and .arm == "invented") | .share) | min	this
+0.651	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-9707d6ff" and .arm == "invented") | .share) | max	this
+0.65	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-9707d6ff" and .arm == "invented") | .share) | max	this
+0.585	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-9707d6ff" and .arm == "known") | .share) | add / length	this
+0.59	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-9707d6ff" and .arm == "known") | .share) | add / length	this
+0.576	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-9707d6ff" and .arm == "known") | .share) | min	this
+0.58	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-9707d6ff" and .arm == "known") | .share) | min	this
+0.597	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-9707d6ff" and .arm == "known") | .share) | max	this
+0.60	experiments/share_unified/results/qwen_reread.jsonl	[., inputs] | map(select(.kind == "fine-tune" and .save == "last" and .decomp == "p-9707d6ff" and .arm == "known") | .share) | max	this

@@ -26,7 +26,7 @@ The whole answers read: copy 1,732, cipher 1,591, known facts 1,066, invented fa
   `results/known_share_check.csv`.
 - E328 (`results/qwen_reread.jsonl`, 58 items) read the figure's 36 fine-tune states (6 sides, seeds 0-2, last save,
   two decompositions), its 12 run-1 random changes and 10 base-model rows on one H100. The output-distribution
-  cells taken from the same logits match the saved ones within 0.06% relative, so the states and rows are the old
+  cells taken from the same logits match the saved ones within 0.052% relative, so the states and rows are the old
   ones. The base-model rows are a determinism check, not a control of the share: with the base model on both sides
   of every cell, on 16 rows (20 for maths), the numerator is exactly 0 on all 10 row sets, which any deterministic
   forward would give.
@@ -82,8 +82,8 @@ Every draw's share, "no band" for a draw that never reached the band
 | Maths, real solutions | 0.554 / 0.553 / 0.483 | 0.737 | no band / −0.0004 / 0.055 | 0.298-0.301 |
 | Maths, shuffled solutions | 0.551 / 0.538 / 0.478 | 0.707-0.710 | no band / −0.017 / 0.051 | 0.302-0.306 |
 
-On VPD, every fine-tune seed reads above every read draw on four tasks. Cipher reads 0.56-0.58 against 0.35-0.38 on
-two draws. Invented facts read 0.64-0.65 against 0.38-0.40 on two draws. Real-solution maths reads 0.74 against
+On VPD, every fine-tune seed reads above every read draw on four tasks. Cipher reads 0.56-0.58 against 0.35-0.37 on
+two draws. Invented facts read 0.64-0.65 against 0.37-0.40 on two draws. Real-solution maths reads 0.74 against
 0.48-0.55 on three draws, and shuffled-solution maths 0.71 against 0.48-0.55 on three. On copy the three draws read
 0.63-0.72, as high as the fine-tunes' 0.61-0.64. On known facts two draws read 0.51 and 0.69 against the fine-tunes'
 0.58-0.60.
@@ -93,7 +93,7 @@ a gain of 1.037, and nothing bounds the ratio at 1. Draw to draw, known facts sp
 neuron control, against a seed spread of 0.02 or less for the known-facts fine-tunes. So one known-facts draw alone can
 land above or below the fine-tunes.
 
-On the neuron control, every fine-tune seed reads 0.30 on both maths tasks, against draws at 0.06 or below, two draws
+On the neuron control, every fine-tune seed reads 0.30 on both maths tasks, against draws at 0.055 or below, two draws
 each. On copy the three draws read 0.43-0.53 against the fine-tunes' 0.42-0.46. On known facts they read 0.23-0.73
 against 0.30-0.31. Cipher and invented facts rest on one draw each, at 0.09 and −0.28, against fine-tunes at 0.30 and 0.35.
 So on copy and known facts, the two reuse tasks, a random change that raises the answers by one log-odds reads as
