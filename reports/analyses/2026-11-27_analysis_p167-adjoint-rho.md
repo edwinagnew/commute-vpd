@@ -136,7 +136,7 @@ filed in `predictions_run2.json`. Under rival a, the scaled split separates the 
 Its gain edits would then sit more than the scan noise of 0.003 above their least-squares 0.761. Its new edits and
 randoms would sit at or below their least-squares values. Under rival b as filed, the gain edits read at or below
 0.761, anywhere down to the unscaled 0.207. The research-log card stated rival b more narrowly: the scaled split reads
-like the unscaled one, within 0.05. No edit had a verdict rule, since no reuse definition has been adopted yet.
+like the unscaled one, within a narrow band of it. No edit had a verdict rule, since no reuse definition has been adopted yet.
 
 ### What we observed: the scaled split gives the least-squares order, at lower values
 
@@ -217,7 +217,7 @@ rather than near the unscaled one, which the card's narrower rival b did not exp
 | run 2 R0b | identity swap under the scaled featurization changes no prediction | stop on any argmax change | none | held |
 | run 2 rival a | scaled adjoint separates more cleanly than least squares | gain edits above 0.761 by more than 0.003; new edits and randoms at or below least squares | gain edits 0.713 | not met |
 | run 2 rival b, filed | gain edits at or below least squares | gain edits at or below 0.761, down to 0.207 | 0.713 | met as written |
-| run 2 rival b, card | scaled reads like unscaled | gain edits within 0.05 of 0.207 | 0.51 above it | not met |
+| run 2 rival b, card | scaled reads like unscaled | gain edits within a narrow band of 0.207 | 0.51 above it | not met |
 
 ## Departures
 
