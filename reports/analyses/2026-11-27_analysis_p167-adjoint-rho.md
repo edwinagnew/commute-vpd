@@ -1,7 +1,7 @@
 # Does the adjoint split, with or without its scale, separate the built edits more cleanly than least squares?
 
 We read the gain share on seven hand-built edits, splitting each weight change by least squares and by the adjoint
-split, without and then with its scale. Without its scale the rescaled edits fell to a fifth and rebuilt fell to the
+split, without and then with its scale. Without its scale the rescaled edits fell to about a quarter and rebuilt fell to the
 new edits' level; with it, the edits kept the least-squares order at lower values. So the adjoint split as `GOALS.md`
 defines it orders the built edits as least squares does, but carries only half of rebuilt's change.
 
@@ -189,7 +189,7 @@ activations in under the scaled featurization changed no prediction on the x2 ed
 of 1e-12. Every fitted scale was positive.
 
 Each edit is again one built state read once, on one decomposition seed and one task. The scan noise is 0.0026, the
-spread of the gain share between two scan seeds on one built edit. The gain and rebuilt edits' falls from least squares
+standard deviation of the gain share between two scan seeds on one built edit. The gain and rebuilt edits' falls from least squares
 lie far beyond it, while the new edits' falls are a few times it. The reading is blind to whether the base weights the
 input statistics were read on match each edit's own; that per-item check was not run.
 

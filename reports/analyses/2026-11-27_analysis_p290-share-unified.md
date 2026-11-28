@@ -2,8 +2,8 @@
 
 We read the Qwen3-1.7B fine-tunes of Appendix H again with the 67M model's share, built on the whole trained
 answer's log-odds, beside random changes scaled to raise the answers by about one log-odds. On the VPD decomposition
-the fine-tunes now read about 0.56 to 0.74, not 0.99, and random changes read lower on cipher, invented facts and
-both maths tasks but as high on copy and known facts. So the appendix's saturation claim does not hold, and any
+the fine-tunes now read about 0.56 to 0.74, not 0.99, and random changes read lower on cipher and invented facts (two
+draws each) and both maths tasks (three draws each), but as high on copy and known facts (three draws each). So the appendix's saturation claim does not hold, and any
 comparison of the Qwen fine-tunes with random changes holds only task by task.
 
 ## What was read
@@ -159,7 +159,8 @@ input.
 - A measure of the numerator's noise at a gain of 1; the zero change reads exactly 0 and says nothing about it.
 - A random change matched to the fine-tunes' own gain of 10 to 160; out of reach at the 100-times cap.
 - The planted changes of `appH:23-26` and E320's three size-matched neuron-control draws in the new form.
-- A numeric check of the multi-token answer log-odds against a direct float64 sum on Qwen logits (asked by the
-  redteam review, `reports/reviews/2026-11-27_review_p290-share-unified.md`); E327 tests only one-token answers.
+- A check of the multi-token answer log-odds on real Qwen logits. The unit test `tests/test_share_unit.py` checks
+  1-6 token answers against a brute-force sum and passed on the pods, but on synthetic logits; E327 tests only
+  one-token answers on a model.
 - The five-times save; only the last save was re-read, as the figure plots.
 - The figure itself: `make_qwen_share.py` still reads the old files, and the paper directory is not edited here.
