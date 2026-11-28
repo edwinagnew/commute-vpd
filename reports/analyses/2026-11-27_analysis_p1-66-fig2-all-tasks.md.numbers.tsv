@@ -298,3 +298,18 @@
 3.7e-5	experiments/fig2_all_tasks/results/stage0/sae_identity_sae_a.json	.max_dev	this
 8e-5	given	experiments/fig2_all_tasks/results/predictions.json .expected.stage0: identity max logit deviation of the order of E298's, neurons 8e-5 (filed text)
 1e-4	given	experiments/fig2_all_tasks/ident_straddle.py docstring: filed fixed max_dev under 1e-4 on all four states
+0.011681	experiments/fig2_all_tasks/results/stage0/neurons_repro_fix2.json	.saved	this
+0.011685	experiments/fig2_all_tasks/results/stage0/neurons_repro_fix2.json	.E_b	this
+3.4e-4	experiments/fig2_all_tasks/results/stage0/neurons_repro_fix2.json	.rel_dev	this
+5e-5	experiments/fig2_all_tasks/results/stage0/neurons_repro_fix2.json	.tol	this
+5.0e-6	experiments/fig2_all_tasks/results/stage0/neurons_repro_neurons_a.json	.rel_dev	this
+3.8e-6	experiments/fig2_all_tasks/results/neurons_hook_diff.json	.max_abs_dE_b	this
+7.8e-5	experiments/fig2_all_tasks/results/ident_straddle.json	.[] | select(.item=="e62/copy_s0") | .fixed_max_dev	this
+5.5e-5	experiments/fig2_all_tasks/results/ident_straddle.json	.[] | select(.item=="e46/ident32_s0") | .fixed_max_dev	this
+5.3e-5	experiments/fig2_all_tasks/results/ident_straddle.json	.[] | select(.item=="e58/copy_s0") | .fixed_max_dev	this
+5.1e-5	experiments/fig2_all_tasks/results/ident_straddle.json	.[] | select(.item=="c3/copy_s0") | .fixed_max_dev	this
+0.02715	experiments/fig2_all_tasks/results/ident_straddle.json	.[] | select(.item=="e62/copy_s0") | .old_max_dev	this
+0.0692	experiments/fig2_all_tasks/results/ident_straddle.json	.[] | select(.item=="e46/ident32_s0") | .old_max_dev	this
+7.8e-5	experiments/fig2_all_tasks/results/stage0/neurons_identity_fix2.json	.max_dev	this
+0.011	experiments/fig2_all_tasks/results/summary.json	[.rows[] | select(.feat=="top" and .side=="random") | .value] | max	this
+0.011	experiments/fig2_all_tasks/results/per_task.json	[.top[] | .random.max] | max	this

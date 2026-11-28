@@ -5,7 +5,8 @@
 Reads results/summary.json (score.py). Writes results/per_task.json (per featurization, task and side: the three
 seeds' E_b over K, their mean, min and max) and figures/fig2_all_tasks.png: for VPD subcomponents, top neurons and SAE latents,
 every seed's trained and matched-random value per task, one row per task, at all three featurizations. The top-neuron
-panel is read under the fixed neuron hook (E326 rerun 2, d2d81436).
+panel's 72 new-task rows are read under the fixed neuron hook (E326 rerun 2, d2d81436), its 24 e58 rows (E298)
+under the old one, a relative difference near 3.4e-4 (README, Other departures).
 """
 
 from __future__ import annotations

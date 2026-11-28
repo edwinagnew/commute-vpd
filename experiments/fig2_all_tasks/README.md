@@ -65,6 +65,18 @@ bf16 autocast.
 - Stage-0 reproductions: VPD e58/cipher_s1 and SAE e58/cipher_s0 (E298's items), neurons e58/copy_s0 (E290's, E298's
   filed neuron reproduction). F comes from known_states' file; D comes from `definition_task`, the same path as the
   new items.
+- Neuron swap hook (2026-11-27, d2d81436): `needed_neurons.Swap.mlp` now splits x's activation at its bound using F's
+  cached run on x, not the rerun's copy (off by rounding), the fix the SAE swap got on 2026-11-24. The old hook put
+  1 and 2 straddling activations on the wrong side on e62/copy_s0 and e46/ident32_s0 (identity max_dev 0.02715 and
+  0.0692; fixed at most 7.8e-5, `results/ident_straddle.json`). The 72 new neuron items were read again under the fix
+  (E326 rerun 2): |dE_b| at most 3.8e-6, K size off by at most 2 on 22 items. Under the fix the filed neuron
+  reproduction of E298's e58/copy_s0 misses by design: 1 of 4171 K entries differs, relative 3.4e-4 against the
+  filed 5e-5. The user (ask 60, 2026-11-27) took the old-hook reproduction (relative 5.0e-6) as the apparatus check
+  and had the miss recorded, not stopped (`run.py --repro-reported`).
+- So the top-neuron panel mixes hooks: its 72 new-task rows (source E325) are read under the fixed hook, its 24 e58
+  rows (E290's, carried by E298) under the old one. The difference is about the size of the e58 reproduction's shift
+  (relative 3.4e-4), far below the figure's resolution. The old-hook npz of the 72 items are kept in
+  `~/commute-data/results-large/fig2_all_tasks/neurons_oldhook/`.
 
 ## Runs
 
