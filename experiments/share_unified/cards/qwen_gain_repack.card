@@ -1,0 +1,16 @@
+cell: P2.91
+rival_a: the fine-tunes' share depends on gain but not on row packing predicts known and copy fine-tunes seeds 0-2 on the packing-seed-1 rows read within 0.05 of their E332 values at full gain and at gain ~1
+rival_b: the share moves with row packing as the known random draw 2 did (1.03 to 1.21) predicts the fine-tunes move by more than 0.1 on the repacked rows at gain ~1
+rung: premise
+smallest_gap: 0.1
+spread: 0.05
+n: 6
+design: paired
+unit: fine-tune states (known and copy x seeds 0-2), each read at full gain and gain ~1 on E332's rows and on the packing-seed-1 rows
+spread_source: experiments/share_unified/results/qwen_gain.jsonl
+spread_of: proxy: E332 fine-tune shares across seeds 0-2 at each gain (known 0.58-0.60 full, 0.72-0.74 gain 1; copy 0.61-0.64 full, 0.58-0.59 gain 1), same share function and decomposition
+floor: MIN_GAIN 1 log-odds; every scaled read sits in the band target x (1 +- tol) as in E330/E332
+stop: the zero control on each repacked row set must read gain and numerator exactly 0; the repeat of known draw 2 must read E332's 1.211 within the same-card floor; a first read over 12 min or a projected total over $10 stops and reports to whip-lead
+sketch: none (descriptive)
+rehearsal: a short pod commute-E###-rehearse-zero: the zero control and one full-gain read on the copy repacked rows, measuring time per item and peak memory, then stop
+descriptive: whip-lead 2026-11-27 19:57, approved P2.91 run 2 (row-sensitivity read) on the redteam's suggested follow-up (reports/reviews/2026-11-27_review_e332-share-vs-gain.md); cell change applied by whip-lead ~20:05; values reported per packing and gain, no claim at the bar
