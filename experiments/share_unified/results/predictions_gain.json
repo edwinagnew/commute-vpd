@@ -1,0 +1,31 @@
+{
+ "experiment": "E332",
+ "cell": "P2.91",
+ "note": "Filed 2026-11-27 by regating-lead (E332, P2.91, descriptive). Qwen3-1.7B, VPD p-9707d6ff only: each known and copy fine-tune's own update (seeds 0-2, last save) read with P2.90's whole-answer log-odds share at its full gain, then scaled down (c in (0, 1], perturb.match) to answer gains of about 10 and 1; and a repeat read of E330's VPD known draw 2 on the known rows repacked. Script experiments/share_unified/qwen_gain.py; search, full read and draw are qwen_random.py's (E330), whose tolerance, search_rows, probe_x, scale_cap and n16 are read from results/predictions_random.json. Card experiments/share_unified/cards/qwen_gain.card.",
+ "settings": {
+  "qwen_gain": {
+   "arms": ["known", "copy"],
+   "arms_source": "the card (cell P2.91): known and copy",
+   "seeds": [0, 1, 2],
+   "seeds_source": "E328's fine-tune seeds (predictions.json .settings.qwen_reread.seeds)",
+   "save": "last",
+   "save_source": "E328 / the figure qwen_share: the last save",
+   "targets": [10, 1.05],
+   "targets_source": "gain 10 (the card); gain 1 is E330's target_gain 1.05 (band [1.0028, 1.0973] with gain_rel_tol 0.045), asserted equal; the same gain_rel_tol for both",
+   "repeat_arm": "known",
+   "repeat_draw": 2,
+   "repeat_source": "E330's VPD known_d2 (share 1.03, the highest draw): draw seed and norms_from read from results/qwen_random_vpd*.jsonl",
+   "repack_seed": 1,
+   "repack_seed_source": "share_reading.marked_rows' packing seed (E330's rows are qwen_pairs.SEED 0): the same 600 trained known items in a new order and row cuts; no content-disjoint trained rows exist without changing the data module",
+   "first_read_max_s": 720,
+   "first_read_max_s_source": "the card's stop: a first read over 12 min"
+  }
+ },
+ "expected": {
+  "control": "per row set (known, copy, known_repack1) a zero change and W0 itself read search gain, full gain and numerator exactly 0 (E330 control a, E328 W0 control); the job stops otherwise",
+  "full": "each full-gain read (c = 1) equals E328's VPD share for the same arm, seed and save (results/qwen_reread.jsonl). No measured same-card Qwen floor exists (the 0.002 in reports/analyses/2026-11-27_analysis_p290-share-unified.md is the 67M's, across batch sizes on one card), so diff_e328 is written and does not stop; expected 0 on the same card and path",
+  "scaled": "every matched read (status ok) has its full-read gain inside target x (1 +- gain_rel_tol) (in_band true), as E330's draws did with search_rows = all rows",
+  "repeat": "no bar: the repeat's share is described beside E330's 1.03",
+  "claims": "none at the bar: descriptive (card experiments/share_unified/cards/qwen_gain.card); values reported per gain"
+ }
+}
