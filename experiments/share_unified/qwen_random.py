@@ -107,9 +107,9 @@ def size(d: DW) -> float:
 
 
 class Search:
-    """Gains of c·R on one row set's first search rows, T cells only, each c read once (E310's `Scaled`)."""
+    """Gains of c·R on one row set's first search rows, T cells only, each c read once (E310's `Scaled`); R None: W0."""
 
-    def __init__(self, lab: Any, R: DW, rows: Tensor, spans: SH.Spans, t0: Tensor) -> None:
+    def __init__(self, lab: Any, R: DW | None, rows: Tensor, spans: SH.Spans, t0: Tensor) -> None:
         self.lab, self.R, self.rows, self.spans, self.t0 = lab, R, rows, spans, t0
         self.seen: dict[float, float] = {}
 
@@ -123,7 +123,7 @@ class Search:
         return self.seen[c]
 
 
-def full_read(lab: Any, R: DW, c: float, rows: Tensor, spans: SH.Spans) -> dict[str, Any]:
+def full_read(lab: Any, R: DW | None, c: float, rows: Tensor, spans: SH.Spans) -> dict[str, Any]:
     """The share of W0 + c·R on all rows, floor MIN_GAIN one-sided, and KL(W0 + c·R || W0) per position."""
     kl = [0.0]
 
