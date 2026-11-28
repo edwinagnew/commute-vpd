@@ -1,0 +1,35 @@
+{
+ "experiment": "E333",
+ "cell": "P2.91",
+ "note": "Filed 2026-11-27 by regating-lead (E333, P2.91 run 2, descriptive). Qwen3-1.7B, VPD p-9707d6ff only: each known and copy fine-tune's own update (seeds 0-2, last save) read with P2.90's whole-answer log-odds share on its task's rows repacked with packing seed 1 (share_reading.marked_rows(task, 1)), at c = 1 and at the c E332 recorded for its gain-1 read (results/qwen_gain.jsonl item p-9707d6ff/g1.05/<state>); no new search, so only the rows change. First the zero and W0 controls on each repacked row set, then E332's VPD known draw-2 repeat re-read at E332's c on known_repack1. Script experiments/share_unified/qwen_repack.py, which reuses qwen_gain.py (E332) and qwen_random.py (E330); E330's settings (results/predictions_random.json) give gain_rel_tol for the in-band note. Card experiments/share_unified/cards/qwen_gain_repack.card.",
+ "settings": {
+  "qwen_repack": {
+   "arms": ["known", "copy"],
+   "arms_source": "the card (cell P2.91 run 2): known and copy",
+   "seeds": [0, 1, 2],
+   "seeds_source": "E332's fine-tune seeds (predictions_gain.json .settings.qwen_gain.seeds)",
+   "save": "last",
+   "save_source": "E332's save (predictions_gain.json .settings.qwen_gain.save)",
+   "repack_seed": 1,
+   "repack_seed_source": "E332's repack_seed (predictions_gain.json .settings.qwen_gain.repack_seed): the row set on which E332's repeat moved",
+   "gain1_stage": "g1.05",
+   "gain1_stage_source": "E332's gain-1 stage name (targets[-1] = 1.05, E330's target_gain); its recorded c is read per state",
+   "repeat_item": "p-9707d6ff/repeat/known_d2_repack1",
+   "repeat_item_source": "E332's repeat record in results/qwen_gain.jsonl: draw seed 228003, norms_from known_s2_last, c 23.34119415283203, share 1.2108150967958595",
+   "repeat_tol": 0,
+   "repeat_tol_source": "measured: E332's six full reads reproduced E328's shares and gains exactly (diff_e328 = 0.0 on all six, results/qwen_gain.jsonl), two pods on NVIDIA H100 80GB HBM3 (results/run_qwen.log, run_gain_rehearse.log), same code path; so the same-card, same-path floor is 0 and the repeat must equal E332's share and gain exactly. The pod must be an H100 80GB HBM3 (SXM) as E332's was",
+   "first_read_max_s": 720,
+   "first_read_max_s_source": "the card's stop: a first read over 12 min (E332's value)",
+   "cost_max_usd": 10,
+   "cost_max_usd_source": "the card's stop: a projected total over $10",
+   "usd_per_h": 4.41,
+   "usd_per_h_source": "the brief: the H100 SXM rate used for E333's projection"
+  }
+ },
+ "expected": {
+  "control": "per repacked row set (known_repack1, copy_repack1) a zero change and W0 itself read search gain, full gain and numerator exactly 0 (E332's controls); the job stops otherwise",
+  "repeat": "E332's VPD known draw-2 repeat re-read at E332's c on known_repack1 reads E332's share 1.2108150967958595 and gain 1.0541939830247227 exactly (repeat_tol 0, measured); the job stops otherwise",
+  "finetunes": "no prediction beyond the card's rivals. rival_a: the fine-tunes' share depends on gain but not on row packing predicts known and copy fine-tunes seeds 0-2 on the packing-seed-1 rows read within 0.05 of their E332 values at full gain and at gain ~1. rival_b: the share moves with row packing as the known random draw 2 did (1.03 to 1.21) predicts the fine-tunes move by more than 0.1 on the repacked rows at gain ~1. The gain the repacked rows give at E332's gain-1 c is recorded, with whether it lies in 1.05 x (1 +- gain_rel_tol)",
+  "claims": "none at the bar: descriptive (card experiments/share_unified/cards/qwen_gain_repack.card); values reported per packing and gain"
+ }
+}
